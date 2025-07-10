@@ -6,5 +6,12 @@
   "action": {
     "default_popup": "settings.html",
     "default_icon": "HiIcon.png"
-  }
+  },
+  "permissions": ["scripting"],
+  "content_scripts": [
+    {
+      "matches": ["*://mangafire.to/*"],
+      "js": ["content.js"]
+    }
+  ]
 }
