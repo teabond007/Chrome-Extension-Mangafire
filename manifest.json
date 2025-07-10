@@ -1,0 +1,10 @@
+{
+  "name": "first Extensions",
+  "description": "Base Level Extension",
+  "version": "0.1",
+  "manifest_version": 3,
+  "action": {
+    "default_popup": "settings.html",
+    "default_icon": "HiIcon.png"
+  }
+}
