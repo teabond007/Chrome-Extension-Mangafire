@@ -2,18 +2,16 @@ function applyContainerStyles() {
   const container = document.querySelector('.original.card-lg');
 
   if (container) {
-    container.style.background = '#fce4ec';
-    container.style.padding = '5px';
-    container.style.borderRadius = '3px';
-    console.log('✅ Styled container');
-    
-    
 const mangaDivs = container.querySelectorAll(':scope > div');
 
-  mangaDivs.forEach(div => {
-    div.style.border = '3px solid #1976d2'; // Blue border
-    div.style.borderRadius = '6px';
+mangaDivs.forEach(item => {
+    const inner = item.querySelector('.inner');
 
+    if (inner) {
+  inner.style.border = '1px solid rgb(0, 255, 8)'; // Green border
+
+
+    }
   });
     
     return true;
