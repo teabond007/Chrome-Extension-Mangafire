@@ -1,4 +1,6 @@
 function applyContainerStyles() {
+  Log('applyContainerStyles() called');
+
   const container = document.querySelector('.original.card-lg');
 
   if (container) {
@@ -37,3 +39,6 @@ window.addEventListener('load', () => {
   applyContainerStyles();
 });
 
+function Log(txt) {
+  chrome.runtime.sendMessage({ type: "log", text: txt });
+}

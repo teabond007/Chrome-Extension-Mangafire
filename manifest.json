@@ -4,10 +4,12 @@
   "version": "0.1",
   "manifest_version": 3,
   "action": {
-    "default_popup": "settings.html",
     "default_icon": "HiIcon.png"
   },
   "permissions": ["scripting"],
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
       "matches": ["*://mangafire.to/*"],
