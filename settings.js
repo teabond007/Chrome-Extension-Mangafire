@@ -14,3 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+document.getElementById('sendMessageBtn').addEventListener('click', () => {
+  chrome.runtime.sendMessage({ type: "scrapeBookmarks", value: 1 });
+  });

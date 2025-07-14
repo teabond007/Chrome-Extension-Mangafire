@@ -23,7 +23,7 @@ function scrapeBookmarksFromUnopenedTab(pageIdentefier) {
             const container = document.querySelector('.original.card-xs');
             const mangaDivs = container.querySelectorAll(':scope > div');
             if (mangaDivs.length === 0) {
-              chrome.runtime.sendMessage({ type: "log", text: "no mangaDivs found" });
+              chrome.runtime.sendMessage({ type: "bookmarksExtracted"});
               chrome.runtime.sendMessage({ type: "scrapeBookmarks", value: 0 });
               return;
             }
@@ -80,6 +80,12 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
   if (msg.type === "scrapeBookmarks") {
     if (msg.value === 0) {
       Log('Message received: scrapeBookmarks. msg.value is 0. stopping further execution');
+    } else if (msg.value === 1){
+      chrome.storage.local.remove('userBookmarks');
+      Log('Removed userBookmarks for a fresh restart');
+      Log(`Message received: scrapeBookmarks, value: ${msg.value}`);
+      scrapeBookmarksFromUnopenedTab(msg.value);
+      Log(`Next page value: ${msg.value + 1}`);
     } else {
       Log(`Message received: scrapeBookmarks, value: ${msg.value}`);
       scrapeBookmarksFromUnopenedTab(msg.value);
@@ -95,4 +101,3 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
 function Log(txt) {
   chrome.runtime.sendMessage({ type: "log", text: txt });
 }
-
