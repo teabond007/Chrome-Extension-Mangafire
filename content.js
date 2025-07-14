@@ -5,7 +5,7 @@ async function applyContainerStyles() {
   return;
 }
   Log('applyContainerStyles() called');
-  chrome.runtime.sendMessage({ type: "scrapeBookmarks" });
+  chrome.runtime.sendMessage({ type: "scrapeBookmarks", value: 1 });
   Log('Request scrapeBookmarks sent');
   const msg = await waitForMessage(msg => msg.type === "bookmarksExtracted");
   Log('Received bookmarksExtracted message');

@@ -1,7 +1,7 @@
 {
   "name": "Mangafire bookmark marker",
   "description": "Base Level Extension",
-  "version": "0.4.5",
+  "version": "0.5",
   "manifest_version": 3,
   "action": {
     "default_icon": "HiIcon.png"

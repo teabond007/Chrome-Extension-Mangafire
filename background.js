@@ -3,18 +3,30 @@ chrome.action.onClicked.addListener(() => {
 });
 
 // to run function chrome.runtime.sendMessage({ type: "scrapeBookmarks" });
-function scrapeBookmarksFromUnopenedTab() {
+/**
+ * 
+ * @param {int} pageIdentefier 
+ */
+function scrapeBookmarksFromUnopenedTab(pageIdentefier) {
   Log('scrapeBookmarksFromUnopenedTab() called');
-  chrome.tabs.create({ url: "https://mangafire.to/user/bookmark", active: false }, (tab) => {
+  pageurl = `https://mangafire.to/user/bookmark?page=${pageIdentefier}`;
+  Log(`Page URL: ${pageurl}`);
+  chrome.tabs.create({ url: pageurl, active: false }, (tab) => {
     Log(`New tab created with ID: ${tab.id}`);
 
         chrome.scripting.executeScript({
           target: { tabId: tab.id },
-          func: () => {
+          args: [pageIdentefier],
+          func: (pageIdentefier) => {
             chrome.runtime.sendMessage({ type: "log", text: "executing script" });
             const bookmarks = [];
             const container = document.querySelector('.original.card-xs');
             const mangaDivs = container.querySelectorAll(':scope > div');
+            if (mangaDivs.length === 0) {
+              chrome.runtime.sendMessage({ type: "log", text: "no mangaDivs found" });
+              chrome.runtime.sendMessage({ type: "scrapeBookmarks", value: 0 });
+              return;
+            }
 
             mangaDivs.forEach(item => {
               chrome.runtime.sendMessage({ type: "log", text: "forEach item run" });
@@ -43,11 +55,19 @@ function scrapeBookmarksFromUnopenedTab() {
               }
     
   });
-  chrome.runtime.sendMessage({ type: "log", text: "bookmarks scraped" });
-  chrome.storage.local.set({ userBookmarks: bookmarks });
-  chrome.runtime.sendMessage({ type: "log", text: `bookmarks saved. Array lenght: ${bookmarks.length}` });
-  chrome.runtime.sendMessage({ type: "bookmarksExtracted" });
 
+  chrome.runtime.sendMessage({ type: "log", text: "bookmarks scraped" });
+  chrome.storage.local.get('userBookmarks', data => {
+      const existing = Array.isArray(data.userBookmarks) ? data.userBookmarks : [];
+      const combined = existing.concat(bookmarks);
+      chrome.storage.local.set({ userBookmarks: combined }, () => {
+        chrome.runtime.sendMessage({ type: "log", text: `bookmarks saved. Array length: ${combined.length}` });
+        chrome.runtime.sendMessage({ type: "bookmarksExtracted" });
+        const pagevalue = pageIdentefier + 1;
+        chrome.runtime.sendMessage({ type: "log", text: `Next page value: ${pagevalue}` });
+        chrome.runtime.sendMessage({ type: "scrapeBookmarks", value: pagevalue });
+      });
+    });
 }
           
         });
@@ -57,10 +77,14 @@ function scrapeBookmarksFromUnopenedTab() {
 }
 
 chrome.runtime.onMessage.addListener((msg, sender) => {
-  if (msg.type === "scrapeBookmarks") 
-    {Log('Message received: scrapeBookmarks');
-    scrapeBookmarksFromUnopenedTab();
-     
+  if (msg.type === "scrapeBookmarks") {
+    if (msg.value === 0) {
+      Log('Message received: scrapeBookmarks. msg.value is 0. stopping further execution');
+    } else {
+      Log(`Message received: scrapeBookmarks, value: ${msg.value}`);
+      scrapeBookmarksFromUnopenedTab(msg.value);
+      Log(`Next page value: ${msg.value + 1}`);
+    }
   }
   if (msg.type === "bookmarksExtracted") {
     chrome.tabs.remove(sender.tab.id);
@@ -71,3 +95,4 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
 function Log(txt) {
   chrome.runtime.sendMessage({ type: "log", text: txt });
 }
+
