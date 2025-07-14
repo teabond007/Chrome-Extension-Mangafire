@@ -11,65 +11,48 @@ function scrapeBookmarksFromUnopenedTab() {
         chrome.scripting.executeScript({
           target: { tabId: tab.id },
           func: () => {
-    
             chrome.runtime.sendMessage({ type: "log", text: "executing script" });
             const bookmarks = [];
-chrome.runtime.sendMessage({ type: "log", text: "5" });
-const container = document.querySelector('.original.card-xs');
-            chrome.runtime.sendMessage({ type: "log", text: "6" });
+            const container = document.querySelector('.original.card-xs');
             const mangaDivs = container.querySelectorAll(':scope > div');
-chrome.runtime.sendMessage({ type: "log", text: "executing script2" });
+
             mangaDivs.forEach(item => {
-              chrome.runtime.sendMessage({ type: "log", text: "item run" });
-    const inner = item.querySelector('.inner');
-    if (inner) {
-  inner.style.border = '1px solid rgb(0, 255, 8)'; // Green border
-  chrome.runtime.sendMessage({ type: "log", text: "color to green" });
+              chrome.runtime.sendMessage({ type: "log", text: "forEach item run" });
+              const inner = item.querySelector('.inner');
+              if (inner) {
+                inner.style.border = '1px solid rgb(0, 255, 8)'; // Green border to check if the script found the element
+
+                const title = inner.querySelector('.info a');
+                chrome.runtime.sendMessage({ type: "log", text: `title: ${title.textContent.trim()}` });
+
+                const statusBtn = inner.querySelector('.info .dropdown.width-limit.favourite button');
+                chrome.runtime.sendMessage({ type: "log", text: `status: ${statusBtn.textContent.trim()}` });
+
+                if (title && statusBtn) {
+                  bookmarks.push({
+                    title: title.textContent.trim(),
+                    status: statusBtn.textContent.trim(),
+                  });
+                  chrome.runtime.sendMessage({ type: "log", text: `data pushed into Array. Array lenght: ${bookmarks.length}` }); 
+                } else {
+                    chrome.runtime.sendMessage({ type: "log", text: "title or statusBtn not found" });
+                }
 
 
-      const title = inner.querySelector('.info a');
-      chrome.runtime.sendMessage({ type: "log", text: `New tab created with ID: ${title.textContent.trim()}` });
 
-      const statusBtn = inner.querySelector('.info .dropdown.width-limit.favourite button');
-      chrome.runtime.sendMessage({ type: "log", text: `New tab created with ID: ${statusBtn.textContent.trim()}` });
-
-
-
-
-
-    }
+              }
     
   });
-  
-
-
-              document.querySelectorAll('.unit').forEach(unit => {
-              chrome.runtime.sendMessage({ type: "log", text: "1" });
-    // Title and manga URL
-            const title = unit.querySelectorAll('.info a');
-    // Status
-            const statusBtn = unit.querySelector('.dropdown.width-limit.favourite button');
-    // Current chapter (optional)
-            const chapterSpan = unit.querySelector('.richdata span');
-            const readingLink = unit.querySelector('.richdata a.reading');
-
-    if (titleLink && statusBtn) {
-      bookmarks.push({
-        title: title.textContent.trim(),
-        status: statusBtn.textContent.trim(),
-        chapter: chapterSpan ? chapterSpan.textContent.trim() : null,
-        readingUrl: readingLink ? readingLink.getAttribute('href') : null
-      });
-    }
-  });
-  chrome.storage.local.set({ userBookmarks: bookmarks });
   chrome.runtime.sendMessage({ type: "log", text: "bookmarks scraped" });
+  chrome.storage.local.set({ userBookmarks: bookmarks });
+  chrome.runtime.sendMessage({ type: "log", text: `bookmarks saved. Array lenght: ${bookmarks.length}` });
   chrome.runtime.sendMessage({ type: "bookmarksExtracted" });
+
 }
           
-          });
-
         });
+
+  });
   
 }
 
