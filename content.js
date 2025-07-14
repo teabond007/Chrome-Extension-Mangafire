@@ -55,14 +55,6 @@ matchedBookmarks.forEach(bookmark => {
 });
 
 
-
-/*mangaDivs.forEach(item => {
-    const inner = item.querySelector('.inner');
-    if (inner) {
-  inner.style.border = '1px solid rgb(0, 255, 8)'; // Green border
-    }
-  });
-  */
 }
 
 window.addEventListener('load', () => {

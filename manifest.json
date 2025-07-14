@@ -1,10 +1,18 @@
 {
-  "name": "Mangafire bookmark marker",
-  "description": "Base Level Extension",
-  "version": "1.0",
+  "name": "Manga Bookmarks Marker",
+  "description": "for MangFire. This is not official MangFire extension and is not affiliated with MangFire in any way. It is my personal project to help me manage my bookmarks on MangFire.",
+  "version": "1.1",
   "manifest_version": 3,
+  "options_ui": {
+  "page": "settings.html",
+  "open_in_tab": true
+},
+  "icons": {
+  "128": "favicon.png"
+},
   "action": {
-    "default_icon": "favicon.png"
+    "default_icon": "favicon.png",
+    "default_popup": "popup.html"
   },
   "permissions": ["scripting", "tabs", "storage"],
     "host_permissions": [
