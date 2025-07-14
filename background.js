@@ -25,6 +25,18 @@ chrome.runtime.sendMessage({ type: "log", text: "executing script2" });
     if (inner) {
   inner.style.border = '1px solid rgb(0, 255, 8)'; // Green border
   chrome.runtime.sendMessage({ type: "log", text: "color to green" });
+
+
+      const title = inner.querySelector('.info a');
+      chrome.runtime.sendMessage({ type: "log", text: `New tab created with ID: ${title.textContent.trim()}` });
+
+      const statusBtn = inner.querySelector('.info .dropdown.width-limit.favourite button');
+      chrome.runtime.sendMessage({ type: "log", text: `New tab created with ID: ${statusBtn.textContent.trim()}` });
+
+
+
+
+
     }
     
   });
