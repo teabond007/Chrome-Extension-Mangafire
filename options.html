@@ -3,6 +3,7 @@
     <meta charset="UTF-8" />
     <title>Manga Bookmarks Marker</title>
     <link rel="stylesheet" href="options.css">
+
     
   </head>
   <body>
@@ -32,9 +33,20 @@
 
 
 
+<p id="autosyncinfo">When Auto Sync is enabled it will sync Bookmarks every set days.</p>
+<p>After the day mark is hit it will wait until Mangafire is opened and then resset the counter</p>
+<div>
+  <input placeholder="How many days..." id="AutoSyncSetDays" class="input" name="text" type="number" value="30"/>
+  <button class="clickMeButton" id="AutoSyncSetDaysButton">Set</button>
+  <button class="clickMeButton" id="AutoSyncSetDaysButtonReset">Reset</button>
+  <p id="logContainerSetDays"></p>
+</div>
 
 
-    <p>Sync Button Requieres you to be logged in Mnagafire.to</p>
+
+
+
+    <p style="margin-top: 3.5rem;">Sync Button Requieres you to be logged in Mnagafire.to</p>
     <p>Works only on Mnagafire.to</p>
     <button class="btn" id="sendMessageBtn">Sync Bookmarks</button>
 

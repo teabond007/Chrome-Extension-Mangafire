@@ -76,6 +76,18 @@ matchedBookmarks.forEach(bookmark => {
 
 });
 
+chrome.storage.local.get(['AutoSyncfeatureEnabled', 'SyncLastDate', 'SyncEverySetDate'], (data) => {
+  datebool = data.AutoSyncfeatureEnabled ?? false;
+  if(datebool){
+    if(Date.now() - data.SyncLastDate >= data.SyncEverySetDate * 24 * 60 * 60 * 1000) {
+      chrome.runtime.sendMessage({ type: "scrapeBookmarks", value: 1 });
+    }
+  }
+
+});
+
+
+
 
 }
 

@@ -67,3 +67,26 @@ function LogCustoomBookmarks() {
   }
 )
 }
+
+AutoSyncSetDaysButton = document.getElementById('AutoSyncSetDaysButton')
+AutoSyncSetDaysinput = document.getElementById('AutoSyncSetDays');
+const container1 = document.getElementById('logContainerSetDays');
+
+
+chrome.storage.local.get('SyncEverySetDate', data => {
+
+    AutoSyncSetDaysinput.value = data.SyncEverySetDate || 30; // Default to 30 days if not set
+
+});
+
+document.getElementById('AutoSyncSetDaysButton').addEventListener('click', () => {
+  chrome.storage.local.set({ SyncEverySetDate: AutoSyncSetDaysinput.value});
+  container1.textContent = ''; // Clear previous content
+    container1.textContent = 'Auto Sync: every ' + AutoSyncSetDaysinput.value + ' days.';
+});
+
+document.getElementById('AutoSyncSetDaysButtonReset').addEventListener('click', () => {
+  chrome.storage.local.set({ SyncEverySetDate: 30});
+  location.reload();
+});
+

@@ -1,8 +1,7 @@
 chrome.action.onClicked.addListener(() => {
-  chrome.tabs.create({ url: chrome.runtime.getURL("settings.html") });
+  chrome.tabs.create({ url: chrome.runtime.getURL("options.html") });
 });
 
-// to run function chrome.runtime.sendMessage({ type: "scrapeBookmarks" });
 /**
  * 
  * @param {int} pageIdentefier 
@@ -81,7 +80,9 @@ function scrapeBookmarksFromUnopenedTab(pageIdentefier) {
 chrome.runtime.onMessage.addListener((msg, sender) => {
   if (msg.type === "scrapeBookmarks") {
     if (msg.value === 0) {
-      Log('Message received: scrapeBookmarks. msg.value is 0. stopping further execution');
+      Log('Message received: scrapeBookmarks. msg.value is 0. stopping further execution. everyithing is OK');
+      chrome.storage.local.set({ SyncLastDate: Date.now() }); // Update SyncLastDate
+      
     } else if (msg.value === 1){
       chrome.storage.local.remove('userBookmarks');
       Log('Removed userBookmarks for a fresh restart');
@@ -103,3 +104,6 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
 function Log(txt) {
   chrome.runtime.sendMessage({ type: "log", text: txt });
 }
+
+
+
