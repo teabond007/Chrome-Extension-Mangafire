@@ -21,6 +21,9 @@ function scrapeBookmarksFromUnopenedTab(pageIdentefier) {
             chrome.runtime.sendMessage({ type: "log", text: "executing script" });
             const bookmarks = [];
             const container = document.querySelector('.original.card-xs');
+            if(!container) {
+              return chrome.runtime.sendMessage({ type: "log", text: "!!!Container not found. Are you logged In Mangafire?" });
+            }
             const mangaDivs = container.querySelectorAll(':scope > div');
             if (mangaDivs.length === 0) {
               chrome.runtime.sendMessage({ type: "bookmarksExtracted"});
@@ -29,7 +32,6 @@ function scrapeBookmarksFromUnopenedTab(pageIdentefier) {
             }
 
             mangaDivs.forEach(item => {
-              chrome.runtime.sendMessage({ type: "log", text: "forEach item run" });
               const inner = item.querySelector('.inner');
               if (inner) {
                 inner.style.border = '1px solid rgb(0, 255, 8)'; // Green border to check if the script found the element

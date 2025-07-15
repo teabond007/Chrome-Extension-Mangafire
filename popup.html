@@ -10,14 +10,31 @@
     <div style="width: 300px; height: 500px;">
     <div class="container">
       <div id="upperContainer">
-        <h1>Settings</h1>
+        <h1>Bookmarks Marker</h1>
         
 
       </div>
 
+<div id="middleupperContainer">
+      <button type="button" class="btn" id="SyncBtn">
+  <strong>Sync Bookmarks</strong>
+  <div id="container-stars">
+    <div id="stars"></div>
+  </div>
+
+  <div id="glow">
+    <div class="circle"></div>
+    <div class="circle"></div>
+  </div>
+</button>
+</div>
+
+
+
+<div id="toggleswitches">
 
         <label class="checkbox-wrapper">
-  <input type="checkbox" />
+  <input type="checkbox" id="AutoSync"/>
   <div class="checkmark">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
       <path
@@ -32,6 +49,41 @@
 </label>
 
 
+        <label class="checkbox-wrapper">
+  <input type="checkbox" id="CustomBookmarks"/>
+  <div class="checkmark">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path
+        d="M20 6L9 17L4 12"
+        stroke-width="3"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      ></path>
+    </svg>
+  </div>
+  <span class="label">Custom Bookmarks</span>
+</label>
+
+
+        <label class="checkbox-wrapper">
+  <input type="checkbox" id="A"/>
+  <div class="checkmark">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path
+        d="M20 6L9 17L4 12"
+        stroke-width="3"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      ></path>
+    </svg>
+  </div>
+  <span class="label">Coming Soon...</span>
+</label>
+
+
+
+
+</div>
 
 
     

@@ -1,10 +1,10 @@
 {
   "name": "Manga Bookmarks Marker",
-  "description": "for MangFire. This is not official MangFire extension and is not affiliated with MangFire in any way. It is my personal project to help me manage my bookmarks on MangFire.",
+  "description": "for MangFire. This is not official MangFire extension and is not affiliated with MangFire in any way. It colors the border of saved Mangas.",
   "version": "1.1",
   "manifest_version": 3,
   "options_ui": {
-  "page": "settings.html",
+  "page": "options.html",
   "open_in_tab": true
 },
   "icons": {

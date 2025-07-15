@@ -37,14 +37,36 @@ matchedBookmarks.forEach(bookmark => {
     let borderColor;
 
             if (status === 'reading') {
-              borderColor = 'green';
+              borderColor = 'green'
             } else if (status === 'dropped') {
-              borderColor = 'red';
+              borderColor = 'red'
             } else if (status === 'completed') {
-              borderColor = 'blue';
+              borderColor = 'blue'
             } else if (status === 'on-hold') {
-              borderColor = 'orange';
-            }
+              borderColor = 'orange'
+            } else if (status === 'plan to read') {
+              borderColor = 'grey'
+            } else {
+                chrome.storage.local.get('CustomBookmarksfeatureEnabled', data => {
+                if (data.CustomBookmarksfeatureEnabled) {
+                  Log(`Custom bookmarks feature is enabled, checking for custom colors for status: ${status}`);
+                  chrome.storage.local.get('customBookmarks', data => {
+                  const customBookmarks = data.customBookmarks || [];
+                  Log(`Custom bookmarks loaded: ${customBookmarks.length} items`);
+                    customBookmarks.forEach(custombookmark => {
+                      Log(`Checking custom bookmark: ${custombookmark.name} with status: ${status}`);
+                      if( custombookmark.name == status){
+                        borderColor = custombookmark.color;
+                        Log(`Custom color found for status ${status}: ${borderColor}`);
+                        element.closest('.inner').style.border = `4px solid ${borderColor}`;
+                      }
+                    });
+                  })
+                }
+                });
+              }
+            
+    
 
     element.closest('.inner').style.border = `4px solid ${borderColor}`;
   }

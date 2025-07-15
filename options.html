@@ -1,0 +1,48 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Manga Bookmarks Marker</title>
+    <link rel="stylesheet" href="options.css">
+    
+  </head>
+  <body>
+
+   
+ 
+      <div id="marginContainer">
+    <h1>Settings</h1>
+    <p>If you have a custom Bookmark add it here because the default statuses are (Reading, Completed, Dropped, On-Hold, Plan to Read)</p>
+    
+    <div id="colorBookmarksContainer">
+      <label for="colorBookmarks">Add Bookmarks to color:    </label>
+      <input placeholder="Bookmark Name..." id="bookmarkName" class="input" name="text" type="text" />
+      <input type="color" id="colorBookmarks" name="colorBookmarks" value="#ff0000">
+
+<button class="clickMeButton" id="addBookmarkButton">
+    Add
+</button>
+<button class="clickMeButton" id="resetBookmarkButton">
+    Remove All
+</button>
+
+
+</div>
+
+<div id="CustomBookmarksContainer" style="height: auto;"></div>
+
+
+
+
+
+    <p>Sync Button Requieres you to be logged in Mnagafire.to</p>
+    <p>Works only on Mnagafire.to</p>
+    <button class="btn" id="sendMessageBtn">Sync Bookmarks</button>
+
+<div id="logContainer" style="max-height: 50%; overflow-y: auto; font-family: monospace;"></div>
+
+      
+      </div>
+
+    <script src="options.js"></script>
+  </body>
+</html>
