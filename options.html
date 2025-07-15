@@ -12,10 +12,12 @@
  
       <div id="marginContainer">
     <h1>Settings</h1>
-    <p>If you have a custom Bookmark add it here because the default statuses are (Reading, Completed, Dropped, On-Hold, Plan to Read)</p>
+    <p>Bookmark Color Marker is a Chrome Extension that allows you to add custom bookmarks to MangaFire.to</p>
+    <p></p>
+    <p style="margin-top: 3.5rem;">If you have a custom Bookmark add it here because the default statuses are (Reading, Completed, Dropped, On-Hold, Plan to Read)</p>
     
     <div id="colorBookmarksContainer">
-      <label for="colorBookmarks">Add Bookmarks to color:    </label>
+      <label for="colorBookmarks">Enter a name and pick a color:    </label>
       <input placeholder="Bookmark Name..." id="bookmarkName" class="input" name="text" type="text" />
       <input type="color" id="colorBookmarks" name="colorBookmarks" value="#ff0000">
 
@@ -29,17 +31,27 @@
 
 </div>
 
-<div id="CustomBookmarksContainer" style="height: auto;"></div>
+<div id="CustomBookmarksContainer" style="height: auto; margin-left: 4rem; margin-top: 1rem;"></div>
 
 
 
 <p id="autosyncinfo">When Auto Sync is enabled it will sync Bookmarks every set days.</p>
-<p>After the day mark is hit it will wait until Mangafire is opened and then resset the counter</p>
+<p>After the day mark is hit it will wait until Mangafire is opened, then Sync and then reset the counter</p>
 <div>
   <input placeholder="How many days..." id="AutoSyncSetDays" class="input" name="text" type="number" value="30"/>
   <button class="clickMeButton" id="AutoSyncSetDaysButton">Set</button>
   <button class="clickMeButton" id="AutoSyncSetDaysButtonReset">Reset</button>
   <p id="logContainerSetDays"></p>
+</div>
+
+
+<p id="bordersizeinfo" style="margin-top: 3.5rem;">When Custom Border Size is enabled it will change the thicness of the marker</p>
+<p>Suggested size is anywhere between 2 - 8</p>
+<div>
+  <input placeholder="Size in px..." id="BorderSetSize" class="input" name="text" type="number" value="4"/>
+  <button class="clickMeButton" id="CustomBorderSizeButton">Set</button>
+  <button class="clickMeButton" id="CustomBorderSizeButtonReset">Reset</button>
+  <p id="logContainerCustomBorderSize"></p>
 </div>
 
 
