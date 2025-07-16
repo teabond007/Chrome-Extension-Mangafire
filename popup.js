@@ -10,6 +10,8 @@ CustomBookmarks;
 const toggle1 = document.getElementById("AutoSync");
 const toggle2 = document.getElementById("CustomBookmarks");
 const toggle3 = document.getElementById("CustomBorderSize");
+const toggle4 = document.getElementById("MarkHomePage");
+const toggle5 = document.getElementById("SyncandMarkRead");
 
 // Load saved state on load
 chrome.storage.local.get("AutoSyncfeatureEnabled", (data) => {
@@ -20,6 +22,12 @@ chrome.storage.local.get("CustomBookmarksfeatureEnabled", (data) => {
 });
 chrome.storage.local.get("CustomBorderSizefeatureEnabled", (data) => {
   toggle3.checked = data.CustomBorderSizefeatureEnabled ?? false;
+});
+chrome.storage.local.get("MarkHomePagefeatureEnabled", (data) => {
+  toggle4.checked = data.MarkHomePagefeatureEnabled ?? false;
+});
+chrome.storage.local.get("SyncandMarkReadfeatureEnabled", (data) => {
+  toggle5.checked = data.SyncandMarkReadfeatureEnabled ?? false;
 });
 
 // Save state when changed
@@ -32,3 +40,11 @@ toggle2.addEventListener("change", () => {
 toggle3.addEventListener("change", () => {
   chrome.storage.local.set({ CustomBorderSizefeatureEnabled: toggle3.checked });
 });
+toggle4.addEventListener("change", () => {
+  chrome.storage.local.set({ MarkHomePagefeatureEnabled: toggle4.checked });
+});
+
+toggle5.addEventListener("change", () => {
+  chrome.storage.local.set({ SyncandMarkReadfeatureEnabled: toggle5.checked });
+});
+

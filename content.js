@@ -2,6 +2,9 @@ async function applyContainerStyles() {
   if (window.location.pathname === "/user/bookmark") {
     return;
   }
+    if (window.location.pathname === "/user/reading") {
+    return;
+  }
   Log("applyContainerStyles() called");
   const pageMangas = [];
 
@@ -45,6 +48,7 @@ async function applyContainerStyles() {
           borderColor = "grey";
         } else {
           chrome.storage.local.get("CustomBookmarksfeatureEnabled", (data) => {
+            
             if (data.CustomBookmarksfeatureEnabled) {
               chrome.storage.local.get("customBookmarks", (data) => {
                 const customBookmarks = data.customBookmarks || [];
@@ -74,7 +78,13 @@ async function applyContainerStyles() {
             element.closest(".inner").style.border = `4px solid ${borderColor}`;
           }
         });
-        //element.closest('.inner').style.border = `4px solid ${borderColor}`;
+        chrome.storage.local.get("SyncandMarkReadfeatureEnabled", (data) => {
+              if (data.SyncandMarkReadfeatureEnabled && status === "read") {
+                borderColor = "black";
+                element.closest('.inner').style.border = `4px solid ${borderColor}`;
+              }
+            });
+        
       }
     });
   });

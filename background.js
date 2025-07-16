@@ -20,6 +20,7 @@ function scrapeBookmarksFromUnopenedTab(pageIdentefier) {
         chrome.runtime.sendMessage({ type: "log", text: "executing script" });
         const bookmarks = [];
         const container = document.querySelector(".original.card-xs");
+  
         if (!container) {
           return chrome.runtime.sendMessage({
             type: "log",
@@ -34,6 +35,7 @@ function scrapeBookmarksFromUnopenedTab(pageIdentefier) {
         }
 
         mangaDivs.forEach((item) => {
+    
           const inner = item.querySelector(".inner");
           if (inner) {
             inner.style.border = "1px solid rgb(0, 255, 8)"; // Green border to check if the script found the element
@@ -98,11 +100,134 @@ function scrapeBookmarksFromUnopenedTab(pageIdentefier) {
   });
 }
 
+/**
+ *
+ * @param {int} pageIdentefier
+ */
+function scrapReadMangasFromUnopenedTab(pageIdentefier) {
+  Log("scrapReadMangasFromUnopenedTab() called");
+  pageurl = `https://mangafire.to/user/reading?page=${pageIdentefier}`;
+  Log(`Page URL: ${pageurl}`);
+  chrome.tabs.create({ url: pageurl, active: false }, (tab) => {
+    Log(`New tab created with ID: ${tab.id}`);
+
+
+    chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      args: [pageIdentefier],
+      func: (pageIdentefier) => {
+       
+        const ReadMangas = [];
+    
+        const container = document.body;
+
+
+
+        mangaDivs = container.querySelectorAll(".inner .info");
+       
+        chrome.runtime.sendMessage({ type: "log", text: `lenght----------???????? is : ${mangaDivs.length}` });
+
+        if (mangaDivs.length === 0) {
+          chrome.runtime.sendMessage({ type: "log", text: "mangaDivs lenght is 0. this means there is zero mangas left" });
+          chrome.runtime.sendMessage({ type: "bookmarksExtracted" });
+          chrome.runtime.sendMessage({ type: "scrapeReadMangas", value: 0 });
+          return;
+        } 
+        
+        
+        chrome.runtime.sendMessage({ type: "log", text: "executing forEach loop" });
+
+        mangaDivs.forEach((item) => {
+          const title = item.querySelector("a").textContent.trim();        
+
+          if (title) {
+            chrome.runtime.sendMessage({
+              type: "log",
+              text: `title is : ${title}`,
+            });
+            ReadMangas.push({
+              title: title,
+              status: "Read",
+            });
+            chrome.runtime.sendMessage({
+              type: "log",
+              text: `data pushed into Array. Array lenght: ${ReadMangas.length}`,
+            });
+          }
+
+
+      
+            
+         
+          
+            
+        
+          
+        });
+
+        chrome.runtime.sendMessage({
+          type: "log",
+          text: "Read Mangas scraped",
+        });
+        chrome.storage.local.get("userBookmarks", (data) => {
+          chrome.runtime.sendMessage({ type: "log", text: "executing script23" });
+          const existing = Array.isArray(data.userBookmarks)  ? data.userBookmarks : [];
+          chrome.runtime.sendMessage({ type: "log", text: "executing script24" });
+           //Step 1: Create a map from the second array (lower priority)
+          const map = new Map(ReadMangas.map((item) => [item.title.toLowerCase(), item]));
+          chrome.runtime.sendMessage({ type: "log", text: "executing script25" });
+
+          // Step 2: Overwrite with items from the first array (higher priority)
+          existing.forEach((item) => map.set(item.title.toLowerCase(), item));
+          chrome.runtime.sendMessage({ type: "log", text: "executing script26" });
+
+          // Step 3: Convert the map back to an array
+          const merged = Array.from(map.values());
+          chrome.runtime.sendMessage({ type: "log", text: "executing script27" });
+          chrome.storage.local.set({ userBookmarks: merged }, () => {
+            chrome.runtime.sendMessage({
+              type: "log",
+              text: `Read Mangas saved. Total Array length: ${merged.length}`,
+            });
+            chrome.runtime.sendMessage({ type: "bookmarksExtracted" });
+            const pagevalue = pageIdentefier + 1;
+            chrome.runtime.sendMessage({
+              type: "scrapeReadMangas",
+              value: pagevalue,
+            });
+          });
+        });
+      },
+    });
+  });
+
+}
+
 chrome.runtime.onMessage.addListener((msg, sender) => {
+  if (msg.type === "scrapeReadMangas") {
+    Log("scrapeReadMangas message received");
+    if (msg.value === 0) {
+      Log(
+        "Message received: scrapeReadMangas. msg.value is 0. stopping further execution. everyithing is OK"
+      );
+    } else if (msg.value === 1) {
+      Log("Message received: scrapeReadMangas, value: 1");
+      Log("Contionouing scraping Mangas now scraping Read Mangas");
+      scrapReadMangasFromUnopenedTab(1);
+      Log("Next page value: 2");
+    } else {
+      Log(`Message received: scrapeReadMangas, value: ${msg.value}`);
+      scrapReadMangasFromUnopenedTab(msg.value);
+    }
+  }
   if (msg.type === "scrapeBookmarks") {
     if (msg.value === 0) {
       Log(
         "Message received: scrapeBookmarks. msg.value is 0. stopping further execution. everyithing is OK"
+      );
+      scrapReadMangasFromUnopenedTab(1);
+      Log(
+        "Message send"
       );
       chrome.storage.local.set({ SyncLastDate: Date.now() }); // Update SyncLastDate
     } else if (msg.value === 1) {
@@ -110,11 +235,9 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
       Log("Removed userBookmarks for a fresh restart");
       Log(`Message received: scrapeBookmarks, value: ${msg.value}`);
       scrapeBookmarksFromUnopenedTab(msg.value);
-      Log(`Next page value: ${msg.value + 1}`);
     } else {
       Log(`Message received: scrapeBookmarks, value: ${msg.value}`);
       scrapeBookmarksFromUnopenedTab(msg.value);
-      Log(`Next page value: ${msg.value + 1}`);
     }
   }
   if (msg.type === "bookmarksExtracted") {
