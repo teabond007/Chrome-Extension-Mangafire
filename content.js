@@ -2,7 +2,7 @@ async function applyContainerStyles() {
   if (window.location.pathname === "/user/bookmark") {
     return;
   }
-    if (window.location.pathname === "/user/reading") {
+  if (window.location.pathname === "/user/reading") {
     return;
   }
   Log("applyContainerStyles() called");
@@ -25,68 +25,67 @@ async function applyContainerStyles() {
     const matchedBookmarks = bookmarks.filter((bookmark) =>
       pageMangas.includes(bookmark.title)
     );
+    chrome.storage.local.get(
+      [
+        "CustomBookmarksfeatureEnabled",
+        "customBookmarks",
+        "CustomBorderSizefeatureEnabled",
+        "CustomBorderSize",
+        "SyncandMarkReadfeatureEnabled",
+      ],
+      (data) => {
+        matchedBookmarks.forEach((bookmark) => {
 
-    matchedBookmarks.forEach((bookmark) => {
-      Log(`Bookmark found: ${bookmark.title} with status: ${bookmark.status}`);
-      const status = bookmark.status.trim().toLowerCase();
-      const element = [...document.querySelectorAll(".inner .info a")].find(
-        (el) => el.textContent.trim() === bookmark.title
-      );
+          const status = bookmark.status.trim().toLowerCase();
+          const element = [...document.querySelectorAll(".inner .info a")].find(
+            (el) => el.textContent.trim() === bookmark.title
+          );
 
-      if (element) {
-        let borderColor;
+          if (element) {
+            const nothingwrong = true;
+            var borderColor;
+            const borderSize = data.CustomBorderSize;
 
-        if (status === "reading") {
-          borderColor = "green";
-        } else if (status === "dropped") {
-          borderColor = "red";
-        } else if (status === "completed") {
-          borderColor = "blue";
-        } else if (status === "on-hold") {
-          borderColor = "orange";
-        } else if (status === "plan to read") {
-          borderColor = "grey";
-        } else {
-          chrome.storage.local.get("CustomBookmarksfeatureEnabled", (data) => {
-            
-            if (data.CustomBookmarksfeatureEnabled) {
-              chrome.storage.local.get("customBookmarks", (data) => {
-                const customBookmarks = data.customBookmarks || [];
-
-                customBookmarks.forEach((custombookmark) => {
-                  if (custombookmark.name == status) {
-                    borderColor = custombookmark.color;
-
-                    element.closest(
-                      ".inner"
-                    ).style.border = `4px solid ${borderColor}`;
-                  }
-                });
+            if (status === "reading") {
+              borderColor = "green";
+            } else if (status === "dropped") {
+              borderColor = "red";
+            } else if (status === "completed") {
+              borderColor = "blue";
+            } else if (status === "on-hold") {
+              borderColor = "orange";
+            } else if (status === "plan to read") {
+              borderColor = "lightgreen";
+            } else if (
+              status === "read" &&
+              data.SyncandMarkReadfeatureEnabled
+            ) {
+              borderColor = "grey";
+            } else if (data.CustomBookmarksfeatureEnabled) {
+              const customBookmarks = data.customBookmarks || [];
+              customBookmarks.forEach((custombookmark) => {
+                if (custombookmark.name == status) {
+                  borderColor = custombookmark.color;
+                }
               });
+            } else {
+              nothing = false;
             }
-          });
-        }
-
-        chrome.storage.local.get("CustomBorderSizefeatureEnabled", (data) => {
-          if (data.CustomBorderSizefeatureEnabled) {
-            chrome.storage.local.get("CustomBorderSize", (data) => {
-              element.closest(
-                ".inner"
-              ).style.border = `${data.CustomBorderSize}px solid ${borderColor}`;
-            });
-          } else {
-            element.closest(".inner").style.border = `4px solid ${borderColor}`;
+            if (nothingwrong) {
+              if (data.CustomBorderSizefeatureEnabled) {
+                element.closest(
+                  ".inner"
+                ).style.border = `${borderSize}px solid ${borderColor}`;
+              } else {
+                element.closest(
+                  ".inner"
+                ).style.border = `4px solid ${borderColor}`;
+              }
+            }
           }
         });
-        chrome.storage.local.get("SyncandMarkReadfeatureEnabled", (data) => {
-              if (data.SyncandMarkReadfeatureEnabled && status === "read") {
-                borderColor = "black";
-                element.closest('.inner').style.border = `4px solid ${borderColor}`;
-              }
-            });
-        
       }
-    });
+    );
   });
 
   chrome.storage.local.get(
