@@ -2,9 +2,10 @@ chrome.action.onClicked.addListener(() => {
   chrome.tabs.create({ url: chrome.runtime.getURL("options.html") });
 });
 
-/**
- *
- * @param {int} pageIdentefier
+/** opens first User Bookmarks page and saves every manga title and status.
+ *  each page holds 30 mangas. after scraping goes to next page.
+ *  on empty page stops.
+ * @param {int} pageIdentefier determines which page to open.
  */
 function scrapeBookmarksFromUnopenedTab(pageIdentefier) {
   Log("scrapeBookmarksFromUnopenedTab() called");
@@ -19,6 +20,7 @@ function scrapeBookmarksFromUnopenedTab(pageIdentefier) {
       func: (pageIdentefier) => {
         chrome.runtime.sendMessage({ type: "log", text: "executing script" });
         const bookmarks = [];
+        // Select the div that holds the 30-ish manga items/panels
         const container = document.querySelector(".original.card-xs");
 
         if (!container) {
@@ -27,7 +29,9 @@ function scrapeBookmarksFromUnopenedTab(pageIdentefier) {
             text: "!!!Container not found. Are you logged In Mangafire?",
           });
         }
+        // Select all the manga items/panels within main container
         const mangaDivs = container.querySelectorAll(":scope > div");
+        // there are practicly infinite pages, when it ecounters first empty one it stops.
         if (mangaDivs.length === 0) {
           chrome.runtime.sendMessage({ type: "bookmarksExtracted" });
           chrome.runtime.sendMessage({ type: "scrapeBookmarks", value: 0 });
@@ -37,7 +41,7 @@ function scrapeBookmarksFromUnopenedTab(pageIdentefier) {
         mangaDivs.forEach((item) => {
           const inner = item.querySelector(".inner");
           if (inner) {
-            inner.style.border = "1px solid rgb(0, 255, 8)"; // Green border to check if the script found the element
+            //inner.style.border = "1px solid rgb(0, 255, 8)"; // Green border to check if the script found the element
 
             const title = inner.querySelector(".info a");
             chrome.runtime.sendMessage({
@@ -72,6 +76,7 @@ function scrapeBookmarksFromUnopenedTab(pageIdentefier) {
         });
 
         chrome.runtime.sendMessage({ type: "log", text: "bookmarks scraped" });
+        // loads saved bookmarks and cross refrences them with newly scraped ones.
         chrome.storage.local.get("userBookmarks", (data) => {
           const existing = Array.isArray(data.userBookmarks)
             ? data.userBookmarks
@@ -99,7 +104,9 @@ function scrapeBookmarksFromUnopenedTab(pageIdentefier) {
   });
 }
 
-/**
+/** opens first User History page and saves every manga title and adds status: read.
+ *  each page holds 30 mangas. after scraping goes to next page.
+ *  on empty page stops.
  *
  * @param {int} pageIdentefier
  */
@@ -119,17 +126,13 @@ function scrapReadMangasFromUnopenedTab(pageIdentefier) {
         const container = document.body;
 
         mangaDivs = container.querySelectorAll(".inner .info");
-
-        chrome.runtime.sendMessage({
-          type: "log",
-          text: `lenght----------???????? is : ${mangaDivs.length}`,
-        });
-
+        // there are practicly infinite pages, when it ecounters first empty one it stops.
         if (mangaDivs.length === 0) {
           chrome.runtime.sendMessage({
             type: "log",
             text: "mangaDivs lenght is 0. this means there is zero mangas left",
           });
+          //closes the tab
           chrome.runtime.sendMessage({ type: "bookmarksExtracted" });
           chrome.runtime.sendMessage({ type: "scrapeReadMangas", value: 0 });
           return;
@@ -144,27 +147,24 @@ function scrapReadMangasFromUnopenedTab(pageIdentefier) {
           const title = item.querySelector("a").textContent.trim();
 
           if (title) {
-            chrome.runtime.sendMessage({
-              type: "log",
-              text: `title is : ${title}`,
-            });
             ReadMangas.push({
               title: title,
               status: "Read",
             });
             chrome.runtime.sendMessage({
               type: "log",
-              text: `data pushed into Array. Array lenght: ${ReadMangas.length}`,
+              text: `title is : ${title} --- data pushed into Array. Array lenght: ${ReadMangas.length}`,
             });
           }
         });
 
         chrome.runtime.sendMessage({
           type: "log",
-          text: "Read Mangas scraped",
+          text: "Read Mangas scraped. forEach loop stopped",
         });
+        // Cross refrences with Bookmarked mangas which have higher priority
+        // if there is no saved manga with same title it adds it to userBookmarks with title: read
         chrome.storage.local.get("userBookmarks", (data) => {
-
           const existing = Array.isArray(data.userBookmarks)
             ? data.userBookmarks
             : [];
@@ -174,10 +174,8 @@ function scrapReadMangasFromUnopenedTab(pageIdentefier) {
             ReadMangas.map((item) => [item.title.toLowerCase(), item])
           );
 
-
           // Step 2: Overwrite with items from the first array (higher priority)
           existing.forEach((item) => map.set(item.title.toLowerCase(), item));
-
 
           // Step 3: Convert the map back to an array
           const merged = Array.from(map.values());
@@ -216,8 +214,7 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
       Log(`Message received: scrapeReadMangas, value: ${msg.value}`);
       scrapReadMangasFromUnopenedTab(msg.value);
     }
-  }
-  if (msg.type === "scrapeBookmarks") {
+  } else if (msg.type === "scrapeBookmarks") {
     if (msg.value === 0) {
       Log(
         "Message received: scrapeBookmarks. msg.value is 0. stopping further execution. everyithing is OK"
@@ -227,8 +224,7 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
           scrapReadMangasFromUnopenedTab(1);
         }
       });
-      chrome.storage.local.set({ SyncLastDate: Date.now() }); // Update SyncLastDate
-
+      chrome.storage.local.set({ SyncLastDate: Date.now() });
     } else if (msg.value === 1) {
       chrome.storage.local.remove("userBookmarks");
       Log("Removed userBookmarks for a fresh restart");
@@ -238,8 +234,7 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
       Log(`Message received: scrapeBookmarks, value: ${msg.value}`);
       scrapeBookmarksFromUnopenedTab(msg.value);
     }
-  }
-  if (msg.type === "bookmarksExtracted") {
+  } else if (msg.type === "bookmarksExtracted") {
     chrome.tabs.remove(sender.tab.id);
     Log("Tab closed after scraping");
   }

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="popup.css">
+
+</head>
+<html>
+
+<body>
+  <div style="width: 300px; height: 500px;">
+    <div class="container">
+      <div id="upperContainer">
+        <h1>Bookmarks Marker</h1>
+
+
+      </div>
+
+      <div id="middleupperContainer">
+        <button type="button" class="btn" id="SyncBtn">
+          <strong>Sync Bookmarks</strong>
+          <div id="container-stars">
+            <div id="stars"></div>
+          </div>
+
+          <div id="glow">
+            <div class="circle"></div>
+            <div class="circle"></div>
+          </div>
+        </button>
+      </div>
+
+
+
+      <div id="toggleswitches">
+
+        <label class="checkbox-wrapper">
+          <input type="checkbox" id="AutoSync" />
+          <div class="checkmark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M20 6L9 17L4 12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          </div>
+          <span class="label">Auto Sync</span>
+        </label>
+
+
+        <label class="checkbox-wrapper">
+          <input type="checkbox" id="CustomBookmarks" />
+          <div class="checkmark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M20 6L9 17L4 12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          </div>
+          <span class="label">Custom Bookmarks</span>
+        </label>
+
+
+        <label class="checkbox-wrapper">
+          <input type="checkbox" id="CustomBorderSize" />
+          <div class="checkmark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M20 6L9 17L4 12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          </div>
+          <span class="label">Custom Border size</span>
+        </label>
+
+        <label class="checkbox-wrapper">
+          <input type="checkbox" id="MarkHomePage" />
+          <div class="checkmark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M20 6L9 17L4 12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          </div>
+          <span class="label">In Progress...</span>
+        </label>
+
+        <label class="checkbox-wrapper">
+          <input type="checkbox" id="SyncandMarkRead" />
+          <div class="checkmark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M20 6L9 17L4 12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          </div>
+          <span class="label">Sync and Mark Read</span>
+        </label>
+
+
+
+
+      </div>
+
+
+
+      <div id="botomContainer">
+        <button class="learn-more" id="oppenSettingsBtn">
+          <span class="circle" aria-hidden="true">
+            <span class="icon arrow"></span>
+          </span>
+          <span class="button-text">More Settings</span>
+        </button>
+      </div>
+
+
+
+      <script src="popup.js"></script>
+    </div>
+  </div>
+</body>
+
+</html>

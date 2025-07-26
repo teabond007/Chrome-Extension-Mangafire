@@ -1,18 +1,18 @@
 {
   "name": "Bookmarks Marker/Higlighter",
-  "description": "for MangFire. It colors the border of saved Mangas. This is not official MangFire extension and is not affiliated with MangFire in any way.",
+  "description": "for MangFire. It colors the border of saved Mangas. Doesn't work on MangaFire homepage yet",
   "version": "1.6",
   "manifest_version": 3,
   "options_ui": {
-  "page": "options.html",
+  "page": "./options/options.html",
   "open_in_tab": true
 },
   "icons": {
-  "128": "favicon.png"
+  "128": "./icons/favicon1.png"
 },
   "action": {
-    "default_icon": "favicon.png",
-    "default_popup": "popup.html"
+    "default_icon": "./icons/favicon1.png",
+    "default_popup": "./popup/popup.html"
   },
   "permissions": ["scripting", "tabs", "storage"],
     "host_permissions": [

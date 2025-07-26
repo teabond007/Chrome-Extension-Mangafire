@@ -1,14 +1,20 @@
+// Colors Borders of saved mangas
 async function applyContainerStyles() {
+  //doesnt run on pages that are loaded multiple times because of scrapers
   if (window.location.pathname === "/user/bookmark") {
     return;
-  }
-  if (window.location.pathname === "/user/reading") {
+  } else if (window.location.pathname === "/user/reading") {
     return;
   }
+
+  //Every Log is displayed on settings.html
+  //settings page has to be open to register logs
+  //dev tools dont work on mangafire.to this is alternative of console.log
   Log("applyContainerStyles() called");
   const pageMangas = [];
 
   chrome.storage.local.get("userBookmarks", (data) => {
+    // finds title of mangas on page and croos refrences them with saved bookmarks
     const bookmarks = data.userBookmarks || [];
     const container = document.querySelector(".original.card-lg");
     if (container) {
@@ -21,7 +27,7 @@ async function applyContainerStyles() {
         }
       });
     }
-
+    // saves only mangas that are on the page and in the bookmarks
     const matchedBookmarks = bookmarks.filter((bookmark) =>
       pageMangas.includes(bookmark.title)
     );
@@ -35,13 +41,13 @@ async function applyContainerStyles() {
       ],
       (data) => {
         matchedBookmarks.forEach((bookmark) => {
-
           const status = bookmark.status.trim().toLowerCase();
           const element = [...document.querySelectorAll(".inner .info a")].find(
             (el) => el.textContent.trim() === bookmark.title
           );
 
           if (element) {
+            // at end of chain colors the border with set size 4px if true; custom size if false
             const nothingwrong = true;
             var borderColor;
             const borderSize = data.CustomBorderSize;
