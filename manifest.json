@@ -1,6 +1,6 @@
 {
-  "name": "Manga Bookmarks Marker",
-  "description": "for MangFire. This is not official MangFire extension and is not affiliated with MangFire in any way. It colors the border of saved Mangas.",
+  "name": "Bookmarks Marker/Higlighter",
+  "description": "for MangFire. It colors the border of saved Mangas. This is not official MangFire extension and is not affiliated with MangFire in any way.",
   "version": "1.6",
   "manifest_version": 3,
   "options_ui": {

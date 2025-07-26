@@ -49,7 +49,7 @@ async function applyContainerStyles() {
             if (status === "reading") {
               borderColor = "green";
             } else if (status === "dropped") {
-              borderColor = "red";
+              borderColor = "darkred";
             } else if (status === "completed") {
               borderColor = "blue";
             } else if (status === "on-hold") {
