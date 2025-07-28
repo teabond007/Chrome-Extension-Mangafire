@@ -1,4 +1,4 @@
-// Colors Borders of saved mangas
+// Main function run on mangafire/ page load
 async function applyContainerStyles() {
   //doesnt run on pages that are loaded multiple times because of scrapers
   if (window.location.pathname === "/user/bookmark") {
@@ -11,11 +11,7 @@ async function applyContainerStyles() {
   //settings page has to be open to register logs
   //dev tools dont work on mangafire.to this is alternative of console.log
   Log("applyContainerStyles() called");
-  const pageMangas = [];
-
-  chrome.storage.local.get("userBookmarks", (data) => {
-    // finds title of mangas on page and croos refrences them with saved bookmarks
-    const bookmarks = data.userBookmarks || [];
+  var pageMangas = [];
     const container = document.querySelector(".original.card-lg");
     if (container) {
       const mangaDivs = container.querySelectorAll(":scope > div");
@@ -28,10 +24,51 @@ async function applyContainerStyles() {
       });
     }
     // saves only mangas that are on the page and in the bookmarks
+    crossRefrencBookmarks(pageMangas, (matched) => {
+      Log("Matched Bookmarks:", matched);
+      applyAndColorBorders(matched);
+ 
+    
+
+});
+  autoSync();
+}
+
+
+
+
+
+
+
+
+/**
+ * gets local data userBookmarks and checks if foundMangas has any titles similar.
+ * outputs objects with title and status if they are saved && on page
+ * @returns An array of titles that are saved(Bookmarked) && on screen through callback
+ * @param {Array} foundMangaTitles all found bookmarks on the page
+ */
+function crossRefrencBookmarks(foundMangaTitles, callback){
+  Log(`crossRefrencBookmarks(), foundMangaTitles: ${foundMangaTitles}`)
+  chrome.storage.local.get("userBookmarks", (data) => {
+
+    // finds title of mangas on page and croos refrences them with saved bookmarks
+    const bookmarks = data.userBookmarks || [];
+ 
     const matchedBookmarks = bookmarks.filter((bookmark) =>
-      pageMangas.includes(bookmark.title)
-    );
-    chrome.storage.local.get(
+      foundMangaTitles.includes(bookmark.title)
+    )
+    Log(`SIMILARITIES: ${matchedBookmarks}`)
+    callback(matchedBookmarks); // return via callback
+  });
+}
+
+/**
+ * 
+ * @param {Array} mangasToColor - Array of objects; [title: One piece, status: Reading]
+ * @param {String} querySelectToTitle - string to find title on page; ".inner .info a"
+ */
+function applyAndColorBorders(mangasToColor, querySelectToTitle){
+  chrome.storage.local.get(
       [
         "CustomBookmarksfeatureEnabled",
         "customBookmarks",
@@ -40,7 +77,8 @@ async function applyContainerStyles() {
         "SyncandMarkReadfeatureEnabled",
       ],
       (data) => {
-        matchedBookmarks.forEach((bookmark) => {
+        Log("massive local storage get done")
+        mangasToColor.forEach((bookmark) => {
           const status = bookmark.status.trim().toLowerCase();
           const element = [...document.querySelectorAll(".inner .info a")].find(
             (el) => el.textContent.trim() === bookmark.title
@@ -92,23 +130,10 @@ async function applyContainerStyles() {
         });
       }
     );
-  });
-
-  chrome.storage.local.get(
-    ["AutoSyncfeatureEnabled", "SyncLastDate", "SyncEverySetDate"],
-    (data) => {
-      datebool = data.AutoSyncfeatureEnabled ?? false;
-      if (datebool) {
-        if (
-          Date.now() - data.SyncLastDate >=
-          data.SyncEverySetDate * 24 * 60 * 60 * 1000
-        ) {
-          chrome.runtime.sendMessage({ type: "scrapeBookmarks", value: 1 });
-        }
-      }
-    }
-  );
 }
+
+
+
 
 window.addEventListener("load", () => {
   applyContainerStyles();
@@ -128,4 +153,21 @@ function waitForMessage(filterFn) {
     }
     chrome.runtime.onMessage.addListener(handler);
   });
+}
+
+function autoSync(){
+    chrome.storage.local.get(
+    ["AutoSyncfeatureEnabled", "SyncLastDate", "SyncEverySetDate"],
+    (data) => {
+      datebool = data.AutoSyncfeatureEnabled ?? false;
+      if (datebool) {
+        if (
+          Date.now() - data.SyncLastDate >=
+          data.SyncEverySetDate * 24 * 60 * 60 * 1000
+        ) {
+          chrome.runtime.sendMessage({ type: "scrapeBookmarks", value: 1 });
+        }
+      }
+    }
+  );
 }

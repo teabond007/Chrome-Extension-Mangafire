@@ -3,11 +3,13 @@ Higlight Borders of Saved Mangas
 
 A Chrome extension for [Mangafire](https://mangafire.to/home)
 With the pourpose of Highligting or Marking Saved and Read mangas/manhwas.
- (currently doesnt work on home page because of added complexity)
+
+
+![Example of before and after with written description](ExtensioExampleWritten.png)
 
 <dl>
 <dt>Solves the Problem</dt>
-  <dd>when you are searching for new things to read, it doesn't show you immidietly if you have it saved and it also doesn't show you that in a clear way. It also only shows you Bookmarked mangas and not your history.
+  <dd>when searching for new things to read, it doesn't show you immidietly, if you have it saved and it also doesn't show you that in a clear way. Also it only shows you Bookmarked mangas and not your history(mangas you read without saving).
 </dd>
 </dl>
 
@@ -28,9 +30,9 @@ Every time you load MangaFire page it checks if mangas shown match with scraped 
 </dl>
 
 Download the folder(less than 1Mb) go to chrome://extensions enable developer mode(top right) and Load unpacked(top left).
-> IMPORTANT! you have to Sync Bookmarks with the press of a button at least once on either extensions popup or settings page.
+> IMPORTANT! you have run the scraper at least once, for the extension to know what to Highlight(Click Sync Bookmarks, on either extensions popup or settings page.)
 
 ***
 
 This is not official MangaFire extension and is not affiliated with MangaFire in any way.
-All CSS is from https://uiverse.io/ with MIT License(open source).
+All CSS is from [universe.io](https://uiverse.io/) with [MIT License(open source)](https://opensource.org/license/mit).
