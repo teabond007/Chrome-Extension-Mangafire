@@ -1,9 +1,12 @@
 // Main function run on mangafire/ page load
-async function applyContainerStyles() {
+function applyContainerStyles() {
   //doesnt run on pages that are loaded multiple times because of scrapers
   if (window.location.pathname === "/user/bookmark") {
     return;
   } else if (window.location.pathname === "/user/reading") {
+    return;
+  } else if (window.location.pathname === "/home") {
+    applyContainerStylesHomePage();
     return;
   }
 
@@ -12,34 +15,85 @@ async function applyContainerStyles() {
   //dev tools dont work on mangafire.to this is alternative of console.log
   Log("applyContainerStyles() called");
   var pageMangas = [];
-    const container = document.querySelector(".original.card-lg");
-    if (container) {
-      const mangaDivs = container.querySelectorAll(":scope > div");
-      mangaDivs.forEach((item) => {
-        const title = item.querySelector(".inner .info a").textContent.trim();
-        if (title) {
-          pageMangas.push(title);
-          Log(`Title found: ${title}`);
-        }
-      });
-    }
-    // saves only mangas that are on the page and in the bookmarks
-    crossRefrencBookmarks(pageMangas, (matched) => {
-      Log("Matched Bookmarks:", matched);
-      applyAndColorBorders(matched);
- 
-    
-
-});
+  const container = document.querySelector(".original.card-lg");
+  if (container) {
+    const mangaDivs = container.querySelectorAll(":scope > div");
+    mangaDivs.forEach((item) => {
+      const title = item.querySelector(".inner .info a").textContent.trim();
+      if (title) {
+        pageMangas.push(title);
+        Log(`Title found: ${title}`);
+      }
+    });
+  }
+  // saves only mangas that are on the page and in the bookmarks
+  crossRefrencBookmarks(pageMangas, (matched) => {
+    Log("Matched Bookmarks:", matched);
+    applyAndColorBorders(matched, ".inner .info a", ".inner");
+  });
   autoSync();
 }
 
+/**
+ *
+ */
+function applyContainerStylesHomePage() {
+  Log("applyContainerStylesHomePage() called");
+  var pageMangas = [];
 
 
 
-
-
-
+  //get titles for topmost mangas: trending mangas
+  
+  var container = document.querySelector(
+    "div.swiper.trending.swiper-container .swiper-wrapper"
+  );
+  if (container) {
+    var mangaDivs = container.querySelectorAll(":scope > div");
+    mangaDivs.forEach((item) => {
+      const title = item
+        .querySelector(".swiper-inner .info .above a")
+        .textContent.trim();
+      if (title && !pageMangas.includes(title)) {
+        pageMangas.push(title);
+        Log(`Title Trending found: ${title}`);
+      }
+    });
+    crossRefrencBookmarks(pageMangas, (matched) => {
+      Log(`Matched Trendin Bookmarks: ${matched}`);
+      applyAndColorBorders(
+        matched,
+        ".swiper-inner .info .above a",
+        ".swiper-inner"
+      );
+    });
+    pageMangas = [];
+  }
+  
+  // get titles for second row of mangas: Most viewed mangas
+  container = document.getElementById("most-viewed")
+  Log(`container cacer found: ${container}`)
+  if(container){
+      const threeMostViewedSlides = container.querySelectorAll(".tab-content .swiper-container .swiper .card-mg");
+   threeMostViewedSlides.forEach((slide) => {
+      mangaDivs = slide.querySelectorAll(":scope > div")
+   
+      mangaDivs.forEach((item) => {
+        const title = item.querySelector(".swiper-slide.unit a span").textContent.trim();
+        if (title ) {
+          pageMangas.push(title);
+          Log(`Title Trending found: ${title}`);
+        }
+      });
+   });
+   crossRefrencBookmarks(pageMangas, (matched) => {
+    Log(`Matched Trendin Bookmarks: ${matched.title}`);
+    applyAndColorBorders(matched.title, ".swiper-inner .info .above a", ".swiper-inner");
+  });
+  pageMangas = [];
+}
+  
+}
 
 /**
  * gets local data userBookmarks and checks if foundMangas has any titles similar.
@@ -47,95 +101,117 @@ async function applyContainerStyles() {
  * @returns An array of titles that are saved(Bookmarked) && on screen through callback
  * @param {Array} foundMangaTitles all found bookmarks on the page
  */
-function crossRefrencBookmarks(foundMangaTitles, callback){
-  Log(`crossRefrencBookmarks(), foundMangaTitles: ${foundMangaTitles}`)
+function crossRefrencBookmarks(foundMangaTitles, callback) {
+  Log(`crossRefrencBookmarks(), foundMangaTitles: ${foundMangaTitles}`);
   chrome.storage.local.get("userBookmarks", (data) => {
-
     // finds title of mangas on page and croos refrences them with saved bookmarks
     const bookmarks = data.userBookmarks || [];
- 
+
     const matchedBookmarks = bookmarks.filter((bookmark) =>
       foundMangaTitles.includes(bookmark.title)
-    )
-    Log(`SIMILARITIES: ${matchedBookmarks}`)
+    );
+    matchedBookmarks.forEach((item) => {
+      Log(`Title: ${item.title}, Status: ${item.status}`);
+    });
     callback(matchedBookmarks); // return via callback
   });
 }
 
 /**
- * 
+ *@param {String} elementClosestSelector - String to find the correct div to color from where title is; ".inner"
  * @param {Array} mangasToColor - Array of objects; [title: One piece, status: Reading]
  * @param {String} querySelectToTitle - string to find title on page; ".inner .info a"
  */
-function applyAndColorBorders(mangasToColor, querySelectToTitle){
+function applyAndColorBorders(
+  mangasToColor,
+  querySelectToTitle,
+  elementClosestSelector
+) {
   chrome.storage.local.get(
-      [
-        "CustomBookmarksfeatureEnabled",
-        "customBookmarks",
-        "CustomBorderSizefeatureEnabled",
-        "CustomBorderSize",
-        "SyncandMarkReadfeatureEnabled",
-      ],
-      (data) => {
-        Log("massive local storage get done")
-        mangasToColor.forEach((bookmark) => {
-          const status = bookmark.status.trim().toLowerCase();
-          const element = [...document.querySelectorAll(".inner .info a")].find(
-            (el) => el.textContent.trim() === bookmark.title
-          );
+    [
+      "CustomBookmarksfeatureEnabled",
+      "customBookmarks",
+      "CustomBorderSizefeatureEnabled",
+      "CustomBorderSize",
+      "SyncandMarkReadfeatureEnabled",
+    ],
+    (data) => {
+      Log("massive local storage get done");
+      Log(
+        `querySelectToTitle: ${querySelectToTitle};    elementClosestSelector: ${elementClosestSelector}`
+      );
+      mangasToColor.forEach((bookmark) => {
+        const status = bookmark.status.trim().toLowerCase(); //".inner .info a"
+        const element = [...document.querySelectorAll(querySelectToTitle)].find(
+          (el) => el.textContent.trim() === bookmark.title
+        );
 
-          if (element) {
-            // at end of chain colors the border with set size 4px if true; custom size if false
-            const nothingwrong = true;
-            var borderColor;
-            const borderSize = data.CustomBorderSize;
+        if (element) {
+          // at end of chain colors the border with set size 4px if true; custom size if false
+          const nothingwrong = true;
+          var borderColor;
+          const borderSize = data.CustomBorderSize;
 
-            if (status === "reading") {
-              borderColor = "green";
-            } else if (status === "dropped") {
-              borderColor = "darkred";
-            } else if (status === "completed") {
-              borderColor = "blue";
-            } else if (status === "on-hold") {
-              borderColor = "orange";
-            } else if (status === "plan to read") {
-              borderColor = "lightgreen";
-            } else if (
-              status === "read" &&
-              data.SyncandMarkReadfeatureEnabled
-            ) {
-              borderColor = "grey";
-            } else if (data.CustomBookmarksfeatureEnabled) {
-              const customBookmarks = data.customBookmarks || [];
-              customBookmarks.forEach((custombookmark) => {
-                if (custombookmark.name == status) {
-                  borderColor = custombookmark.color;
-                }
-              });
-            } else {
-              nothing = false;
-            }
-            if (nothingwrong) {
-              if (data.CustomBorderSizefeatureEnabled) {
-                element.closest(
-                  ".inner"
-                ).style.border = `${borderSize}px solid ${borderColor}`;
-              } else {
-                element.closest(
-                  ".inner"
-                ).style.border = `4px solid ${borderColor}`;
+          if (status === "reading") {
+            borderColor = "green";
+          } else if (status === "dropped") {
+            borderColor = "darkred";
+          } else if (status === "completed") {
+            borderColor = "blue";
+          } else if (status === "on-hold") {
+            borderColor = "orange";
+          } else if (status === "plan to read") {
+            borderColor = "lightgreen";
+          } else if (status === "read" && data.SyncandMarkReadfeatureEnabled) {
+            borderColor = "grey";
+          } else if (data.CustomBookmarksfeatureEnabled) {
+            const customBookmarks = data.customBookmarks || [];
+            customBookmarks.forEach((custombookmark) => {
+              if (custombookmark.name == status) {
+                borderColor = custombookmark.color;
               }
+            });
+          } else {
+            nothing = false;
+          }
+          if (nothingwrong) {
+            if (data.CustomBorderSizefeatureEnabled) {
+              element.closest(
+                elementClosestSelector
+              ).style.border = `${borderSize}px solid ${borderColor}`;
+            } else {
+              element.closest(
+                elementClosestSelector
+              ).style.border = `4px solid ${borderColor}`;
             }
           }
-        });
-      }
-    );
+        }
+      });
+    }
+  );
 }
 
-
-
-
 window.addEventListener("load", () => {
+  if (window.location.pathname === "/home") {
+    Log("Homepage script executing");
+
+    document.querySelectorAll(".swiper-slide").forEach((el) => {
+      
+      el.style.border = "8px solid red"; // change font size
+    });
+
+    var mostViewedTab = document.getElementsByClassName(
+      "trending-button-next"
+    )[0];
+    mostViewedTab.addEventListener("click", applyContainerStylesHomePage);
+    mostViewedTab = document.getElementsByClassName("trending-button-prev")[0];
+    mostViewedTab.addEventListener("click", applyContainerStylesHomePage);
+
+    const tabs = document.querySelectorAll(".tabs");
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", applyContainerStylesHomePage);
+    });
+  }
   applyContainerStyles();
 });
 
@@ -155,8 +231,8 @@ function waitForMessage(filterFn) {
   });
 }
 
-function autoSync(){
-    chrome.storage.local.get(
+function autoSync() {
+  chrome.storage.local.get(
     ["AutoSyncfeatureEnabled", "SyncLastDate", "SyncEverySetDate"],
     (data) => {
       datebool = data.AutoSyncfeatureEnabled ?? false;
