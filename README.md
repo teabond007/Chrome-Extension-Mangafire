@@ -9,14 +9,14 @@ With the pourpose of Highligting or Marking Saved and Read mangas/manhwas.
 
 <dl>
 <dt>Solves the Problem</dt>
-  <dd>when searching for new things to read, it doesn't show you immidietly, if you have it saved and it also doesn't show you that in a clear way. Also it only shows you Bookmarked mangas and not your history(mangas you read without saving).
+  <dd>when searching for new things to read, it doesn't show you immidietly, if you have it saved and it also doesn't show you that in a clear way. Same with your history(mangas you read without saving).
 </dd>
 </dl>
 
 
 <dl>
 <dt>How it works</dt>
-<dd>Extension Scrapes your Bookmarks(Saved mangas) and your History(Read Mangas) for the name of the manga and its status(Reading, Completed, Dropped...).
+<dd>On command Scrapes your Bookmarks(Saved mangas) and/or your History(Read Mangas) for names and statuses(Reading, Completed, Dropped...).
 Every time you load MangaFire page it checks if mangas shown match with scraped data and if so, colors the border.
 </dd>
 </dl>

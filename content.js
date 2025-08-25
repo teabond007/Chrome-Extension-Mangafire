@@ -34,65 +34,119 @@ function applyContainerStyles() {
   autoSync();
 }
 
+
+function applyContainerStylesHomePageOnLoad(){
+//second part
+Log("Homepage script executing");
+    const topTrendingMangas = [];
+    const mostViewedMangasDay = [];
+    const mostViewedMangasWeek = [];
+    const mostViewedMangasMonth = [];
+    const newReleasesMangas = [];
+    document.querySelectorAll(".swiper-slide").forEach((el) => {
+      if (el.closest("#top-trending")) {
+        let title = el
+          .querySelector(".swiper-inner .info .above a")
+          .textContent.trim();
+        if (!topTrendingMangas.includes(title)) {
+          topTrendingMangas.push(title);
+          Log(`topTrending title: ${title}`);
+        }
+      } else if (el.closest("#most-viewed")) {
+        if (el.closest('.tab-content[data-name="day"]')) {
+          let title = el.querySelector("a span").textContent.trim();
+          if (!mostViewedMangasDay.includes(title)) {
+            mostViewedMangasDay.push(title);
+            Log(`day title: ${title}`);
+          }
+        } else if (el.closest('.tab-content[data-name="week"]')) {
+          let title = el.querySelector("a span").textContent.trim();
+          if (!mostViewedMangasWeek.includes(title)) {
+            mostViewedMangasWeek.push(title);
+            Log(`week title: ${title}`);
+          }
+        } else if (el.closest('.tab-content[data-name="month"]')) {
+          let title = el.querySelector("a span").textContent.trim();
+          if (!mostViewedMangasMonth.includes(title)) {
+            mostViewedMangasMonth.push(title);
+            Log(`month title: ${title}`);
+          }
+        }
+      } else {
+        let title = el.querySelector("a span").textContent.trim();
+        if (!newReleasesMangas.includes(title)) {
+          newReleasesMangas.push(title);
+          Log(`new release title: ${title}`);
+        }
+      }
+    });
+
+    crossRefrencBookmarks(topTrendingMangas, (matched) => {
+      Log("crossRefrencBookmarks()");
+      applyAndColorBorders(
+        matched,
+        "#top-trending .swiper-inner .info .above a",
+        ".swiper-inner"
+      );
+    });
+    crossRefrencBookmarks(mostViewedMangasDay, (matched) => {
+      Log("crossRefrencBookmarks()");
+      applyAndColorBorders(
+        matched,
+        '.tab-content[data-name="day"] a span',
+        "a"
+      );
+    });
+    crossRefrencBookmarks(mostViewedMangasWeek, (matched) => {
+      Log("crossRefrencBookmarks()");
+      applyAndColorBorders(
+        matched,
+        '.tab-content[data-name="week"] a span',
+        "a"
+      );
+    });
+    crossRefrencBookmarks(mostViewedMangasMonth, (matched) => {
+      Log("crossRefrencBookmarks()");
+      applyAndColorBorders(
+        matched,
+        '.tab-content[data-name="month"] a span',
+        "a"
+      );
+    });
+    crossRefrencBookmarks(newReleasesMangas, (matched) => {
+      Log("crossRefrencBookmarks()");
+      applyAndColorBorders(matched, ".swiper.completed a span", "a");
+    });
+}
 /**
  *
  */
 function applyContainerStylesHomePage() {
-  /* Log("applyContainerStylesHomePage() called");
+  Log("applyContainerStylesHomePage() called");
   var pageMangas = [];
 
-
-
-  //get titles for topmost mangas: trending mangas
-  
-  var container = document.querySelector(
-    "div.swiper.trending.swiper-container .swiper-wrapper"
-  );
+  //get titles for midlle mangas: recently updated
+  var container = document.querySelector('.tab-content[data-name="all"]');
   if (container) {
-    var mangaDivs = container.querySelectorAll(":scope > div");
+    var mangaDivs = container.querySelectorAll(".unit");
     mangaDivs.forEach((item) => {
-      const title = item
-        .querySelector(".swiper-inner .info .above a")
-        .textContent.trim();
+      const title = item.querySelector(".info a").textContent.trim();
       if (title && !pageMangas.includes(title)) {
         pageMangas.push(title);
-        Log(`Title Trending found: ${title}`);
+        Log(`Title recently updated found: ${title}`);
       }
     });
     crossRefrencBookmarks(pageMangas, (matched) => {
-      Log(`Matched Trendin Bookmarks: ${matched}`);
+      Log("--------------Matched Bookmarks:", matched);
       applyAndColorBorders(
         matched,
-        ".swiper-inner .info .above a",
-        ".swiper-inner"
+        '.tab-content[data-name="all"] .info a',
+        ".inner"
       );
     });
     pageMangas = [];
-  }*/
-  /*  
-  // get titles for second row of mangas: Most viewed mangas
-  container = document.getElementById("most-viewed")
-  Log(`container cacer found: ${container}`)
-  if(container){
-      const threeMostViewedSlides = container.querySelectorAll(".tab-content .swiper-container .swiper .card-mg");
-   threeMostViewedSlides.forEach((slide) => {
-      mangaDivs = slide.querySelectorAll(":scope > div")
-   
-      mangaDivs.forEach((item) => {
-        const title = item.querySelector(".swiper-slide.unit a span").textContent.trim();
-        if (title ) {
-          pageMangas.push(title);
-          Log(`Title Trending found: ${title}`);
-        }
-      });
-   });
-   crossRefrencBookmarks(pageMangas, (matched) => {
-    Log(`Matched Trendin Bookmarks: ${matched.title}`);
-    applyAndColorBorders(matched.title, ".swiper-inner .info .above a", ".swiper-inner");
-  });
-  pageMangas = [];
-}
-  */
+  }
+
 }
 
 /**
@@ -147,7 +201,7 @@ function applyAndColorBorders(
         );
 
         if (element) {
-        //  Log(`applyColors title: ${bookmark.title}`)
+          //  Log(`applyColors title: ${bookmark.title}`)
           // at end of chain colors the border with set size 4px if true; custom size if false
 
           var borderColor;
@@ -191,64 +245,18 @@ function applyAndColorBorders(
 
 window.addEventListener("load", () => {
   if (window.location.pathname === "/home") {
-    Log("Homepage script executing");
-    const topTrendingMangas = [];
-    const mostViewedMangasDay = [];
-    const mostViewedMangasWeek = [];
-    const mostViewedMangasMonth = [];
-    const newReleasesMangas = [];
-    document.querySelectorAll(".swiper-slide").forEach((el) => {
-      if (el.closest("#top-trending")) {
-         let title = el
-          .querySelector(".swiper-inner .info .above a")
-          .textContent.trim();
-        if (!topTrendingMangas.includes(title)) {
-          topTrendingMangas.push(title);
-          Log(`topTrending title: ${title}`);
+    chrome.storage.local.get(
+      ["MarkHomePagefeatureEnabled"],
+      (data) => {
+        if (data.MarkHomePagefeatureEnabled) {
+          applyContainerStylesHomePageOnLoad();
+          applyContainerStylesHomePage();
         }
-
-        
-      } else if (el.closest("#most-viewed")) {
-        if (el.closest('.tab-content[data-name="day"]')) {
-        
-          let title = el
-            .querySelector("a span")
-            .textContent.trim();
-          if (!mostViewedMangasDay.includes(title)) {
-            mostViewedMangasDay.push(title);
-            Log(`day title: ${title}`);
-          }
-        } else if (el.closest('.tab-content[data-name="week"]')) {
-         
-          let title = el
-            .querySelector("a span")
-            .textContent.trim();
-          if (!mostViewedMangasWeek.includes(title)) {
-            mostViewedMangasWeek.push(title);
-            Log(`week title: ${title}`);
-          }
-        } else if (el.closest('.tab-content[data-name="month"]')) {
-         
-          let title = el
-            .querySelector("a span")
-            .textContent.trim();
-          if (!mostViewedMangasMonth.includes(title)) {
-            mostViewedMangasMonth.push(title);
-            Log(`month title: ${title}`);
-          }
-        }
-       
-        
-      } else {
-        let title = el
-            .querySelector("a span")
-            .textContent.trim();
-          if (!newReleasesMangas.includes(title)) {
-            newReleasesMangas.push(title);
-            Log(`new release title: ${title}`);
-          }
       }
-    });
+    );
+   
+    
+    
 
     var mostViewedTab = document.getElementsByClassName(
       "trending-button-next"
@@ -262,46 +270,7 @@ window.addEventListener("load", () => {
       tab.addEventListener("click", applyContainerStylesHomePage);
     });
     //second part
-    crossRefrencBookmarks(topTrendingMangas, (matched) => {
-      Log("crossRefrencBookmarks()");
-      applyAndColorBorders(
-        matched,
-        "#top-trending .swiper-inner .info .above a",
-        ".swiper-slide"
-      );
-    });
-    crossRefrencBookmarks(mostViewedMangasDay, (matched) => {
-      Log("crossRefrencBookmarks()");
-      applyAndColorBorders(
-        matched,
-        '.tab-content[data-name="day"] a span',
-        "a"
-      );
-    });
-    crossRefrencBookmarks(mostViewedMangasWeek, (matched) => {
-      Log("crossRefrencBookmarks()");
-applyAndColorBorders(
-        matched,
-        '.tab-content[data-name="week"] a span',
-        "a"
-      );
-    });
-    crossRefrencBookmarks(mostViewedMangasMonth, (matched) => {
-      Log("crossRefrencBookmarks()");
-applyAndColorBorders(
-        matched,
-        '.tab-content[data-name="month"] a span',
-        "a"
-      );
-    });
-    crossRefrencBookmarks(newReleasesMangas, (matched) => {
-      Log("crossRefrencBookmarks()");
-applyAndColorBorders(
-        matched,
-        '.swiper.completed a span',
-        "a"
-      );
-    });
+    
   } else {
     applyContainerStyles();
   }
