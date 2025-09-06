@@ -45,6 +45,8 @@ Log("Homepage script executing");
     const newReleasesMangas = [];
     document.querySelectorAll(".swiper-slide").forEach((el) => {
       if (el.closest("#top-trending")) {
+        
+        //el.querySelector(".swiper-inner .info").style.setProperty("border-left", "4px solid darkblue", "important");
         let title = el
           .querySelector(".swiper-inner .info .above a")
           .textContent.trim();
@@ -82,11 +84,9 @@ Log("Homepage script executing");
     });
 
     crossRefrencBookmarks(topTrendingMangas, (matched) => {
-      Log("crossRefrencBookmarks()");
-      applyAndColorBorders(
+      Log("crossRefrencBookmarks() for top trending mangas");
+      applyAndColorBordersForTopTrendingMangas(
         matched,
-        "#top-trending .swiper-inner .info .above a",
-        ".swiper-inner"
       );
     });
     crossRefrencBookmarks(mostViewedMangasDay, (matched) => {
@@ -205,9 +205,10 @@ function applyAndColorBorders(
           // at end of chain colors the border with set size 4px if true; custom size if false
 
           var borderColor;
+          var borderStyle = "solid";
           const borderSize = data.CustomBorderSize;
 
-          if (status === "reading") {
+            if (status === "reading") {
             borderColor = "green";
           } else if (status === "dropped") {
             borderColor = "darkred";
@@ -219,11 +220,13 @@ function applyAndColorBorders(
             borderColor = "lightgreen";
           } else if (status === "read" && data.SyncandMarkReadfeatureEnabled) {
             borderColor = "grey";
-          } else if (data.CustomBookmarksfeatureEnabled) {
+          }
+          if (data.CustomBookmarksfeatureEnabled) {
             const customBookmarks = data.customBookmarks || [];
             customBookmarks.forEach((custombookmark) => {
               if (custombookmark.name == status) {
                 borderColor = custombookmark.color;
+                borderStyle = custombookmark.style;
               }
             });
           }
@@ -231,12 +234,81 @@ function applyAndColorBorders(
           if (data.CustomBorderSizefeatureEnabled) {
             element.closest(
               elementClosestSelector
-            ).style.border = `${borderSize}px solid ${borderColor}`;
+            ).style.border = `${borderSize}px ${borderStyle} ${borderColor}`;
           } else {
             element.closest(
               elementClosestSelector
-            ).style.border = `4px solid ${borderColor}`;
+            ).style.border = `4px ${borderStyle} ${borderColor}`;
           }
+        }
+      });
+    }
+  );
+}
+/**
+ * 
+ * @param {Array} mangasToColor 
+ */
+function applyAndColorBordersForTopTrendingMangas(mangasToColor) {
+    chrome.storage.local.get(
+    [
+      "CustomBookmarksfeatureEnabled",
+      "customBookmarks",
+      "CustomBorderSizefeatureEnabled",
+      "CustomBorderSize",
+      "SyncandMarkReadfeatureEnabled",
+    ],
+    (data) => {
+      Log("applyAndColorBordersForTopTrendingMangas()");
+      mangasToColor.forEach((bookmark) => {
+        const status = bookmark.status.trim().toLowerCase(); //".inner .info a"
+        const element = [...document.querySelectorAll("#top-trending .swiper-inner .info .above a")].find(
+          (el) => el.textContent.trim() === bookmark.title
+        );
+        Log("1")
+        Log("bookmark title: " + bookmark.title);
+        if (element) {
+          //  Log(`applyColors title: ${bookmark.title}`)
+          // at end of chain colors the border with set size 4px if true; custom size if false
+
+          var borderColor;
+          var borderStyle;
+          const borderSize = data.CustomBorderSize;
+          Log("2")
+          
+          if (data.CustomBookmarksfeatureEnabled) {
+            const customBookmarks = data.customBookmarks || [];
+            customBookmarks.forEach((custombookmark) => {
+              if (custombookmark.name === status) {
+                borderColor = custombookmark.color;
+                borderStyle = custombookmark.style;
+              }
+            });
+          } else if (status === "reading") {
+            borderColor = "green";
+          } else if (status === "dropped") {
+            borderColor = "darkred";
+          } else if (status === "completed") {
+            borderColor = "blue";
+          } else if (status === "on-hold") {
+            borderColor = "orange";
+          } else if (status === "plan to read") {
+            borderColor = "lightgreen";
+          } else if (status === "read" && data.SyncandMarkReadfeatureEnabled) {
+            borderColor = "grey";
+          }
+         Log("3")
+          if (data.CustomBorderSizefeatureEnabled) {
+            element.closest(
+              ".info"
+            ).style.setProperty("border-left", `${borderSize}px ${borderStyle} ${borderColor}`, "important");
+          } else {
+            let gej = element.closest(
+              ".swiper-inner"
+            )
+            gej.querySelector(".info").style.setProperty("border-left", `4px solid red`, "important");
+          }
+          Log("4")
         }
       });
     }

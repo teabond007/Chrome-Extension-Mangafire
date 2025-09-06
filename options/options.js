@@ -30,16 +30,16 @@ document.getElementById("addBookmarkButton").addEventListener("click", () => {
   console.log("Add Bookmark button clicked");
   const bookmarkName = document.getElementById("bookmarkName").value;
   const bookmarkColor = document.getElementById("colorBookmarks").value;
-  console.log(`Bookmark Name: ${bookmarkName}, Color: ${bookmarkColor}`);
+  const borderStyle = document.getElementById("customBorderStyleSelect").value;
   if (bookmarkName && bookmarkColor) {
     chrome.storage.local.get("customBookmarks", (data) => {
       const existing = Array.isArray(data.customBookmarks)
         ? data.customBookmarks
         : [];
-      const newBookmark = { name: bookmarkName, color: bookmarkColor };
+      const newBookmark = { name: bookmarkName, color: bookmarkColor, style: borderStyle };
       const combined = [...existing, newBookmark];
       chrome.storage.local.set({ customBookmarks: combined }, () => {
-        console.log(`Bookmark added: ${bookmarkName}, Color: ${bookmarkColor}`);
+      
         document.getElementById("bookmarkName").value = ""; // Clear input field
         document.getElementById("colorBookmarks").value = "#ff0000"; // Reset color picker
       });
@@ -74,6 +74,7 @@ function LogCustoomBookmarks() {
       // Layout using flexbox
       bookmarkDiv.style.display = "flex";
       bookmarkDiv.style.alignItems = "center";
+      bookmarkDiv.style.border = `4px ${bookmark.style} ${bookmark.color}`
       bookmarkDiv.appendChild(colorBlock);
       bookmarkDiv.appendChild(text);
 

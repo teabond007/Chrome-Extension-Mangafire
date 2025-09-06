@@ -5,11 +5,11 @@ A Chrome extension for [Mangafire](https://mangafire.to/home)
 With the pourpose of Highligting or Marking Saved and Read mangas/manhwas.
 
 
-![Example of before and after with written description](ExtensioExampleWritten.png)
+![before and after with written description](ExtensioExampleWritten.png)
 
 <dl>
-<dt>Solves the Problem</dt>
-  <dd>when searching for new things to read, it doesn't show you immidietly, if you have it saved and it also doesn't show you that in a clear way. Same with your history(mangas you read without saving).
+<dt>Why use This</dt>
+  <dd>Normaly, when searching for new things to read, it doesn't show you immidietly, if you have it saved and it also doesn't show you that in a clear way. Same with your history(mangas you read without saving).
 </dd>
 </dl>
 
@@ -31,8 +31,9 @@ Every time you load MangaFire page it checks if mangas shown match with scraped 
 
 Download the folder(less than 1Mb) go to chrome://extensions enable developer mode(top right) and Load unpacked(top left).
 > IMPORTANT! you have run the scraper at least once, for the extension to know what to Highlight(Click Sync Bookmarks, on either extensions popup or settings page.)
+> you have to be logged in Mangafire.
 
 ***
 
-This is not official MangaFire extension and is not affiliated with MangaFire in any way.
+This is not official MangaFire extension and is not affiliated with MangaFire in any way. Made for Mangafire v2
 All CSS is from [universe.io](https://uiverse.io/) with [MIT License(open source)](https://opensource.org/license/mit).
