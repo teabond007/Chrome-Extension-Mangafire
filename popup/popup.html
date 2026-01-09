@@ -1,112 +1,99 @@
 <!DOCTYPE html>
+<html lang="en">
 
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MangaFire Marker</title>
   <link rel="stylesheet" href="popup.css">
-
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<html>
 
 <body>
-  <div style="width: 300px; height: 500px;">
-    <div class="container">
-      <div id="upperContainer">
-        <h1>Bookmarks Marker</h1>
+  <div class="popup-container">
 
+    <header class="popup-header">
+      <div class="brand">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="brand-icon">
+          <path d="M5 5C5 3.89543 5.89543 3 7 3H17C18.1046 3 19 3.89543 19 5V21L12 18L5 21V5Z" fill="currentColor" />
+        </svg>
+        <span class="brand-text">Color Marker</span>
+      </div>
+      <button id="SyncBtn" class="btn-sync" title="Sync Bookmarks Now">
+        <span class="icon-sync">↻</span>
+      </button>
+    </header>
 
+    <div class="features-list">
+
+      <div class="feature-item">
+        <div class="feature-info">
+          <span class="feature-name">Auto Sync</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="AutoSync">
+          <span class="slider"></span>
+        </label>
       </div>
 
-      <div id="middleupperContainer">
-        <button type="button" class="btn" id="SyncBtn">
-          <strong>Sync Bookmarks</strong>
-          <div id="container-stars">
-            <div id="stars"></div>
-          </div>
-
-          <div id="glow">
-            <div class="circle"></div>
-            <div class="circle"></div>
-          </div>
-        </button>
+      <div class="feature-item">
+        <div class="feature-info">
+          <span class="feature-name">Custom Markers</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="CustomBookmarks">
+          <span class="slider"></span>
+        </label>
       </div>
 
-
-
-      <div id="toggleswitches">
-
-        <label class="checkbox-wrapper">
-          <input type="checkbox" id="AutoSync" />
-          <div class="checkmark">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M20 6L9 17L4 12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
-            </svg>
-          </div>
-          <span class="label">Auto Sync</span>
+      <div class="feature-item">
+        <div class="feature-info">
+          <span class="feature-name">Custom Borders</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="CustomBorderSize">
+          <span class="slider"></span>
         </label>
-
-
-        <label class="checkbox-wrapper">
-          <input type="checkbox" id="CustomBookmarks" />
-          <div class="checkmark">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M20 6L9 17L4 12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
-            </svg>
-          </div>
-          <span class="label">Custom Bookmarks</span>
-        </label>
-
-
-        <label class="checkbox-wrapper">
-          <input type="checkbox" id="CustomBorderSize" />
-          <div class="checkmark">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M20 6L9 17L4 12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
-            </svg>
-          </div>
-          <span class="label">Custom Border size</span>
-        </label>
-
-        <label class="checkbox-wrapper">
-          <input type="checkbox" id="MarkHomePage" />
-          <div class="checkmark">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M20 6L9 17L4 12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
-            </svg>
-          </div>
-          <span class="label">Mark Homepage</span>
-        </label>
-
-        <label class="checkbox-wrapper">
-          <input type="checkbox" id="SyncandMarkRead" />
-          <div class="checkmark">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M20 6L9 17L4 12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
-            </svg>
-          </div>
-          <span class="label">Sync and Mark Read</span>
-        </label>
-
-
-
-
       </div>
 
-
-
-      <div id="botomContainer">
-        <button class="learn-more" id="oppenSettingsBtn">
-          <span class="circle" aria-hidden="true">
-            <span class="icon arrow"></span>
-          </span>
-          <span class="button-text">More Settings</span>
-        </button>
+      <div class="feature-item">
+        <div class="feature-info">
+          <span class="feature-name">Mark Homepage</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="MarkHomePage">
+          <span class="slider"></span>
+        </label>
       </div>
 
+      <div class="feature-item">
+        <div class="feature-info">
+          <span class="feature-name">Sync History</span>
+          <span class="feature-sub">Sync & Mark Read</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="SyncandMarkRead">
+          <span class="slider"></span>
+        </label>
+      </div>
 
-
-      <script src="popup.js"></script>
     </div>
+
+    <footer class="popup-footer">
+      <button id="oppenSettingsBtn" class="link-btn">
+        <span>Open Settings</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+          <polyline points="15 3 21 3 21 9"></polyline>
+          <line x1="10" y1="14" x2="21" y2="3"></line>
+        </svg>
+      </button>
+    </footer>
+
   </div>
+  <script src="popup.js"></script>
 </body>
 
 </html>

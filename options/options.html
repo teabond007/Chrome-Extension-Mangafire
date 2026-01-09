@@ -1,84 +1,327 @@
-<html>
-  <head>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manga Bookmarks Marker</title>
     <link rel="stylesheet" href="options.css">
+    <!-- Using Google Fonts for Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
 
-    
-  </head>
-  <body>
+<body>
 
-   
- 
-      <div id="marginContainer">
-    <h1>Settings</h1>
-    <p>Bookmark Color Marker is a Chrome Extension that allows you to add custom bookmarks to MangaFire.to</p>
-    <p></p>
-    <p style="margin-top: 3.5rem;">If you have a custom Bookmark add it here because the default statuses are (reading, completed, dropped, on-hold, plan to read, read(which is depriorotized))</p>
-    
-    <div id="colorBookmarksContainer">
-      <label for="colorBookmarks">Enter a name and pick a color:    </label>
-      <input placeholder="Bookmark Name..." id="bookmarkName" class="input" name="text" type="text" />
-      <input type="color" id="colorBookmarks" name="colorBookmarks" value="#ff0000">
-      <select id="customBorderStyleSelect">
-        <option value="solid">Solid</option>
-        <option value="dashed">Dashed</option>
-        <option value="dotted">Dotted</option>
-        <option value="double">Double</option>
-        <option value="groove">Groove</option>
-        <option value="ridge">Ridge</option>
-        <option value="inset">Inset</option>
-        <option value="outset">Outset</option>
-        </select>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 5C5 3.89543 5.89543 3 7 3H17C18.1046 3 19 3.89543 19 5V21L12 18L5 21V5Z"
+                            fill="currentColor" />
+                    </svg>
+                </div>
+                <span class="brand-name">Color Marker</span>
+            </div>
 
-<button class="clickMeButton" id="addBookmarkButton">
-    Add
-</button>
-<button class="clickMeButton" id="resetBookmarkButton">
-    Remove All
-</button>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-tab="settings">
+                    <span class="nav-icon">⚙️</span>
+                    General Settings
+                </a>
+                <a href="#" class="nav-item" data-tab="about">
+                    <span class="nav-icon">ℹ️</span>
+                    About
+                </a>
+            </nav>
 
+            <div class="sidebar-footer">
+                <button id="themeToggleBtn" class="theme-toggle">
+                    <span class="icon-sun">☀️</span>
+                    <span class="icon-moon">🌙</span>
+                    <span class="label">Toggle Theme</span>
+                </button>
+                <div class="version-info">Version 2.4.1</div>
+            </div>
+        </aside>
 
-</div>
+        <!-- Main Content -->
+        <main class="main-content">
 
-<div id="CustomBookmarksContainer" style="height: auto; margin-left: 4rem; margin-top: 1rem;"></div>
+            <!-- Settings Tab -->
+            <div id="tab-settings" class="tab-pane active fade-in">
+                <header class="header">
+                    <div class="header-text">
+                        <h1>Settings</h1>
+                        <p class="subtitle">Configure your custom bookmarks for MangaFire.to, manage sync, and display
+                            preferences.</p>
+                    </div>
+                </header>
 
+                <div class="content-grid">
 
+                    <!-- Card 0: General Preferences -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">⚙️</div>
+                            <h3>General Preferences</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="input-group-row">
+                                <div class="feature-toggle-wrapper">
+                                    <div class="toggle-label-group">
+                                        <label for="MarkHomePage" class="toggle-main-label">Mark Homepage</label>
+                                        <span class="toggle-sub-label">Highlight manga on the homepage</span>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="MarkHomePage">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
 
-<p id="autosyncinfo">When Auto Sync is enabled it will sync Bookmarks every set days.</p>
-<p>After the day mark is hit it will wait until Mangafire is opened, then Sync and then reset the counter</p>
-<div>
-  <input placeholder="How many days..." id="AutoSyncSetDays" class="input" name="text" type="number" value="30"/>
-  <button class="clickMeButton" id="AutoSyncSetDaysButton">Set</button>
-  <button class="clickMeButton" id="AutoSyncSetDaysButtonReset">Reset</button>
-  <p id="logContainerSetDays"></p>
-</div>
+                                <div class="feature-toggle-wrapper">
+                                    <div class="toggle-label-group">
+                                        <label for="SyncandMarkRead" class="toggle-main-label">Sync & Mark Read</label>
+                                        <span class="toggle-sub-label">Sync history and mark as read</span>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="SyncandMarkRead">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
+                    <!-- Card 1: Custom Markers -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">🎨</div>
+                            <h3>Custom Markers</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="feature-toggle-header">
+                                <span class="description" style="margin:0;">Add custom statuses beyond the
+                                    defaults.</span>
+                                <label class="switch small-switch" title="Enable Custom Markers">
+                                    <input type="checkbox" id="CustomBookmarks">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <div style="margin-top: 15px;"></div>
 
-<p id="bordersizeinfo" style="margin-top: 3.5rem;">When Custom Border Size is enabled it will change the thicness of the marker</p>
-<p>Suggested size is anywhere between 2 - 8</p>
-<div>
-  <input placeholder="Size in px..." id="BorderSetSize" class="input" name="text" type="number" value="4"/>
-  <button class="clickMeButton" id="CustomBorderSizeButton">Set</button>
-  <button class="clickMeButton" id="CustomBorderSizeButtonReset">Reset</button>
-  <p id="logContainerCustomBorderSize"></p>
-</div>
+                            <div class="input-group-row">
+                                <div class="input-wrapper flex-grow">
+                                    <label for="bookmarkName">Marker Name</label>
+                                    <input type="text" id="bookmarkName" placeholder="e.g. Re-reading"
+                                        class="input-field">
+                                </div>
+                                <div class="input-wrapper">
+                                    <label for="colorBookmarks">Color</label>
+                                    <div class="color-picker-wrapper">
+                                        <input type="color" id="colorBookmarks" value="#ff0000">
+                                    </div>
+                                </div>
+                                <div class="input-wrapper">
+                                    <label for="customBorderStyleSelect">Border Style</label>
+                                    <select id="customBorderStyleSelect" class="select-field">
+                                        <option value="solid">Solid</option>
+                                        <option value="dashed">Dashed</option>
+                                        <option value="dotted">Dotted</option>
+                                        <option value="double">Double</option>
+                                        <option value="groove">Groove</option>
+                                        <option value="ridge">Ridge</option>
+                                        <option value="inset">Inset</option>
+                                        <option value="outset">Outset</option>
+                                    </select>
+                                </div>
+                                <div class="input-wrapper input-button-wrapper">
+                                    <button id="addBookmarkButton" class="btn btn-primary btn-input-height">
+                                        + Add
+                                    </button>
+                                </div>
+                            </div>
 
+                            <div class="active-markers-header">
+                                <label class="section-label">ACTIVE MARKERS</label>
+                                <button id="resetBookmarkButton" class="btn btn-ghost btn-sm">
+                                    Remove All
+                                </button>
+                            </div>
 
+                            <div id="CustomBookmarksContainer" class="markers-container">
+                                <!-- Bookmarks will be injected here -->
+                            </div>
+                        </div>
+                    </div>
 
+                    <!-- Row for smaller cards -->
+                    <div class="cards-row">
+                        <!-- Card 2: Auto Sync -->
+                        <div class="card full-height">
+                            <div class="card-header">
+                                <div class="card-icon">🔄</div>
+                                <h3>Auto Sync</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="feature-toggle-header">
+                                    <span class="description" style="margin:0">Automatically sync bookmarks.</span>
+                                    <label class="switch small-switch" title="Enable Auto Sync">
+                                        <input type="checkbox" id="AutoSync">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                                <div style="margin-top: 15px;"></div>
 
+                                <div class="input-wrapper">
+                                    <label for="AutoSyncSetDays">Sync Interval (Days)</label>
+                                    <div class="input-with-button">
+                                        <input type="number" id="AutoSyncSetDays" value="30" class="input-field">
+                                    </div>
+                                </div>
+                                <p id="logContainerSetDays" class="status-text"></p>
 
-    <p style="margin-top: 3.5rem;">Sync Button Requieres you to be logged in Mnagafire.to</p>
-    <p>Sync and Mark Read also saves/highlights your history/read mangas.</p>
-    <p>if Sync and Mark Read is disabled syncing bookmarks will not save read mangas, after enabling this option you have to sync bookmarks again</p>
-    <p>Works only on Mnagafire.to</p>
-    <button class="btn" id="sendMessageBtn">Sync Bookmarks</button>
+                                <div class="button-group bottom-align">
+                                    <button id="AutoSyncSetDaysButton" class="btn btn-primary">Save Interval</button>
+                                    <button id="AutoSyncSetDaysButtonReset" class="btn btn-ghost">Reset Default</button>
+                                </div>
+                            </div>
+                        </div>
 
-<div id="logContainer" style="max-height: 50%; overflow-y: auto; font-family: monospace;"></div>
+                        <!-- Card 3: Display Settings -->
+                        <div class="card full-height">
+                            <div class="card-header">
+                                <div class="card-icon">⚙️</div>
+                                <h3>Display Settings</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="feature-toggle-header">
+                                    <span class="description" style="margin:0">Adjust visual thickness.</span>
+                                    <label class="switch small-switch" title="Enable Custom Borders">
+                                        <input type="checkbox" id="CustomBorderSize">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                                <div style="margin-top: 15px;"></div>
 
-      
-      </div>
+                                <div class="range-wrapper">
+                                    <div class="range-header">
+                                        <label for="BorderSetSize">Border Thickness</label>
+                                        <span id="rangeValueDisplay">4px</span>
+                                    </div>
+                                    <input type="range" id="BorderSetSize" min="1" max="10" value="4"
+                                        class="range-slider">
+                                    <div class="range-labels">
+                                        <span>min</span>
+                                        <span>max</span>
+                                    </div>
+                                </div>
+                                <p id="logContainerCustomBorderSize" class="status-text"></p>
+
+                                <div class="button-group bottom-align">
+                                    <button id="CustomBorderSizeButton" class="btn btn-primary">Apply Changes</button>
+                                    <button id="CustomBorderSizeButtonReset" class="btn btn-ghost">Reset</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 4: Manual Sync -->
+                    <div class="card highlight-card">
+                        <div class="card-body flex-row-center">
+                            <div class="info-section">
+                                <h3>⚠️ Manual Synchronization</h3>
+                                <ul class="info-list">
+                                    <li>Requires you to be logged into MangaFire.to</li>
+                                    <li>Saves your read history and highlights</li>
+                                    <li>Disabling sync prevents read status saving</li>
+                                </ul>
+                            </div>
+                            <div class="action-section">
+                                <button id="sendMessageBtn" class="btn btn-warning-large">
+                                    ⚡ Sync Bookmarks Now
+                                </button>
+                                <p class="tiny-text">Last synced: Check logs below</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Log Container -->
+                    <div class="card bg-terminal">
+                        <div id="logContainer" class="terminal-log"></div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- About Tab -->
+            <div id="tab-about" class="tab-pane fade-in" style="display: none;">
+                <header class="header">
+                    <div class="header-text">
+                        <h1>About</h1>
+                        <p class="subtitle">Information, usage guide, and credits.</p>
+                    </div>
+                </header>
+
+                <div class="content-grid">
+                    <div class="card">
+                        <div class="card-body prose">
+                            <h2>MangaFire Bookmark Color Marker</h2>
+                            <p>A powerful Chrome Extension for <a href="https://mangafire.to/home"
+                                    target="_blank">MangaFire.to</a> that enhances your browsing experience by
+                                automatically highlighting manga based on your bookmarks and reading history.</p>
+
+                            <h3>🚀 Why Use This?</h3>
+                            <p>Finding new manga to read can be frustrating when you can't instantly see what you've
+                                already read or saved. MangaFire's default interface doesn't always make this clear at a
+                                glance.</p>
+                            <p><strong>Bookmark Color Marker</strong> solves this by visually tagging manga covers with
+                                colored borders corresponding to their status (e.g., Reading, Completed, Plan to Read)
+                                directly on the browsing pages.</p>
+
+                            <hr class="divider">
+
+                            <h3>✨ Features</h3>
+                            <ul class="feature-list">
+                                <li><strong>Automatic Highlighting</strong>: Instantly spot your saved manga with custom
+                                    colored borders.</li>
+                                <li><strong>Custom Statuses</strong>: Create your own bookmark categories with unique
+                                    names, colors, and border styles.</li>
+                                <li><strong>History Sync</strong>: Optionally highlight manga that are in your reading
+                                    history but not bookmarked.</li>
+                                <li><strong>Visual Customization</strong>: Adjust border thickness and style (Solid,
+                                    Dashed, Dotted, etc.).</li>
+                            </ul>
+
+                            <hr class="divider">
+
+                            <h3>📖 How to Use</h3>
+                            <ol class="usage-list">
+                                <li><strong>Sync Data</strong>: Click 'Sync Bookmarks Now' in the Settings tab (requires
+                                    login to MangaFire).</li>
+                                <li><strong>Browse</strong>: Visit MangaFire.to. Your lists will be highlighted!</li>
+                                <li><strong>Customize</strong>: Use the Settings tab to add new markers (e.g.
+                                    "Favorites" in Gold).</li>
+                            </ol>
+
+                            <hr class="divider">
+
+                            <div class="alert-box">
+                                <p><strong>Disclaimer:</strong> This is an unofficial extension and is not affiliated
+                                    with MangaFire.to.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
 
     <script src="options.js"></script>
-  </body>
+</body>
+
 </html>

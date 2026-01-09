@@ -1,588 +1,219 @@
-h1{
-    font-size: 1.7rem;
-    color: rgb(16, 101, 151);
-    text-align: center;
+:root {
+  /* Reuse core variables from options.css */
+  --bg-body: #F4F7FE;
+  --bg-sidebar: #1E222D;
+  --bg-popup: #FFFFFF;
+  --text-primary: #1E222D;
+  --text-secondary: #8B95A5;
+  --accent-primary: #4318FF;
+  --accent-hover: #3311CC;
+  --border-color: #E0E5F2;
+  --danger: #EE5D50;
 
-    word-spacing: 0.4rem;
-    letter-spacing: 0.1rem;
-
-    padding-top: 0.7rem;
+  /* Toggle Colors */
+  --toggle-inactive: #E0E5F2;
+  --toggle-active: #4318FF;
+  --toggle-thumb: #FFFFFF;
 }
 
-
-#upperContainer {
-    background-color: #0c102b;
-    color: #ffffff;
-    font-family: Arial, sans-serif;
-    width: 100%;
-    height:3rem;
+/* Dark Mode Support (if popup background is dark) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-body: #0B1437;
+    --bg-popup: #111C44;
+    --text-primary: #FFFFFF;
+    --text-secondary: #A3AED0;
+    --border-color: #2B3674;
+    --toggle-inactive: #2B3674;
+  }
 }
 
-#middleupperContainer{
-  margin-top: 2rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 1.5rem;
-
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-#toggleswitches {
-  margin-left: 1rem;
-  margin-bottom: 1rem;
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-body);
+  width: 300px;
+  height: auto;
+  min-height: 400px;
 }
 
-
-#botomContainer{
-  height:200px;
-}
-
-
-
-.checkbox-wrapper {
-  --checkbox-size: 25px;
-  --checkbox-color: #00ff88;
-  --checkbox-shadow: rgba(0, 255, 136, 0.3);
-  --checkbox-border: rgba(0, 255, 136, 0.7);
-  display: flex;
-  align-items: center;
-  position: relative;
-  cursor: pointer;
-  padding: 10px;
-}
-
-.checkbox-wrapper input {
-  position: absolute;
-  opacity: 0;
-  cursor: pointer;
-  height: 0;
-  width: 0;
-}
-
-.checkbox-wrapper .checkmark {
-  position: relative;
-  width: var(--checkbox-size);
-  height: var(--checkbox-size);
-  border: 2px solid var(--checkbox-border);
-  border-radius: 8px;
-  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: rgba(0, 0, 0, 0.2);
-  box-shadow: 0 0 15px var(--checkbox-shadow);
-  overflow: hidden;
-}
-
-.checkbox-wrapper .checkmark::before {
-  content: "";
-  position: absolute;
+.popup-container {
+  background-color: var(--bg-popup);
+  color: var(--text-primary);
   width: 100%;
   height: 100%;
-  background: linear-gradient(45deg, var(--checkbox-color), #00ffcc);
-  opacity: 0;
-  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  transform: scale(0) rotate(-45deg);
+  /* Removed border-radius */
+  display: flex;
+  flex-direction: column;
 }
 
-.checkbox-wrapper input:checked ~ .checkmark::before {
-  opacity: 1;
-  transform: scale(1) rotate(0);
+/* Header */
+.popup-header {
+  padding: 20px;
+  background-color: var(--bg-sidebar);
+  /* Dark Header like sidebar */
+  color: #FFFFFF;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.checkbox-wrapper .checkmark svg {
-  width: 0;
-  height: 0;
-  color: #1a1a1a;
-  z-index: 1;
-  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.checkbox-wrapper input:checked ~ .checkmark svg {
-  width: 18px;
-  height: 18px;
-  transform: rotate(360deg);
+.brand-text {
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.5px;
 }
 
-.checkbox-wrapper:hover .checkmark {
-  border-color: var(--checkbox-color);
-  transform: scale(1.1);
-  box-shadow:
-    0 0 20px var(--checkbox-shadow),
-    0 0 40px var(--checkbox-shadow),
-    inset 0 0 10px var(--checkbox-shadow);
-}
-
-.checkbox-wrapper input:checked ~ .checkmark {
-  animation: pulse 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-    box-shadow: 0 0 20px var(--checkbox-shadow);
-  }
-  50% {
-    transform: scale(0.9);
-    box-shadow:
-      0 0 30px var(--checkbox-shadow),
-      0 0 50px var(--checkbox-shadow);
-  }
-  100% {
-    transform: scale(1);
-    box-shadow: 0 0 20px var(--checkbox-shadow);
-  }
-}
-
-.checkbox-wrapper .label {
-  margin-left: 15px;
-  font-family: "Segoe UI", sans-serif;
-  color: var(--checkbox-color);
-  font-size: 18px;
-  text-shadow: 0 0 10px var(--checkbox-shadow);
-  opacity: 0.9;
-  transition: all 0.3s;
-}
-
-.checkbox-wrapper:hover .label {
-  opacity: 1;
-  transform: translateX(5px);
-}
-
-/* Glowing dots animation */
-.checkbox-wrapper::after,
-.checkbox-wrapper::before {
-  content: "";
-  position: absolute;
-  width: 4px;
-  height: 4px;
+.btn-sync {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #FFF;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: var(--checkbox-color);
-  opacity: 0;
-  transition: all 0.5s;
-}
-
-.checkbox-wrapper::before {
-  left: -10px;
-  top: 50%;
-}
-
-.checkbox-wrapper::after {
-  right: -10px;
-  top: 50%;
-}
-
-.checkbox-wrapper:hover::before {
-  opacity: 1;
-  transform: translateX(-10px);
-  box-shadow: 0 0 10px var(--checkbox-color);
-}
-
-.checkbox-wrapper:hover::after {
-  opacity: 1;
-  transform: translateX(10px);
-  box-shadow: 0 0 10px var(--checkbox-color);
-}
-
-
-
-
-
-
-
-
-
-#oppenSettingsBtn {
- position: relative;
- display: inline-block;
- cursor: pointer;
- outline: none;
- border: 0;
- vertical-align: middle;
- text-decoration: none;
- background: transparent;
- padding: 0;
- font-size: inherit;
- font-family: inherit;
-}
-
-button.learn-more {
- width: 12rem;
- height: auto;
-}
-
-button.learn-more .circle {
- transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
- position: relative;
- display: block;
- margin: 0;
- width: 3rem;
- height: 3rem;
- background: #282936;
- border-radius: 1.625rem;
-}
-
-button.learn-more .circle .icon {
- transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
- position: absolute;
- top: 0;
- bottom: 0;
- margin: auto;
- background: #fff;
-}
-
-button.learn-more .circle .icon.arrow {
- transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
- left: 0.625rem;
- width: 1.125rem;
- height: 0.125rem;
- background: none;
-}
-
-button.learn-more .circle .icon.arrow::before {
- position: absolute;
- content: "";
- top: -0.29rem;
- right: 0.0625rem;
- width: 0.625rem;
- height: 0.625rem;
- border-top: 0.125rem solid #fff;
- border-right: 0.125rem solid #fff;
- transform: rotate(45deg);
-}
-
-button.learn-more .button-text {
- transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
- position: absolute;
- top: 0;
- left: 0;
- right: 0;
- bottom: 0;
- padding: 0.75rem 0;
- margin: 0 0 0 1.85rem;
- color: #dfe7e6;
- font-weight: 700;
- line-height: 1.6;
- text-align: center;
- text-transform: uppercase;
-}
-
-button:hover .circle {
- width: 100%;
-}
-
-button:hover .circle .icon.arrow {
- background: #fff;
- transform: translate(1rem, 0);
-}
-
-button:hover .button-text {
- color:rgba(0, 255, 136, 0.7);
-}
-
-
-
-
-
-
-
-.btn {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 13rem;
-  overflow: hidden;
-  height: 3rem;
-  background-size: 300% 300%;
   cursor: pointer;
-  backdrop-filter: blur(1rem);
-  border-radius: 5rem;
-  transition: 0.5s;
-  animation: gradient_301 5s ease infinite;
-  border: double 4px transparent;
-  background-image: linear-gradient(#212121, #212121),
-    linear-gradient(
-      137.48deg,
-      #ffdb3b 10%,
-      #fe53bb 45%,
-      #8f51ea 67%,
-      #0044ff 87%
-    );
-  background-origin: border-box;
-  background-clip: content-box, border-box;
-}
-
-#container-stars {
-  position: absolute;
-  z-index: -1;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  transition: 0.5s;
-  backdrop-filter: blur(1rem);
-  border-radius: 5rem;
-}
-
-strong {
-  z-index: 2;
-  font-family: "Avalors Personal Use";
-  font-size: 17px;
-  letter-spacing: 3px;
-  color: #ffffff;
-  text-shadow: 0 0 4px white;
-}
-
-#glow {
-  position: absolute;
   display: flex;
-  width: 12rem;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
 }
 
-.circle {
-  width: 100%;
-  height: 30px;
-  filter: blur(2rem);
-  animation: pulse_3011 4s infinite;
-  z-index: -1;
+.btn-sync:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: rotate(180deg);
 }
 
-.circle:nth-of-type(1) {
-  background: rgba(254, 83, 186, 0.636);
+.icon-sync {
+  font-size: 18px;
+  line-height: 1;
 }
 
-.circle:nth-of-type(2) {
-  background: rgba(142, 81, 234, 0.704);
+/* Features List */
+.features-list {
+  padding: 10px 0;
+  flex: 1;
 }
 
-.btn:hover #container-stars {
-  z-index: 1;
-  background-color: #212121;
+.feature-item {
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
 }
 
-.btn:hover {
-  transform: scale(1.1);
+.feature-item:last-child {
+  border-bottom: none;
 }
 
-.btn:active {
-  border: double 4px #fe53bb;
-  background-origin: border-box;
-  background-clip: content-box, border-box;
-  animation: none;
+.feature-info {
+  display: flex;
+  flex-direction: column;
 }
 
-.btn:active .circle {
-  background: #fe53bb;
+.feature-name {
+  font-weight: 500;
+  font-size: 14px;
 }
 
-#stars {
+.feature-sub {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* Clean Toggle Switch */
+.toggle-switch {
   position: relative;
-  background: transparent;
-  width: 200rem;
-  height: 200rem;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
 }
 
-#stars::after {
-  content: "";
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
   position: absolute;
-  top: -10rem;
-  left: -100rem;
-  width: 100%;
-  height: 100%;
-  animation: animStarRotate 90s linear infinite;
-}
-
-#stars::after {
-  background-image: radial-gradient(#ffffff 1px, transparent 1%);
-  background-size: 50px 50px;
-}
-
-#stars::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -50%;
-  width: 170%;
-  height: 500%;
-  animation: animStar 60s linear infinite;
-}
-
-#stars::before {
-  background-image: radial-gradient(#ffffff 1px, transparent 1%);
-  background-size: 50px 50px;
-  opacity: 0.5;
-}
-
-@keyframes animStar {
-  from {
-    transform: translateY(0);
-  }
-
-  to {
-    transform: translateY(-135rem);
-  }
-}
-
-@keyframes animStarRotate {
-  from {
-    transform: rotate(360deg);
-  }
-
-  to {
-    transform: rotate(0);
-  }
-}
-
-@keyframes gradient_301 {
-  0% {
-    background-position: 0% 50%;
-  }
-
-  50% {
-    background-position: 100% 50%;
-  }
-
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-@keyframes pulse_3011 {
-  0% {
-    transform: scale(0.75);
-    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.7);
-  }
-
-  70% {
-    transform: scale(1);
-    box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
-  }
-
-  100% {
-    transform: scale(0.75);
-    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
-  }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-.container {
-  position: absolute;
+  cursor: pointer;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(
-      ellipse at 20% 30%,
-      rgba(138, 43, 226, 0.8) 0%,
-      rgba(138, 43, 226, 0) 60%
-    ),
-    radial-gradient(
-      ellipse at 80% 50%,
-      rgba(0, 191, 255, 0.7) 0%,
-      rgba(0, 191, 255, 0) 70%
-    ),
-    radial-gradient(
-      ellipse at 50% 80%,
-      rgba(50, 205, 50, 0.6) 0%,
-      rgba(50, 205, 50, 0) 65%
-    ),
-    linear-gradient(135deg, #000000 0%, #0a0520 100%);
-  background-blend-mode: overlay, screen, hard-light;
-  overflow: hidden;
-  animation: aurora-drift 25s infinite alternate ease-in-out;
+  right: 0;
+  bottom: 0;
+  background-color: var(--toggle-inactive);
+  transition: .4s;
+  border-radius: 34px;
 }
 
-.container::before {
-  content: "";
+.slider:before {
   position: absolute;
-  width: 200%;
-  height: 200%;
-  top: -50%;
-  left: -50%;
-  background: repeating-linear-gradient(
-      45deg,
-      rgba(255, 255, 255, 0.02) 0px,
-      rgba(255, 255, 255, 0.02) 1px,
-      transparent 1px,
-      transparent 40px
-    ),
-    repeating-linear-gradient(
-      -45deg,
-      rgba(255, 255, 255, 0.03) 0px,
-      rgba(255, 255, 255, 0.03) 1px,
-      transparent 1px,
-      transparent 60px
-    );
-  animation: grid-shift 20s linear infinite;
-}
-
-.container::after {
   content: "";
-  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: var(--toggle-thumb);
+  transition: .4s;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+input:checked+.slider {
+  background-color: var(--toggle-active);
+}
+
+input:checked+.slider:before {
+  transform: translateX(20px);
+}
+
+/* Footer */
+.popup-footer {
+  padding: 0;
+  /* Remove padding for full button */
+  background-color: var(--bg-sidebar);
+  /* Match header */
+  border-top: none;
+}
+
+.link-btn {
+  background: var(--bg-sidebar);
+  /* Match header */
+  border: none;
+  color: #FFFFFF;
+  /* White text */
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   width: 100%;
-  height: 100%;
-  background: radial-gradient(
-    circle at center,
-    transparent 70%,
-    rgba(10, 5, 32, 0.9) 100%
-  );
-  animation: aurora-pulse 8s infinite alternate;
+  padding: 16px;
+  transition: background 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-@keyframes aurora-drift {
-  0% {
-    background-position:
-      0% 0%,
-      0% 0%,
-      0% 0%;
-    filter: hue-rotate(0deg) brightness(1);
-  }
-  50% {
-    background-position:
-      -10% -5%,
-      5% 10%,
-      0% 15%;
-    filter: hue-rotate(30deg) brightness(1.2);
-  }
-  100% {
-    background-position:
-      5% 10%,
-      -10% -5%,
-      15% 0%;
-    filter: hue-rotate(60deg) brightness(1);
-  }
+.link-btn:hover {
+  background-color: #2c3142;
+  /* Slightly lighter */
+  text-decoration: none;
 }
 
-@keyframes grid-shift {
-  0% {
-    transform: translate(0, 0);
-  }
-  100% {
-    transform: translate(-50%, -50%);
-  }
-}
-
-@keyframes aurora-pulse {
-  0% {
-    opacity: 0.8;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.5;
-    transform: scale(1.05);
-  }
-  100% {
-    opacity: 0.8;
-    transform: scale(1);
-  }
+.link-btn svg {
+  stroke: currentColor;
 }
