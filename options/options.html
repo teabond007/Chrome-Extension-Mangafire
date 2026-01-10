@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="import-export.css">
 </head>
 
 <body>
@@ -52,7 +53,7 @@
                     <span class="icon-moon">🌙</span>
                     <span class="label">Toggle Theme</span>
                 </button>
-                <div class="version-info">Version 3.0.1</div>
+                <div class="version-info">Version 3.3.0</div>
             </div>
         </aside>
 
@@ -76,6 +77,15 @@
                         <div class="card-header">
                             <div class="card-icon">⚙️</div>
                             <h3>General Preferences</h3>
+                            <button class="info-redirect-btn" data-target="guide-general"
+                                title="How to use General Preferences">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                </svg>
+                            </button>
                         </div>
                         <div class="card-body">
                             <div class="input-group-row">
@@ -121,6 +131,15 @@
                         <div class="card-header">
                             <div class="card-icon">🎨</div>
                             <h3>Custom Markers</h3>
+                            <button class="info-redirect-btn" data-target="guide-markers"
+                                title="How to use Custom Markers">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                </svg>
+                            </button>
                         </div>
                         <div class="card-body">
                             <div class="feature-toggle-header">
@@ -185,6 +204,14 @@
                             <div class="card-header">
                                 <div class="card-icon">🔄</div>
                                 <h3>Auto Sync</h3>
+                                <button class="info-redirect-btn" data-target="guide-sync" title="How to use Auto Sync">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                    </svg>
+                                </button>
                             </div>
                             <div class="card-body">
                                 <div class="feature-toggle-header">
@@ -217,6 +244,15 @@
                             <div class="card-header">
                                 <div class="card-icon">⚙️</div>
                                 <h3>Display Settings</h3>
+                                <button class="info-redirect-btn" data-target="guide-personalization"
+                                    title="How to adjust Display settings">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                    </svg>
+                                </button>
                             </div>
                             <div class="card-body">
                                 <div class="feature-toggle-header">
@@ -288,6 +324,7 @@
                 </header>
 
                 <div class="content-grid">
+                    <!-- Project Info Card (Restored) -->
                     <div class="card">
                         <div class="card-body prose">
                             <h2>MangaFire Bookmark Color Marker</h2>
@@ -336,6 +373,92 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- User Guide Header -->
+                    <div class="section-title-full">
+                        <h2 class="section-label">User Guide & Feature Help</h2>
+                    </div>
+
+                    <!-- Guide Grid -->
+                    <div class="guide-grid">
+                        <!-- Auto Sync Guide -->
+                        <div id="guide-sync" class="card guide-card">
+                            <div class="card-header">
+                                <div class="card-icon">🔄</div>
+                                <h3>Auto Sync</h3>
+                            </div>
+                            <div class="card-body">
+                                <p class="guide-text">Automatically retrieves your latest bookmarks from MangaFire. You
+                                    can set the interval (in days) for how often the background sync should trigger.
+                                    Requires you to be logged into the site.</p>
+                            </div>
+                        </div>
+
+                        <!-- Custom Markers Guide -->
+                        <div id="guide-markers" class="card guide-card">
+                            <div class="card-header">
+                                <div class="card-icon">🎨</div>
+                                <h3>Custom Markers</h3>
+                            </div>
+                            <div class="card-body">
+                                <p class="guide-text">Go beyond default statuses! Create markers like "Favorite", "Top
+                                    Tier", or "To-Read". You can customize the color and border style (dashed, double,
+                                    etc.) for each marker.</p>
+                            </div>
+                        </div>
+
+                        <!-- General Preferences Guide -->
+                        <div id="guide-general" class="card guide-card">
+                            <div class="card-header">
+                                <div class="card-icon">⚙️</div>
+                                <h3>General Preferences</h3>
+                            </div>
+                            <div class="card-body">
+                                <p class="guide-text">Toggle <b>Mark Homepage</b> to see highlights on the front page.
+                                    Use <b>Sync & Mark Read</b> to track history. <b>Family Friendly</b> mode hides
+                                    entries with adult-only tags.</p>
+                            </div>
+                        </div>
+
+                        <!-- Saved Entries Guide -->
+                        <div id="guide-entries" class="card guide-card">
+                            <div class="card-header">
+                                <div class="card-icon">📚</div>
+                                <h3>Saved Entries</h3>
+                            </div>
+                            <div class="card-body">
+                                <p class="guide-text">Your local manga library. Synchronize with AniList to get cover
+                                    images and metadata. Use filters to browse your collection by status, format, or
+                                    name.</p>
+                            </div>
+                        </div>
+
+                        <!-- Import & Export Guide -->
+                        <div id="guide-backup" class="card guide-card">
+                            <div class="card-header">
+                                <div class="card-icon">💾</div>
+                                <h3>Backup & Restore</h3>
+                            </div>
+                            <div class="card-body">
+                                <p class="guide-text">Always keep a backup! <b>Export</b> saves your bookmarks,
+                                    settings, and cache. <b>Import</b> allows you to restore data or merge backups from
+                                    different devices.</p>
+                            </div>
+                        </div>
+
+                        <!-- Dark Mode & Theme Guide -->
+                        <div id="guide-personalization" class="card guide-card">
+                            <div class="card-header">
+                                <div class="card-icon">🌙</div>
+                                <h3>Personalization</h3>
+                            </div>
+                            <div class="card-body">
+                                <p class="guide-text">Switch between light and dark modes in the sidebar. You can also
+                                    adjust the thickness of the manga highlight borders to suit your visual preference.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -355,7 +478,19 @@
                         <div class="library-title-section">
                             <div class="library-icon">📚</div>
                             <div class="library-title-text">
-                                <h2>Your Library</h2>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <h2>Your Library</h2>
+                                    <button class="info-redirect-btn" data-target="guide-entries"
+                                        title="How to use Saved Entries">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                        </svg>
+                                    </button>
+                                </div>
                                 <p class="library-subtitle" id="library-subtitle">Loading...</p>
                             </div>
                         </div>
@@ -438,7 +573,19 @@
                                 </svg>
                             </div>
                             <div class="card-title-group">
-                                <h3>Export Data</h3>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <h3>Export Data</h3>
+                                    <button class="info-redirect-btn" data-target="guide-backup"
+                                        title="About Backup & Restore">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                        </svg>
+                                    </button>
+                                </div>
                                 <p class="description compact">Generate a backup of your entire library and history.</p>
                             </div>
                         </div>
@@ -479,7 +626,19 @@
                                 </svg>
                             </div>
                             <div class="card-title-group">
-                                <h3>Import Data</h3>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <h3>Import Data</h3>
+                                    <button class="info-redirect-btn" data-target="guide-backup"
+                                        title="About Backup & Restore">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                        </svg>
+                                    </button>
+                                </div>
                                 <p class="description compact">Restore your data from a previously exported file.</p>
                             </div>
                         </div>
@@ -511,7 +670,7 @@
                                     <span class="slider round"></span>
                                 </label>
                             </div>
-                            <button id="importDataBtn" class="btn btn-white btn-with-icon">
+                            <button id="startImportBtn" class="btn btn-white btn-with-icon">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -541,6 +700,7 @@
     </div>
 
     <script src="anilist-api.js"></script>
+    <script src="import-export.js"></script>
     <script src="savedentries.js"></script>
     <script src="options.js"></script>
 </body>

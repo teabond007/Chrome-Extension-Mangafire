@@ -229,25 +229,32 @@ function createMangaCard(entry) {
   card.dataset.title = entry.title;
 
   const aniData = entry.anilistData;
+  const statusInfo = getStatusInfo(entry.status, entry.customMarker);
 
-  // Apply custom marker border
+  // Apply styles directly for dynamic coloring
+  card.style.border = `2px solid ${statusInfo.borderColor}`;
+  if (statusInfo.borderStyle) {
+    card.style.borderStyle = statusInfo.borderStyle;
+  }
+  
   if (entry.customMarker) {
-    const marker = customMarkers.find(m => m.name === entry.customMarker);
-    if (marker) {
-      card.classList.add("has-custom-marker");
-      card.style.borderColor = marker.color;
-      card.style.borderStyle = marker.style || "solid";
-    }
+    card.classList.add("has-custom-marker");
   }
 
   // Create cover section
   const cover = createCardCover(entry, aniData);
   card.appendChild(cover);
 
+  // Status dot update: find dot and apply color
+  const statusDot = cover.querySelector('.card-status-dot');
+  if (statusDot) {
+    statusDot.style.backgroundColor = statusInfo.borderColor;
+  }
+
   // Create body section
-  const body = createCardBody(entry, aniData);
+  const body = createCardBody(entry, aniData, statusInfo);
   card.appendChild(body);
-  card.style.border = `2px solid ${getStatusClassColor(entry.status)}`;
+  
   return card;
 }
 
@@ -265,7 +272,7 @@ function createCardCover(entry, aniData) {
 
   // Status dot indicator
   const statusDot = document.createElement("div");
-  statusDot.className = `card-status-dot ${getStatusDotClass(entry.status)}`;
+  statusDot.className = "card-status-dot";
   cover.appendChild(statusDot);
 
   // Hover actions
@@ -309,7 +316,7 @@ function createCardActions(entry, aniData) {
 /**
  * Create card body with title, status, and metadata
  */
-function createCardBody(entry, aniData) {
+function createCardBody(entry, aniData, statusInfo) {
   const body = document.createElement("div");
   body.className = "manga-card-body";
 
@@ -321,23 +328,28 @@ function createCardBody(entry, aniData) {
   body.appendChild(title);
 
   // Metadata section
-  const meta = createCardMeta(entry, aniData);
+  const meta = createCardMeta(entry, aniData, statusInfo);
   body.appendChild(meta);
-  body.style.border = `2px solid ${getStatusClass(entry.status)}`;
+  
   return body;
 }
 
 /**
  * Create card metadata (status badge, format, chapters)
  */
-function createCardMeta(entry, aniData) {
+function createCardMeta(entry, aniData, statusInfo) {
   const meta = document.createElement("div");
   meta.className = "manga-card-meta";
 
   // Saved status badge
   const savedStatus = document.createElement("span");
-  savedStatus.className = `manga-card-status ${getStatusClass(entry.status)}`;
+  savedStatus.className = "manga-card-status";
   savedStatus.textContent = entry.status;
+  
+  // Apply dynamic background and text color
+  savedStatus.style.backgroundColor = statusInfo.badgeBg;
+  savedStatus.style.color = statusInfo.badgeText;
+  
   meta.appendChild(savedStatus);
 
   // AniList details
@@ -409,42 +421,58 @@ function showMarkerSelector(entry) {
 }
 
 /**
- * Get CSS class for status dot indicator
+ * Unified status info resolver
+ * Prioritizes custom bookmarks/markers over default statuses
  */
-function getStatusDotClass(status) {
+function getStatusInfo(status, customMarkerName) {
   const statusLower = status.toLowerCase();
-  if (statusLower.includes("reading")) return "status-dot-reading";
-  else if (statusLower.includes("read")) return "status-dot-read";
-  else if (statusLower.includes("completed")) return "status-dot-completed";
-  else if (statusLower.includes("dropped")) return "status-dot-dropped";
-  else if (statusLower.includes("hold")) return "status-dot-onhold";
-  else if (statusLower.includes("plan")) return "status-dot-planning";
-  return "status-dot-default";
-}
+  
+  // 1. Check if status itself is a custom marker
+  let marker = customMarkers.find(m => m.name.toLowerCase() === statusLower);
+  
+  // 2. If not, check if there is an explicit custom marker attached
+  if (!marker && customMarkerName) {
+    marker = customMarkers.find(m => m.name === customMarkerName);
+  }
 
-/**
- * Get CSS class for status badge
- */
-function getStatusClass(status) {
-  const statusLower = status.toLowerCase();
-  if (statusLower.includes("reading")) return "status-reading";
-  else if (statusLower.includes("read")) return "status-read";
-  else if (statusLower.includes("completed")) return "status-completed";
-  else if (statusLower.includes("dropped")) return "status-dropped";
-  else if (statusLower.includes("hold")) return "status-onhold";
-  else if (statusLower.includes("plan")) return "status-planning";
-  return "";
-}
+  if (marker) {
+    return {
+      borderColor: marker.color,
+      borderStyle: marker.style || "solid",
+      badgeBg: `${marker.color}26`, // 15% opacity
+      badgeText: marker.color
+    };
+  }
 
-function getStatusClassColor(status) {
-  const statusLower = status.toLowerCase();
-  if (statusLower.includes("reading")) return "green";
-  else if (statusLower.includes("read")) return "gray";
-  else if (statusLower.includes("completed")) return "blue";
-  else if (statusLower.includes("dropped")) return "red";
-  else if (statusLower.includes("hold")) return "orange";
-  else if (statusLower.includes("plan")) return "purple";
-  return "";
+  // 3. Fallback to default status colors
+  const DEFAULT_STATUS_COLORS = {
+    reading: { color: "#4CAF50", bg: "rgba(76, 175, 80, 0.15)" },
+    read: { color: "#9f9f9f", bg: "rgba(159, 159, 159, 0.15)" },
+    completed: { color: "#2196F3", bg: "rgba(33, 150, 243, 0.15)" },
+    dropped: { color: "#F44336", bg: "rgba(244, 67, 54, 0.15)" },
+    onhold: { color: "#FFC107", bg: "rgba(255, 193, 7, 0.15)" },
+    planning: { color: "#9C27B0", bg: "rgba(156, 39, 176, 0.15)" },
+    default: { color: "#8B95A5", bg: "rgba(139, 149, 165, 0.15)" }
+  };
+
+  let type = "default";
+  if (statusLower.includes("reading")) type = "reading";
+  else if (statusLower.includes("reading") || statusLower === "read") type = "read"; // Note: 'reading' check duplicate, but prioritizing specific 'read'
+  else if (statusLower.includes("completed")) type = "completed";
+  else if (statusLower.includes("dropped")) type = "dropped";
+  else if (statusLower.includes("hold")) type = "onhold";
+  else if (statusLower.includes("plan")) type = "planning";
+  
+  // Fix for 'read' vs 'reading'
+  if (statusLower === "read") type = "read";
+
+  const config = DEFAULT_STATUS_COLORS[type];
+  return {
+    borderColor: config.color,
+    borderStyle: "solid",
+    badgeBg: config.bg,
+    badgeText: config.color
+  };
 }
 
 /**
