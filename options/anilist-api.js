@@ -30,7 +30,7 @@ const SEARCH_MANGA_QUERY = `
 // Rate limiting configuration
 let lastRequestTime = 0;
 const MIN_REQUEST_INTERVAL = 2000; // Increased to 2 seconds for reliability
-const MAX_RETRIES = 5; // Increased retries for rate limit handling
+const MAX_RETRIES = 3; // Increased retries for rate limit handling
 const RETRY_DELAY_BASE = 3000; // Increased base delay
 
 /**

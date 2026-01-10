@@ -2,7 +2,7 @@
 
 A powerful Chrome Extension for [MangaFire.to](https://mangafire.to/home) that enhances your browsing experience by automatically highlighting manga based on your bookmarks and reading history.
 
-![Extension Preview](ExtensioExampleWritten.png)
+![Extension Preview](images/ExtensioExampleWritten.png)
 
 ## 🚀 Why Use This?
 Finding new manga to read can be frustrating when you can't instantly see what you've already read or saved. MangaFire's default interface doesn't always make this clear at a glance. 

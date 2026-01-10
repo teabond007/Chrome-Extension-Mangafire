@@ -186,6 +186,10 @@ body.dark-mode .theme-toggle .icon-sun {
 
 .header {
     margin-bottom: 30px;
+    display:flex;
+    flex-direction:row;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .header h1 {

@@ -79,7 +79,7 @@
                                     <div class="toggle-label-group">
                                         <label for="MarkHomePage" class="toggle-main-label">Mark Homepage</label>
                                         <span class="toggle-sub-label">Highlight manga on the homepage
-                                            (Experimental)</span>
+                                            </span>
                                     </div>
                                     <label class="switch">
                                         <input type="checkbox" id="MarkHomePage">
@@ -258,7 +258,7 @@
                                 </ul>
                             </div>
                             <div class="action-section">
-                                <button id="sendMessageBtn" class="btn btn-warning-large">
+                                <button id="sendMessageBtnSyncBookmarks" class="btn btn-warning-large">
                                     ⚡ Sync Bookmarks Now
                                 </button>
                                 <p class="tiny-text">Last synced: Check logs below</p>
@@ -342,6 +342,7 @@
                         <h1>Saved Entries</h1>
                         <p class="subtitle">Browse and manage your manga library</p>
                     </div>
+                    <button id="BtnTrashAndSyncEntries" class="btn btn-warning-large">⚡Fresh Sync Entries</button>
                 </header>
 
                 <div class="content-grid" style="max-width: 100%;">
@@ -415,6 +416,7 @@
     </div>
 
     <script src="anilist-api.js"></script>
+    <script src="savedentries.js"></script>
     <script src="options.js"></script>
 </body>
 
