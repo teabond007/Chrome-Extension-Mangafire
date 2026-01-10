@@ -36,6 +36,10 @@
                     <span class="nav-icon">&#128218;</span>
                     Saved Entries
                 </a>
+                <a href="#" class="nav-item" data-tab="import-export">
+                    <span class="nav-icon">&#128194;</span>
+                    Import & Export
+                </a>
                 <a href="#" class="nav-item" data-tab="about">
                     <span class="nav-icon">ℹ️</span>
                     About
@@ -79,7 +83,7 @@
                                     <div class="toggle-label-group">
                                         <label for="MarkHomePage" class="toggle-main-label">Mark Homepage</label>
                                         <span class="toggle-sub-label">Highlight manga on the homepage
-                                            </span>
+                                        </span>
                                     </div>
                                     <label class="switch">
                                         <input type="checkbox" id="MarkHomePage">
@@ -410,9 +414,130 @@
                     </div>
                 </div>
             </div>
-    </div>
 
-    </main>
+            <!-- Import/Export Tab -->
+            <div id="tab-import-export" class="tab-pane fade-in" style="display: none;">
+                <header class="header">
+                    <div class="header-text">
+                        <h1>Import & Export</h1>
+                        <p class="subtitle">Manage your manga bookmarks and reading history. Keep your data safe or
+                            transfer it to another machine.</p>
+                    </div>
+                </header>
+
+                <div class="content-grid export-import-grid">
+                    <!-- Export Card -->
+                    <div class="card secondary-bg-card">
+                        <div class="card-header">
+                            <div class="card-icon blue-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                            </div>
+                            <div class="card-title-group">
+                                <h3>Export Data</h3>
+                                <p class="description compact">Generate a backup of your entire library and history.</p>
+                            </div>
+                        </div>
+
+                        <div class="inner-info-card">
+                            <div class="format-info">
+                                <span class="label-info">Target Format: <span class="highlight-text">JSON</span></span>
+                                <p class="sub-description">Includes: Bookmarks, Reading Status, Tags, and Custom Notes.
+                                </p>
+                            </div>
+                            <button id="exportDataBtn" class="btn btn-primary btn-with-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                Export Data
+                            </button>
+                        </div>
+
+                        <div class="card-footer-info">
+                            <span class="status-icon">ℹ️</span>
+                            <span class="status-text-muted">Last backup performed: <span
+                                    id="lastBackupDisplay">Never</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Import Card -->
+                    <div class="card secondary-bg-card">
+                        <div class="card-header">
+                            <div class="card-icon purple-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                            </div>
+                            <div class="card-title-group">
+                                <h3>Import Data</h3>
+                                <p class="description compact">Restore your data from a previously exported file.</p>
+                            </div>
+                        </div>
+
+                        <div class="drop-zone-container" id="dropZone">
+                            <input type="file" id="importDataInput" accept=".json" style="display: none;">
+                            <div class="drop-zone-content">
+                                <div class="drop-zone-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                        <line x1="12" y1="18" x2="12" y2="12"></line>
+                                        <polyline points="9 15 12 12 15 15"></polyline>
+                                    </svg>
+                                </div>
+                                <span class="drop-zone-text">Click to upload or drag and drop</span>
+                                <span class="drop-zone-subtext">Supports .json files (max 10MB)</span>
+                            </div>
+                        </div>
+
+                        <div class="import-actions-row">
+                            <div class="feature-toggle-wrapper no-margin">
+                                <div class="toggle-label-group">
+                                    <span class="toggle-main-label">Merge with current data</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="mergeImportToggle" checked>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <button id="importDataBtn" class="btn btn-white btn-with-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                Start Import
+                            </button>
+                        </div>
+
+                        <div class="caution-banner">
+                            <div class="caution-icon">⚠️</div>
+                            <div class="caution-text">
+                                <strong>Caution:</strong> If "Merge with current data" is disabled, all existing
+                                bookmarks will be overwritten by the imported file. This action cannot be undone.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="import-export-footer">
+                        <p>Having issues? Check out our <a href="#">Support Guide</a> or <a href="#">Contact
+                                Developers</a>.</p>
+                    </div>
+                </div>
+            </div>
+
+        </main>
     </div>
 
     <script src="anilist-api.js"></script>

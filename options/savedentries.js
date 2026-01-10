@@ -247,7 +247,7 @@ function createMangaCard(entry) {
   // Create body section
   const body = createCardBody(entry, aniData);
   card.appendChild(body);
-
+  card.style.border = `2px solid ${getStatusClassColor(entry.status)}`;
   return card;
 }
 
@@ -323,7 +323,7 @@ function createCardBody(entry, aniData) {
   // Metadata section
   const meta = createCardMeta(entry, aniData);
   body.appendChild(meta);
-
+  body.style.border = `2px solid ${getStatusClass(entry.status)}`;
   return body;
 }
 
@@ -414,11 +414,11 @@ function showMarkerSelector(entry) {
 function getStatusDotClass(status) {
   const statusLower = status.toLowerCase();
   if (statusLower.includes("reading")) return "status-dot-reading";
-  if (statusLower.includes("read")) return "status-dot-read";
-  if (statusLower.includes("completed")) return "status-dot-completed";
-  if (statusLower.includes("dropped")) return "status-dot-dropped";
-  if (statusLower.includes("hold")) return "status-dot-onhold";
-  if (statusLower.includes("plan")) return "status-dot-planning";
+  else if (statusLower.includes("read")) return "status-dot-read";
+  else if (statusLower.includes("completed")) return "status-dot-completed";
+  else if (statusLower.includes("dropped")) return "status-dot-dropped";
+  else if (statusLower.includes("hold")) return "status-dot-onhold";
+  else if (statusLower.includes("plan")) return "status-dot-planning";
   return "status-dot-default";
 }
 
@@ -428,11 +428,22 @@ function getStatusDotClass(status) {
 function getStatusClass(status) {
   const statusLower = status.toLowerCase();
   if (statusLower.includes("reading")) return "status-reading";
-  if (statusLower.includes("read")) return "status-read";
-  if (statusLower.includes("completed")) return "status-completed";
-  if (statusLower.includes("dropped")) return "status-dropped";
-  if (statusLower.includes("hold")) return "status-onhold";
-  if (statusLower.includes("plan")) return "status-planning";
+  else if (statusLower.includes("read")) return "status-read";
+  else if (statusLower.includes("completed")) return "status-completed";
+  else if (statusLower.includes("dropped")) return "status-dropped";
+  else if (statusLower.includes("hold")) return "status-onhold";
+  else if (statusLower.includes("plan")) return "status-planning";
+  return "";
+}
+
+function getStatusClassColor(status) {
+  const statusLower = status.toLowerCase();
+  if (statusLower.includes("reading")) return "green";
+  else if (statusLower.includes("read")) return "gray";
+  else if (statusLower.includes("completed")) return "blue";
+  else if (statusLower.includes("dropped")) return "red";
+  else if (statusLower.includes("hold")) return "orange";
+  else if (statusLower.includes("plan")) return "purple";
   return "";
 }
 
