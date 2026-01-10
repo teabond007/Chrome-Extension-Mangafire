@@ -198,7 +198,7 @@ function scrapReadMangasFromUnopenedTab(pageIdentefier) {
   });
 }
 
-chrome.runtime.onMessage.addListener((msg, sender) => {
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === "scrapeReadMangas") {
     Log("scrapeReadMangas message received");
     if (msg.value === 0) {
@@ -238,6 +238,10 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
     chrome.tabs.remove(sender.tab.id);
     Log("Tab closed after scraping");
   }
+  
+  // Mandatory response to prevent "The message port closed before a response was received"
+  sendResponse({ status: "received" });
+  return true; 
 });
 
 function Log(txt) {

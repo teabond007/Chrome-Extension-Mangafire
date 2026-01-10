@@ -20,12 +20,9 @@
         <aside class="sidebar">
             <div class="brand">
                 <div class="brand-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M5 5C5 3.89543 5.89543 3 7 3H17C18.1046 3 19 3.89543 19 5V21L12 18L5 21V5Z"
-                            fill="currentColor" />
-                    </svg>
+                    <span class="icon-svg icon-brand"></span>
                 </div>
-                <span class="brand-name">Color Marker</span>
+                <span class="brand-name header-text-gradient">Color Marker</span>
             </div>
 
             <nav class="nav-menu">
@@ -53,7 +50,7 @@
                     <span class="icon-moon">🌙</span>
                     <span class="label">Toggle Theme</span>
                 </button>
-                <div class="version-info">Version 3.3.0</div>
+                <div class="version-info">Version 3.3.5</div>
             </div>
         </aside>
 
@@ -79,12 +76,7 @@
                             <h3>General Preferences</h3>
                             <button class="info-redirect-btn" data-target="guide-general"
                                 title="How to use General Preferences">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <line x1="12" y1="16" x2="12" y2="12"></line>
-                                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                                </svg>
+                                <svg class="icon-svg icon-info" style="width: 16px; height: 16px;"></svg>
                             </button>
                         </div>
                         <div class="card-body">
@@ -133,12 +125,7 @@
                             <h3>Custom Markers</h3>
                             <button class="info-redirect-btn" data-target="guide-markers"
                                 title="How to use Custom Markers">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <line x1="12" y1="16" x2="12" y2="12"></line>
-                                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                                </svg>
+                                <svg class="icon-svg icon-info" style="width: 16px; height: 16px;"></svg>
                             </button>
                         </div>
                         <div class="card-body">
@@ -482,13 +469,7 @@
                                     <h2>Your Library</h2>
                                     <button class="info-redirect-btn" data-target="guide-entries"
                                         title="How to use Saved Entries">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                            stroke-linejoin="round">
-                                            <circle cx="12" cy="12" r="10"></circle>
-                                            <line x1="12" y1="16" x2="12" y2="12"></line>
-                                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                                        </svg>
+                                        <svg class="icon-svg icon-info" style="width: 16px; height: 16px;"></svg>
                                     </button>
                                 </div>
                                 <p class="library-subtitle" id="library-subtitle">Loading...</p>
@@ -515,18 +496,10 @@
                             <input type="text" id="savedSearchInput" placeholder="Search titles..." class="input-field">
                             <div class="view-toggle-group">
                                 <button id="view-compact-btn" class="view-toggle-btn" title="Compact View">
-                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                                        <rect x="1" y="1" width="6" height="6" rx="1" />
-                                        <rect x="9" y="1" width="6" height="6" rx="1" />
-                                        <rect x="1" y="9" width="6" height="6" rx="1" />
-                                        <rect x="9" y="9" width="6" height="6" rx="1" />
-                                    </svg>
+                                    <svg class="icon-svg icon-view-compact"></svg>
                                 </button>
                                 <button id="view-large-btn" class="view-toggle-btn active" title="Large View">
-                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                                        <rect x="1" y="1" width="6" height="13" rx="1" />
-                                        <rect x="9" y="1" width="6" height="13" rx="1" />
-                                    </svg>
+                                    <svg class="icon-svg icon-view-large"></svg>
                                 </button>
                             </div>
                         </div>
@@ -565,12 +538,7 @@
                     <div class="card secondary-bg-card">
                         <div class="card-header">
                             <div class="card-icon blue-icon">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                    <polyline points="17 8 12 3 7 8"></polyline>
-                                    <line x1="12" y1="3" x2="12" y2="15"></line>
-                                </svg>
+                                <svg class="icon-svg icon-export" style="width: 20px; height: 20px;"></svg>
                             </div>
                             <div class="card-title-group">
                                 <div style="display: flex; align-items: center; gap: 8px;">
@@ -597,12 +565,7 @@
                                 </p>
                             </div>
                             <button id="exportDataBtn" class="btn btn-primary btn-with-icon">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                    <polyline points="7 10 12 15 17 10"></polyline>
-                                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                                </svg>
+                                <svg class="icon-svg icon-import" style="width: 16px; height: 16px;"></svg>
                                 Export Data
                             </button>
                         </div>
@@ -618,25 +581,14 @@
                     <div class="card secondary-bg-card">
                         <div class="card-header">
                             <div class="card-icon purple-icon">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                    <polyline points="7 10 12 15 17 10"></polyline>
-                                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                                </svg>
+                                <svg class="icon-svg icon-import" style="width: 20px; height: 20px;"></svg>
                             </div>
                             <div class="card-title-group">
                                 <div style="display: flex; align-items: center; gap: 8px;">
                                     <h3>Import Data</h3>
                                     <button class="info-redirect-btn" data-target="guide-backup"
                                         title="About Backup & Restore">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                            stroke-linejoin="round">
-                                            <circle cx="12" cy="12" r="10"></circle>
-                                            <line x1="12" y1="16" x2="12" y2="12"></line>
-                                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                                        </svg>
+                                        <svg class="icon-svg icon-info" style="width: 16px; height: 16px;"></svg>
                                     </button>
                                 </div>
                                 <p class="description compact">Restore your data from a previously exported file.</p>
@@ -647,13 +599,7 @@
                             <input type="file" id="importDataInput" accept=".json" style="display: none;">
                             <div class="drop-zone-content">
                                 <div class="drop-zone-icon">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                        <polyline points="14 2 14 8 20 8"></polyline>
-                                        <line x1="12" y1="18" x2="12" y2="12"></line>
-                                        <polyline points="9 15 12 12 15 15"></polyline>
-                                    </svg>
+                                    <svg class="icon-svg icon-file" style="width: 24px; height: 24px;"></svg>
                                 </div>
                                 <span class="drop-zone-text">Click to upload or drag and drop</span>
                                 <span class="drop-zone-subtext">Supports .json files (max 10MB)</span>
@@ -671,11 +617,7 @@
                                 </label>
                             </div>
                             <button id="startImportBtn" class="btn btn-white btn-with-icon">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                                </svg>
+                                <svg class="icon-svg icon-plus" style="width: 16px; height: 16px;"></svg>
                                 Start Import
                             </button>
                         </div>
@@ -689,20 +631,19 @@
                         </div>
                     </div>
 
-                    <div class="import-export-footer">
-                        <p>Having issues? Check out our <a href="#">Support Guide</a> or <a href="#">Contact
-                                Developers</a>.</p>
-                    </div>
+
                 </div>
             </div>
 
         </main>
     </div>
 
-    <script src="anilist-api.js"></script>
-    <script src="import-export.js"></script>
-    <script src="savedentries.js"></script>
-    <script src="options.js"></script>
+    <!-- Scroll to Top Button -->
+    <button id="scrollToTopBtn" class="scroll-to-top" title="Go to top">
+        <svg class="icon-svg icon-arrow-up"></svg>
+    </button>
+
+    <script src="options.js" type="module"></script>
 </body>
 
 </html>

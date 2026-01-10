@@ -1,340 +1,59 @@
+/**
+ * Options Page Entry Point (Modular)
+ */
 
+import { initTheme } from './theme-manager.js';
+import { initTabs, initInfoRedirects, initScrollToTop } from './ui-navigation.js';
+import { initFeatureToggles } from './feature-toggles.js';
+import { initSettings } from './settings-manager.js';
+import { initMarkerManager } from './marker-manager.js';
+import { initImportExport } from './import-export.js';
+import { initLibrary } from './library-manager.js';
+import { Log } from './utils.js';
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Theme Handling
-  initTheme();
-  
-  // Navigation
-  initTabs();
+    // 1. Theme
+    initTheme();
 
-  // Feature Toggles (Sync with Popup)
-  initFeatureToggles();
-  
-  // Initialize Rendering
-  LogCustoomBookmarks();
-  initRangeSlider();
-  
-  // Saved Entries
-  initSavedEntries();
+    // 2. Navigation
+    initTabs();
+    initInfoRedirects();
+    initScrollToTop();
 
-  // Import & Export
-  initImportExport();
+    // 3. Settings & Toggles
+    initFeatureToggles();
+    initSettings();
 
-  // Info Redirects
-  initInfoRedirects();
-});
+    // 4. Custom Markers
+    initMarkerManager();
 
-// --- Feature Toggles Logic ---
-function initFeatureToggles() {
-    const features = [
-        { id: "MarkHomePage", storageKey: "MarkHomePagefeatureEnabled" },
-        { id: "SyncandMarkRead", storageKey: "SyncandMarkReadfeatureEnabled" },
-        { id: "CustomBookmarks", storageKey: "CustomBookmarksfeatureEnabled" },
-        { id: "AutoSync", storageKey: "AutoSyncfeatureEnabled" },
-        { id: "CustomBorderSize", storageKey: "CustomBorderSizefeatureEnabled" },
-        { id: "FamilyFriendly", storageKey: "FamilyFriendlyfeatureEnabled" }
-    ];
+    // 5. Import / Export
+    initImportExport();
 
-    features.forEach(feature => {
-        const toggle = document.getElementById(feature.id);
-        if(!toggle) return;
+    // 6. Saved Entries
+    initLibrary();
 
-        // Load initial state
-        chrome.storage.local.get(feature.storageKey, (data) => {
-             toggle.checked = data[feature.storageKey] || false; 
-        });
-
-        // Listen for changes
-        toggle.addEventListener("change", () => {
-             const update = {};
-             update[feature.storageKey] = toggle.checked;
-             chrome.storage.local.set(update);
-        });
-    });
-    
-    // Sync across pages (if popup changes it)
-    chrome.storage.onChanged.addListener((changes, area) => {
-        if (area === 'local') {
-            features.forEach(feature => {
-                if (changes[feature.storageKey]) {
-                    const toggle = document.getElementById(feature.id);
-                    if(toggle) toggle.checked = changes[feature.storageKey].newValue;
+    // 7. Manual Sync Button
+    const syncBtn = document.getElementById("sendMessageBtnSyncBookmarks");
+    if (syncBtn) {
+        syncBtn.addEventListener("click", () => {
+            Log("Requesting bookmark sync...");
+            chrome.runtime.sendMessage({ type: "scrapeBookmarks", value: 1 }, (response) => {
+                if (chrome.runtime.lastError) {
+                    Log("Error: " + chrome.runtime.lastError.message);
+                } else {
+                    Log("Sync process initiated...");
                 }
             });
-        }
-    });
-}
-
-
-// --- Tab Navigation ---
-function initTabs() {
-  const navItems = document.querySelectorAll('.nav-item');
-  const tabPanes = document.querySelectorAll('.tab-pane');
-  
-  navItems.forEach(item => {
-    item.addEventListener('click', (e) => {
-      e.preventDefault();
-      
-      const targetTab = item.getAttribute('data-tab');
-      if (!targetTab) return; // Ignore links without tab data
-      
-      // Update Nav State
-      navItems.forEach(nav => nav.classList.remove('active'));
-      item.classList.add('active');
-      
-      // Update Tab Content
-      tabPanes.forEach(pane => {
-        if (pane.id === `tab-${targetTab}`) {
-          pane.style.display = 'block';
-          // Small delay to trigger animation if class is used
-          setTimeout(() => pane.classList.add('active'), 10);
-        } else {
-          pane.style.display = 'none';
-          pane.classList.remove('active');
-        }
-      });
-    });
-  });
-}
-
-// --- Theme Logic ---
-function initTheme() {
-  const themeToggleBtn = document.getElementById("themeToggleBtn");
-  const body = document.body;
-
-  // Check storage or system preference
-  chrome.storage.local.get("theme", (data) => {
-    if (data.theme === "dark") {
-      body.classList.add("dark-mode");
-    } else if (data.theme === "light") {
-      body.classList.remove("dark-mode");
-    } else {
-      // System Default
-      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        body.classList.add("dark-mode");
-      }
-    }
-  });
-
-  // Toggle Listener
-  themeToggleBtn.addEventListener("click", () => {
-    body.classList.toggle("dark-mode");
-    const isDark = body.classList.contains("dark-mode");
-    chrome.storage.local.set({ theme: isDark ? "dark" : "light" });
-  });
-}
-
-// --- Range Slider Logic ---
-function initRangeSlider() {
-  const slider = document.getElementById("BorderSetSize");
-  const display = document.getElementById("rangeValueDisplay");
-  
-  if (slider && display) {
-    // Update display on slide
-    slider.addEventListener("input", (e) => {
-      display.textContent = `${e.target.value}px`;
-    });
-    
-    // Set initial display based on loaded value (async)
-    chrome.storage.local.get("CustomBorderSize", (data) => {
-      const val = data.CustomBorderSize || 4;
-      slider.value = val;
-      display.textContent = `${val}px`;
-    });
-  }
-}
-
-// --- Logging Utility ---
-function Log(txt) {
-  const logContainer = document.getElementById("logContainer");
-  if (!logContainer) return;
-  const logLine = document.createElement("div");
-  logLine.textContent = `> ${txt}`;
-  logContainer.appendChild(logLine);
-  logContainer.scrollTop = logContainer.scrollHeight;
-}
-
-// --- Event Listeners ---
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg.type === "log") {
-    Log(msg.text);
-  }
-});
-
-document.getElementById("sendMessageBtnSyncBookmarks").addEventListener("click", () => {
-  chrome.runtime.sendMessage({ type: "scrapeBookmarks", value: 1 });
-  Log("Sync started manually...");
-});
-
-
-document.getElementById("resetBookmarkButton").addEventListener("click", () => {
-  if(confirm("Are you sure you want to remove all custom markers?")) {
-    chrome.storage.local.remove("customBookmarks");
-    Log("All custom markers removed.");
-    location.reload();
-  }
-});
-
-document.getElementById("addBookmarkButton").addEventListener("click", () => {
-  console.log("Add Bookmark button clicked");
-  const bookmarkName = document.getElementById("bookmarkName").value;
-  const bookmarkColor = document.getElementById("colorBookmarks").value;
-  const borderStyle = document.getElementById("customBorderStyleSelect").value;
-  
-  if (bookmarkName && bookmarkColor) {
-    chrome.storage.local.get("customBookmarks", (data) => {
-      const existing = Array.isArray(data.customBookmarks)
-        ? data.customBookmarks
-        : [];
-      const newBookmark = { name: bookmarkName, color: bookmarkColor, style: borderStyle };
-      const combined = [...existing, newBookmark];
-      chrome.storage.local.set({ customBookmarks: combined }, () => {
-        Log(`Added marker: ${bookmarkName}`);
-        document.getElementById("bookmarkName").value = ""; // Clear input field
-        document.getElementById("colorBookmarks").value = "#ff0000"; // Reset color picker
-      });
-    });
-  } else {
-    alert("Please enter a name for the marker.");
-  }
-  setTimeout(LogCustoomBookmarks, 200);
-});
-
-// --- Bookmark Rendering (Pills) ---
-function LogCustoomBookmarks() {
-  chrome.storage.local.get("customBookmarks", (data) => {
-    const bookmarks = data.customBookmarks || [];
-    const container = document.getElementById("CustomBookmarksContainer");
-    
-    // Clear previous content
-    while (container.firstChild) {
-        container.removeChild(container.firstChild);
-    }
-
-    if (bookmarks.length === 0) {
-        // Updated empty state message
-        const emptyMsg = document.createElement("span");
-        emptyMsg.className = "description";
-        emptyMsg.style.margin = "0";
-        emptyMsg.textContent = "No active markers.";
-        container.appendChild(emptyMsg);
-        return;
-    }
-
-    bookmarks.forEach((bookmark, index) => {
-      // Create Pill
-      const pill = document.createElement("div");
-      pill.className = "marker-pill";
-      pill.style.backgroundColor = `${bookmark.color}33`;
-      console.log("Bookmark color:", bookmark.color);
-      pill.style.border = `2px ${bookmark.style} ${bookmark.color}CC`;
-      pill.textContent = bookmark.name;
-      pill.title = "Click to remove"; // Tooltip
-      
-      // Individual Delete Listener
-      pill.addEventListener("click", () => {
-          if(confirm(`Remove marker "${bookmark.name}"?`)) {
-              removeBookmark(index);
-          }
-      });
-      
-      container.appendChild(pill);
-    });
-  });
-}
-
-function removeBookmark(index) {
-    chrome.storage.local.get("customBookmarks", (data) => {
-        const bookmarks = data.customBookmarks || [];
-        if (index >= 0 && index < bookmarks.length) {
-            bookmarks.splice(index, 1);
-            chrome.storage.local.set({ customBookmarks: bookmarks }, () => {
-                 Log("Marker removed.");
-                 LogCustoomBookmarks(); // Re-render
-            });
-        }
-    });
-}
-
-
-// --- Auto Sync Logic ---
-const AutoSyncSetDaysButton = document.getElementById("AutoSyncSetDaysButton");
-const AutoSyncSetDaysinput = document.getElementById("AutoSyncSetDays");
-const container1 = document.getElementById("logContainerSetDays");
-
-chrome.storage.local.get("SyncEverySetDate", (data) => {
-  if(AutoSyncSetDaysinput) AutoSyncSetDaysinput.value = data.SyncEverySetDate || 30; 
-});
-
-if(AutoSyncSetDaysButton) {
-    AutoSyncSetDaysButton.addEventListener("click", () => {
-        chrome.storage.local.set({ SyncEverySetDate: AutoSyncSetDaysinput.value });
-        container1.textContent = "Saved: Auto Sync every " + AutoSyncSetDaysinput.value + " days.";
-        setTimeout(() => container1.textContent = "", 3000);
-    });
-}
-
-document.getElementById("AutoSyncSetDaysButtonReset").addEventListener("click", () => {
-    chrome.storage.local.set({ SyncEverySetDate: 30 });
-    if(AutoSyncSetDaysinput) AutoSyncSetDaysinput.value = 30;
-    container1.textContent = "Reset to default (30 days).";
-    setTimeout(() => container1.textContent = "", 3000);
-});
-
-// --- Border Size Logic ---
-const CustomBorderSizeButton = document.getElementById("CustomBorderSizeButton");
-const BorderSetSizeinput = document.getElementById("BorderSetSize");
-const container2 = document.getElementById("logContainerCustomBorderSize");
-
-// Note: Initial value set in initRangeSlider
-
-if(CustomBorderSizeButton) {
-    CustomBorderSizeButton.addEventListener("click", () => {
-        chrome.storage.local.set({ CustomBorderSize: BorderSetSizeinput.value });
-        container2.textContent = "Saved: Border size " + BorderSetSizeinput.value + " px.";
-        setTimeout(() => container2.textContent = "", 3000);
-    });
-}
-
-document.getElementById("CustomBorderSizeButtonReset").addEventListener("click", () => {
-    chrome.storage.local.set({ CustomBorderSize: 4 });
-    if(BorderSetSizeinput) {
-        BorderSetSizeinput.value = 4;
-        document.getElementById("rangeValueDisplay").textContent = "4px";
-    }
-    container2.textContent = "Reset to default (4px).";
-    setTimeout(() => container2.textContent = "", 3000);
-});
-
-// Moved to savedentries.js for better code organization
-
-// --- Info Redirect Logic ---
-function initInfoRedirects() {
-    document.querySelectorAll('.info-redirect-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const targetId = btn.getAttribute('data-target');
-
-            // Switch to About Tab
-            const aboutNavItem = document.querySelector('.nav-item[data-tab="about"]');
-            if (aboutNavItem) {
-                aboutNavItem.click();
-
-                // Scroll to specific guide card
-                if (targetId) {
-                    const targetElement = document.getElementById(targetId);
-                    if (targetElement) {
-                        setTimeout(() => {
-                            targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            // Visual highlight
-                            targetElement.classList.add('highlight-pulse');
-                            setTimeout(() => targetElement.classList.remove('highlight-pulse'), 2000);
-                        }, 300);
-                    }
-                }
-            }
         });
-    });
-}
+    }
+});
+
+/**
+ * Handle messages from background/runtime
+ */
+chrome.runtime.onMessage.addListener((msg) => {
+    if (msg.type === "log") {
+        Log(msg.text);
+    }
+});

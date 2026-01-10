@@ -1,5 +1,7 @@
+import { Log } from './utils.js';
+
 // --- Import & Export Logic ---
-function initImportExport() {
+export function initImportExport() {
     const exportBtn = document.getElementById('exportDataBtn');
     const startImportBtn = document.getElementById('startImportBtn'); // Changed ID to be unique
     const importInput = document.getElementById('importDataInput');
