@@ -14,11 +14,11 @@
   --toggle-inactive: #E0E5F2;
   --toggle-active: #4318FF;
   --toggle-thumb: #FFFFFF;
-  
+
 }
 
 /* Text Gradient CSS */
-.text-gradient {
+.header-text-gradient {
   color: #82BDF5;
   background-image: linear-gradient(45deg, #82BDF5 27%, #3299D1 44%, #8861FF 83%);
   background-clip: text;
@@ -149,7 +149,7 @@ body {
 .feature-name {
   font-weight: 500;
   font-size: 14px;
-  
+
 }
 
 .feature-sub {

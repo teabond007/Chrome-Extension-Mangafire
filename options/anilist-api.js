@@ -3,26 +3,28 @@ const ANILIST_API_URL = 'https://graphql.anilist.co';
 
 const SEARCH_MANGA_QUERY = `
   query ($search: String) {
-    Media (search: $search, type: MANGA) {
-      id
-      title {
-        romaji
-        english
-        native
+    Page (perPage: 5) {
+      media (search: $search, type: MANGA) {
+        id
+        title {
+          romaji
+          english
+          native
+        }
+        coverImage {
+          large
+          medium
+        }
+        format
+        countryOfOrigin
+        genres
+        status
+        chapters
+        volumes
+        siteUrl
+        averageScore
+        meanScore
       }
-      coverImage {
-        large
-        medium
-      }
-      format
-      countryOfOrigin
-      genres
-      status
-      chapters
-      volumes
-      siteUrl
-      averageScore
-      meanScore
     }
   }
 `;
@@ -80,7 +82,7 @@ function cleanTitle(title, aggressive = false) {
  * @param {number} retryCount - Current retry attempt (internal use)
  * @returns {Promise<object|null>} - The manga media object or null if not found.
  */
-async function fetchMangaFromAnilist(title, retryCount = 0) {
+export async function fetchMangaFromAnilist(title, retryCount = 0) {
   // Rate limiting - ensure minimum interval between requests
   const now = Date.now();
   const timeSinceLastRequest = now - lastRequestTime;
@@ -150,17 +152,31 @@ async function fetchMangaFromAnilist(title, retryCount = 0) {
       return null;
     }
 
-    if (data.data && data.data.Media) {
-      return data.data.Media;
-    }
+    if (data.data && data.data.Page && data.data.Page.media) {
+      const results = data.data.Page.media;
+      if (results.length === 0) {
+        // No results for this strategy - try next strategy
+        if (retryCount < 2) {
+          console.log(`No results for "${searchTitle}", trying next strategy...`);
+          return fetchMangaFromAnilist(title, retryCount + 1);
+        }
+        return null;
+      }
 
-    // No media found - try next strategy
-    if (retryCount < 2) {
-      console.log(`No results for "${searchTitle}", trying next strategy...`);
-      return fetchMangaFromAnilist(title, retryCount + 1);
-    }
+      // Pick the best match (Prioritize MANGA format)
+      // Rank: MANGA > (Everything else) > NOVEL > ONE_SHOT
+      const sortedResults = [...results].sort((a, b) => {
+        const getScore = (media) => {
+          if (media.format === 'MANGA') return 100;
+          if (media.format === 'ONE_SHOT') return 10;
+          if (media.format === 'NOVEL') return 5;
+          return 50; // Unknown or other formats
+        };
+        return getScore(b) - getScore(a);
+      });
 
-    return null;
+      return sortedResults[0];
+    }
   } catch (error) {
     console.error('Network error fetching from AniList:', error);
     
