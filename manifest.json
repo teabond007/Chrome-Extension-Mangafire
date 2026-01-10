@@ -1,7 +1,7 @@
 {
   "name": "Bookmarks Marker/Higlighter",
   "description": "for MangFire v2. It colors the border of saved Mangas. Doesn't work on MangaFire homepage yet",
-  "version": "3.0.1",
+  "version": "3.1.0",
   "manifest_version": 3,
   "options_ui": {
     "page": "./options/options.html",
@@ -20,7 +20,8 @@
     "storage"
   ],
   "host_permissions": [
-    "https://mangafire.to/user/bookmark"
+    "https://mangafire.to/user/bookmark",
+    "https://graphql.anilist.co/*"
   ],
   "background": {
     "service_worker": "background.js"

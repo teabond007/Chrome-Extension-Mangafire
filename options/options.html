@@ -97,6 +97,17 @@
                                         <span class="slider round"></span>
                                     </label>
                                 </div>
+
+                                <div class="feature-toggle-wrapper">
+                                    <div class="toggle-label-group">
+                                        <label for="FamilyFriendly" class="toggle-main-label">Family Friendly</label>
+                                        <span class="toggle-sub-label">Hide Ecchi/Adult content</span>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="FamilyFriendly">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -329,29 +340,81 @@
                 <header class="header">
                     <div class="header-text">
                         <h1>Saved Entries</h1>
-                        <p class="subtitle">under progres bookmarks area</p>
+                        <p class="subtitle">Browse and manage your manga library</p>
                     </div>
                 </header>
 
-                <div class="content-grid">
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-icon">📚</div>
-                            <h3>Your Saved Entries</h3>
+                <div class="content-grid" style="max-width: 100%;">
+                    <!-- Library Header with Filters -->
+                    <div class="library-header">
+                        <div class="library-title-section">
+                            <div class="library-icon">📚</div>
+                            <div class="library-title-text">
+                                <h2>Your Library</h2>
+                                <p class="library-subtitle" id="library-subtitle">Loading...</p>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <p>This section is under development. Meant for filtering what you've bookmarked.</p>
+                        <div class="library-controls">
+                            <select id="savedStatusFilter" class="select-field">
+                                <option value="All">All Statuses</option>
+                                <option value="Reading">Reading</option>
+                                <option value="Completed">Completed</option>
+                                <option value="On Hold">On Hold</option>
+                                <option value="Plan to Read">Plan to Read</option>
+                                <option value="Dropped">Dropped</option>
+                                <!-- Custom markers will be added dynamically -->
+                            </select>
+                            <select id="savedFormatFilter" class="select-field">
+                                <option value="All">All Formats</option>
+                                <option value="Manga">Manga</option>
+                                <option value="Manhwa">Manhwa</option>
+                                <option value="Manhua">Manhua</option>
+                                <option value="One Shot">One Shot</option>
+                                <option value="Light Novel">Light Novel</option>
+                            </select>
+                            <input type="text" id="savedSearchInput" placeholder="Search titles..." class="input-field">
+                            <div class="view-toggle-group">
+                                <button id="view-compact-btn" class="view-toggle-btn" title="Compact View">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                        <rect x="1" y="1" width="6" height="6" rx="1" />
+                                        <rect x="9" y="1" width="6" height="6" rx="1" />
+                                        <rect x="1" y="9" width="6" height="6" rx="1" />
+                                        <rect x="9" y="9" width="6" height="6" rx="1" />
+                                    </svg>
+                                </button>
+                                <button id="view-large-btn" class="view-toggle-btn active" title="Large View">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                        <rect x="1" y="1" width="6" height="13" rx="1" />
+                                        <rect x="9" y="1" width="6" height="13" rx="1" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
-                    <div class="cards-row" id="bookmark-entries-cards-row">
-                        <!-- Saved entries will be dynamically added here in the future -->
+
+                    <!-- Progress Bar -->
+                    <div class="loading-progress" id="loading-progress" style="display: none;">
+                        <div class="progress-text">
+                            <span id="progress-text">Fetching data...</span>
+                            <span id="progress-percent">0%</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" id="progress-bar-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Manga Grid -->
+                    <div class="manga-grid" id="manga-grid">
+                        <!-- Cards will be populated here -->
                     </div>
                 </div>
             </div>
-
-        </main>
     </div>
 
+    </main>
+    </div>
+
+    <script src="anilist-api.js"></script>
     <script src="options.js"></script>
 </body>
 
