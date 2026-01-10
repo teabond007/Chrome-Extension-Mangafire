@@ -214,8 +214,9 @@ function LogCustoomBookmarks() {
       // Create Pill
       const pill = document.createElement("div");
       pill.className = "marker-pill";
-      pill.style.backgroundColor = bookmark.color;
-      pill.style.border = `2px ${bookmark.style} rgba(255,255,255,0.5)`; // Subtle inner border
+      pill.style.backgroundColor = `${bookmark.color}33`;
+      console.log("Bookmark color:", bookmark.color);
+      pill.style.border = `2px ${bookmark.style} ${bookmark.color}CC`;
       pill.textContent = bookmark.name;
       pill.title = "Click to remove"; // Tooltip
       

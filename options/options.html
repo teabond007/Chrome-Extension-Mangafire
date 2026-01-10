@@ -32,6 +32,10 @@
                     <span class="nav-icon">⚙️</span>
                     General Settings
                 </a>
+                <a href="#" class="nav-item" data-tab="saved-entries">
+                    <span class="nav-icon">&#128218;</span>
+                    Saved Entries
+                </a>
                 <a href="#" class="nav-item" data-tab="about">
                     <span class="nav-icon">ℹ️</span>
                     About
@@ -44,7 +48,7 @@
                     <span class="icon-moon">🌙</span>
                     <span class="label">Toggle Theme</span>
                 </button>
-                <div class="version-info">Version 2.4.1</div>
+                <div class="version-info">Version 3.0.1</div>
             </div>
         </aside>
 
@@ -74,7 +78,8 @@
                                 <div class="feature-toggle-wrapper">
                                     <div class="toggle-label-group">
                                         <label for="MarkHomePage" class="toggle-main-label">Mark Homepage</label>
-                                        <span class="toggle-sub-label">Highlight manga on the homepage</span>
+                                        <span class="toggle-sub-label">Highlight manga on the homepage
+                                            (Experimental)</span>
                                     </div>
                                     <label class="switch">
                                         <input type="checkbox" id="MarkHomePage">
@@ -168,7 +173,8 @@
                             </div>
                             <div class="card-body">
                                 <div class="feature-toggle-header">
-                                    <span class="description" style="margin:0">Automatically sync bookmarks.</span>
+                                    <span class="description" style="margin:0">Automatically update bookmarks on site
+                                        visit.</span>
                                     <label class="switch small-switch" title="Enable Auto Sync">
                                         <input type="checkbox" id="AutoSync">
                                         <span class="slider round"></span>
@@ -314,6 +320,31 @@
                                     with MangaFire.to.</p>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Saved-Entries Tab -->
+            <div id="tab-saved-entries" class="tab-pane active fade-in" style="display: none;">
+                <header class="header">
+                    <div class="header-text">
+                        <h1>Saved Entries</h1>
+                        <p class="subtitle">under progres bookmarks area</p>
+                    </div>
+                </header>
+
+                <div class="content-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">📚</div>
+                            <h3>Your Saved Entries</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>This section is under development. Meant for filtering what you've bookmarked.</p>
+                        </div>
+                    </div>
+                    <div class="cards-row" id="bookmark-entries-cards-row">
+                        <!-- Saved entries will be dynamically added here in the future -->
                     </div>
                 </div>
             </div>
