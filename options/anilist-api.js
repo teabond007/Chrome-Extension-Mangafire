@@ -3,7 +3,11 @@ const ANILIST_API_URL = 'https://graphql.anilist.co';
 
 const SEARCH_MANGA_QUERY = `
   query ($search: String) {
+<<<<<<< HEAD
     Page (page: 1, perPage: 1) {
+=======
+    Page (perPage: 5) {
+>>>>>>> d1e02d91a6ce03168c8bc61cd1c435195ebc3947
       media (search: $search, type: MANGA) {
         id
         title {
