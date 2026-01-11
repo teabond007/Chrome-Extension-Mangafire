@@ -1,4 +1,4 @@
-import { Log } from './utils.js';
+import { Log, decodeHTMLEntities } from './utils.js';
 
 // --- Import & Export Logic ---
 export function initImportExport() {
@@ -64,17 +64,31 @@ export function initImportExport() {
 
     // Import Logic
     const handleFile = (file) => {
-        if (!file || (file.type !== "application/json" && !file.name.endsWith(".json"))) {
-            alert("Please select a valid JSON file.");
+        if (!file) return;
+
+        const isJSON = file.type === "application/json" || file.name.endsWith(".json");
+        const isXML = file.type === "text/xml" || file.type === "application/xml" || file.name.endsWith(".xml");
+
+        if (!isJSON && !isXML) {
+            alert("Please select a valid JSON or XML file.");
             return;
         }
 
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
-                const importedData = JSON.parse(e.target.result);
-                const isMerge = mergeToggle.checked;
+                let importedData;
+                if (isJSON) {
+                    importedData = JSON.parse(e.target.result);
+                } else if (isXML) {
+                    importedData = parseXMLBookmarks(e.target.result);
+                }
 
+                if (!importedData) {
+                    throw new Error("Failed to parse data");
+                }
+
+                const isMerge = mergeToggle.checked;
                 if (isMerge) {
                     processMergeImport(importedData);
                 } else {
@@ -82,10 +96,38 @@ export function initImportExport() {
                 }
             } catch (err) {
                 console.error("Import error:", err);
-                alert("Failed to parse JSON file. Please ensure it is a valid backup.");
+                alert("Failed to parse file. Please ensure it is a valid backup or MyAnimeList XML export.");
             }
         };
         reader.readAsText(file);
+    };
+
+    const parseXMLBookmarks = (xmlString) => {
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+        const mangaNodes = xmlDoc.querySelectorAll("manga");
+        
+        if (mangaNodes.length === 0) {
+            throw new Error("No manga entries found in XML.");
+        }
+
+        const userBookmarks = Array.from(mangaNodes).map(node => {
+            const titleNode = node.querySelector("manga_title");
+            const statusNode = node.querySelector("my_status");
+            const readChaptersNode = node.querySelector("my_read_chapters");
+            
+            let title = titleNode ? decodeHTMLEntities(titleNode.textContent.trim()) : "Unknown Title";
+            let status = statusNode ? statusNode.textContent.trim() : "Reading";
+            let readChapters = readChaptersNode ? parseInt(readChaptersNode.textContent.trim()) || 0 : 0;
+
+            // Normalize status if needed (MangaFire common statuses)
+            if (status === "On-Hold") status = "On Hold";
+            
+            return { title, status, readChapters };
+        });
+
+        // Wrap in the format expected by the import logic
+        return { userBookmarks };
     };
 
     const processOverwriteImport = (data) => {

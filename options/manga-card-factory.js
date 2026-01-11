@@ -118,12 +118,14 @@ function createCardBody(entry, aniData, statusInfo) {
             info.appendChild(formatItem);
         }
 
-        if (aniData.chapters) {
-            const chaptersItem = document.createElement("div");
-            chaptersItem.className = "info-item";
-            chaptersItem.innerHTML = `<span class="info-label">CH:</span>${aniData.chapters}`;
-            info.appendChild(chaptersItem);
-        }
+        const readChapters = entry.readChapters || 0;
+        const totalChapters = aniData.chapters || "?";
+        
+        const chaptersItem = document.createElement("div");
+        chaptersItem.className = "info-item";
+        chaptersItem.innerHTML = `<span class="info-label">Read:</span>${readChapters} / <span class="info-label">Total:</span>${totalChapters}`;
+        info.appendChild(chaptersItem);
+        
         meta.appendChild(info);
     } else {
         const loading = document.createElement("div");

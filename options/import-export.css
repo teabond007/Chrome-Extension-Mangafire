@@ -111,6 +111,12 @@ body.dark-mode .drop-zone-container {
 .drop-zone-container.drag-over {
     border-color: var(--accent-primary);
     background-color: rgba(67, 24, 255, 0.05);
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 10px 20px -5px rgba(67, 24, 255, 0.15);
+}
+
+.drop-zone-container:active {
+    transform: translateY(0) scale(0.99);
 }
 
 .drop-zone-content {

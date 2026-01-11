@@ -1,37 +1,21 @@
-
 const ANILIST_API_URL = 'https://graphql.anilist.co';
 
-const SEARCH_MANGA_QUERY = `
-  query ($search: String) {
-<<<<<<< HEAD
-    Page (page: 1, perPage: 1) {
-=======
-    Page (perPage: 5) {
->>>>>>> d1e02d91a6ce03168c8bc61cd1c435195ebc3947
-      media (search: $search, type: MANGA) {
-        id
-        title {
-          romaji
-          english
-          native
-        }
-        coverImage {
-          large
-          medium
-        }
-        format
-        countryOfOrigin
-        genres
-        status
-        chapters
-        volumes
-        siteUrl
-        averageScore
-        meanScore
-      }
+let cachedQuery = null;
+
+/**
+ * Load GraphQL query from external file
+ */
+async function getQuery() {
+    if (cachedQuery) return cachedQuery;
+    try {
+        const response = await fetch(chrome.runtime.getURL('options/anilist-query.graphql'));
+        cachedQuery = await response.text();
+        return cachedQuery;
+    } catch (err) {
+        console.error("Failed to load AniList query:", err);
+        return null;
     }
-  }
-`;
+}
 
 // Rate limiting configuration
 let lastRequestTime = 0;
@@ -103,19 +87,22 @@ export async function fetchMangaFromAnilist(title, retryCount = 0) {
   if (retryCount === 1) searchTitle = cleanTitle(title, false);
   if (retryCount >= 2) searchTitle = cleanTitle(title, true);
 
-  const options = {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
-    body: JSON.stringify({
-      query: SEARCH_MANGA_QUERY,
-      variables: {
-        search: searchTitle
-      }
-    })
-  };
+    const query = await getQuery();
+    if (!query) return null;
+
+    const options = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+            query: query,
+            variables: {
+                search: searchTitle
+            }
+        })
+    };
 
   try {
     const response = await fetch(ANILIST_API_URL, options);

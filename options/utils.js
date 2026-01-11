@@ -36,3 +36,14 @@ export function setStorage(data) {
         chrome.storage.local.set(data, resolve);
     });
 }
+/**
+ * Decode HTML entities in a string
+ * @param {string} text 
+ * @returns {string}
+ */
+export function decodeHTMLEntities(text) {
+    if (!text) return "";
+    const temp = document.createElement("textarea");
+    temp.innerHTML = text;
+    return temp.value;
+}

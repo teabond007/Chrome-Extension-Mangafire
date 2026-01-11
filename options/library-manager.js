@@ -1,8 +1,4 @@
-/**
- * Library Manager Module
- * Handles loading, filtering, and data fetching for saved entries.
- */
-import { createMangaCard, getFormatName } from './manga-card-factory.js';
+import { createMangaCard, getFormatName, getStatusInfo } from './manga-card-factory.js';
 import { fetchMangaFromAnilist } from './anilist-api.js';
 
 let savedEntriesMerged = [];
@@ -11,16 +7,28 @@ let fetchInProgress = false;
 
 let elements = {
     grid: null,
+    viewLargeBtn: null,
+    // Filters
     statusFilter: null,
     formatFilter: null,
+    genreFilter: null,
     searchInput: null,
-    subtitle: null,
-    progressBar: null,
-    progressText: null,
-    progressPercent: null,
-    progressContainer: null,
-    viewCompactBtn: null,
-    viewLargeBtn: null
+    // Modal elements
+    modal: null,
+    modalTitle: null,
+    modalSynonyms: null,
+    modalCover: null,
+    modalBanner: null,
+    modalDescription: null,
+    modalGenres: null,
+    modalTags: null,
+    modalStatus: null,
+    modalFormat: null,
+    modalScore: null,
+    modalPopularity: null,
+    modalReleased: null,
+    modalExternalLinks: null,
+    closeModal: null
 };
 
 export function initLibrary() {
@@ -35,8 +43,27 @@ export function initLibrary() {
         progressPercent: document.getElementById("progress-percent"),
         progressContainer: document.getElementById("loading-progress"),
         viewCompactBtn: document.getElementById("view-compact-btn"),
-        viewLargeBtn: document.getElementById("view-large-btn")
+        viewLargeBtn: document.getElementById("view-large-btn"),
+        // Modal
+        modal: document.getElementById("mangaDetailsModal"),
+        modalTitle: document.getElementById("modalTitle"),
+        modalSynonyms: document.getElementById("modalSynonyms"),
+        modalCover: document.getElementById("modalCover"),
+        modalBanner: document.getElementById("modalBanner"),
+        modalDescription: document.getElementById("modalDescriptionText"),
+        modalGenres: document.getElementById("modalGenres"),
+        modalTags: document.getElementById("modalTags"),
+        modalStatus: document.getElementById("modalStatusBadge"),
+        modalFormat: document.getElementById("modalFormatBadge"),
+        modalScore: document.getElementById("modalScoreValue"),
+        modalPopularity: document.getElementById("modalPopularity"),
+        modalReleased: document.getElementById("modalReleased"),
+        modalExternalLinks: document.getElementById("modalExternalLinks"),
+        closeModal: document.getElementById("closeMangaDetails")
     };
+
+    // Genre filter
+    elements.genreFilter = document.getElementById("savedGenreFilter");
 
     if (!elements.grid) return;
 
@@ -51,6 +78,7 @@ export function initLibrary() {
             savedEntriesMerged = data.userBookmarks.map(b => ({
                 title: b.title,
                 status: b.status,
+                readChapters: b.readChapters || 0,
                 anilistData: null,
                 customMarker: null,
                 lastUpdated: Date.now()
@@ -59,6 +87,7 @@ export function initLibrary() {
         }
 
         populateStatusFilter();
+        populateGenreFilter();
         
         const viewSize = data.cardViewSize || "large";
         setViewSize(viewSize);
@@ -76,6 +105,7 @@ export function initLibrary() {
 function attachListeners() {
     elements.statusFilter?.addEventListener("change", filterEntries);
     elements.formatFilter?.addEventListener("change", filterEntries);
+    elements.genreFilter?.addEventListener("change", filterEntries);
     elements.searchInput?.addEventListener("input", filterEntries);
 
     elements.viewCompactBtn?.addEventListener("click", () => {
@@ -86,6 +116,17 @@ function attachListeners() {
     elements.viewLargeBtn?.addEventListener("click", () => {
         setViewSize("large");
         chrome.storage.local.set({ cardViewSize: "large" });
+    });
+
+    // Modal listeners
+    elements.closeModal?.addEventListener("click", () => {
+        if (elements.modal) elements.modal.style.display = "none";
+    });
+
+    window.addEventListener("click", (e) => {
+        if (e.target === elements.modal) {
+            elements.modal.style.display = "none";
+        }
     });
 
     const freshSyncBtn = document.getElementById("BtnTrashAndSyncEntries");
@@ -115,9 +156,11 @@ function setViewSize(size) {
 function populateStatusFilter() {
     if (!elements.statusFilter) return;
     // Keep original options, add custom ones
-    const originalCount = 6; // All, Reading, etc.
-    while (elements.statusFilter.options.length > originalCount) {
-        elements.statusFilter.remove(originalCount);
+    const originalCount = 7; // All, Reading, Completed, On Hold, Plan to Read, Dropped, marker header
+    
+    // Reset to base 6 options (All + 5 default statuses)
+    while (elements.statusFilter.options.length > 6) {
+        elements.statusFilter.remove(6);
     }
 
     if (customMarkers.length > 0) {
@@ -136,9 +179,33 @@ function populateStatusFilter() {
     }
 }
 
+function populateGenreFilter() {
+    if (!elements.genreFilter) return;
+    
+    // Get unique genres
+    const genres = new Set();
+    savedEntriesMerged.forEach(e => {
+        if (e.anilistData?.genres) {
+            e.anilistData.genres.forEach(g => genres.add(g));
+        }
+    });
+
+    // Keep only "All Genres"
+    elements.genreFilter.innerHTML = '<option value="All">All Genres</option>';
+    
+    // Add sorted genres
+    Array.from(genres).sort().forEach(genre => {
+        const opt = document.createElement("option");
+        opt.value = genre;
+        opt.textContent = genre;
+        elements.genreFilter.appendChild(opt);
+    });
+}
+
 export function filterEntries() {
     const statusVal = elements.statusFilter?.value || "All";
     const formatVal = elements.formatFilter?.value || "All";
+    const genreVal = elements.genreFilter?.value || "All";
     const searchVal = elements.searchInput?.value.toLowerCase() || "";
 
     chrome.storage.local.get(["FamilyFriendlyfeatureEnabled"], (data) => {
@@ -171,12 +238,17 @@ export function filterEntries() {
                 }
             }
 
+            let matchesGenre = true;
+            if (genreVal !== "All") {
+                matchesGenre = ani?.genres?.includes(genreVal) || false;
+            }
+
             const matchesSearch = searchVal === "" || 
                 entry.title.toLowerCase().includes(searchVal) ||
                 ani?.title?.english?.toLowerCase().includes(searchVal) ||
                 ani?.title?.romaji?.toLowerCase().includes(searchVal);
 
-            return matchesStatus && matchesFormat && matchesSearch;
+            return matchesStatus && matchesFormat && matchesGenre && matchesSearch;
         });
 
         renderEntries(filtered);
@@ -195,10 +267,130 @@ function renderEntries(entries) {
 
     entries.forEach(entry => {
         const card = createMangaCard(entry, customMarkers, (e) => showMarkerPicker(e));
+        card.addEventListener("click", () => showMangaDetails(entry));
         elements.grid.appendChild(card);
     });
 
     updateSubtitle(entries.length);
+}
+
+function showMangaDetails(entry) {
+    const ani = entry.anilistData;
+    if (!ani) return;
+
+    if (elements.modalTitle) elements.modalTitle.textContent = ani.title.english || ani.title.romaji || entry.title;
+    
+    // Synonyms
+    if (elements.modalSynonyms) {
+        elements.modalSynonyms.innerHTML = "";
+        const synonyms = ani.synonyms || [];
+        if (synonyms.length > 0) {
+            synonyms.slice(0, 5).forEach(s => {
+                const span = document.createElement("span");
+                span.className = "modal-synonym-item";
+                span.textContent = s;
+                elements.modalSynonyms.appendChild(span);
+            });
+        }
+    }
+
+    if (elements.modalCover) elements.modalCover.src = ani.coverImage.large;
+    
+    // Banner
+    if (elements.modalBanner) {
+        if (ani.bannerImage) {
+            elements.modalBanner.style.backgroundImage = `url('${ani.bannerImage}')`;
+            elements.modalBanner.style.display = "block";
+        } else {
+            elements.modalBanner.style.display = "none";
+        }
+    }
+
+    if (elements.modalDescription) elements.modalDescription.innerHTML = ani.description || "No description available.";
+    
+    // Status Badge
+    const statusInfo = getStatusInfo(entry.status, entry.customMarker, customMarkers);
+    if (elements.modalStatus) {
+        elements.modalStatus.textContent = entry.status;
+        elements.modalStatus.style.backgroundColor = statusInfo.badgeBg;
+        elements.modalStatus.style.color = statusInfo.badgeText;
+    }
+
+    // Format Badge
+    if (elements.modalFormat) {
+        elements.modalFormat.textContent = getFormatName(ani.format, ani.countryOfOrigin);
+    }
+
+    // Genres
+    if (elements.modalGenres) {
+        elements.modalGenres.innerHTML = "";
+        (ani.genres || []).forEach(genre => {
+            const span = document.createElement("span");
+            span.className = "modal-genre-tag";
+            span.textContent = genre;
+            elements.modalGenres.appendChild(span);
+        });
+    }
+
+    // Tags
+    if (elements.modalTags) {
+        elements.modalTags.innerHTML = "";
+        (ani.tags || []).slice(0, 10).forEach(tag => {
+            const span = document.createElement("span");
+            span.className = "modal-tag";
+            span.textContent = tag.name;
+            elements.modalTags.appendChild(span);
+        });
+    }
+
+    // Score & Popularity
+    if (elements.modalScore) {
+        elements.modalScore.textContent = ani.averageScore ? `${ani.averageScore}%` : "-";
+    }
+    if (elements.modalPopularity) {
+        elements.modalPopularity.textContent = ani.popularity ? ani.popularity.toLocaleString() : "-";
+    }
+
+    // Released Date
+    if (elements.modalReleased) {
+        if (ani.startDate && ani.startDate.year) {
+            const d = ani.startDate;
+            elements.modalReleased.textContent = `${d.year}${d.month ? '-' + d.month : ''}${d.day ? '-' + d.day : ''}`;
+        } else {
+            elements.modalReleased.textContent = "Unknown";
+        }
+    }
+
+    // External Links
+    if (elements.modalExternalLinks) {
+        elements.modalExternalLinks.innerHTML = "";
+        
+        // Add AniList as the first link
+        if (ani.siteUrl) {
+            const a = document.createElement("a");
+            a.className = "external-link-btn primary";
+            a.href = ani.siteUrl;
+            a.target = "_blank";
+            a.innerHTML = `<span>AniList</span>`;
+            elements.modalExternalLinks.appendChild(a);
+        }
+
+        (ani.externalLinks || []).forEach(link => {
+            const a = document.createElement("a");
+            a.className = "external-link-btn";
+            a.href = link.url;
+            a.target = "_blank";
+            a.textContent = link.site;
+            elements.modalExternalLinks.appendChild(a);
+        });
+    }
+
+    if (elements.modal) {
+        elements.modal.style.display = "flex";
+        // Reset scroll position
+        const body = elements.modal.querySelector('.modal-body');
+        if (body) body.scrollTop = 0;
+    }
 }
 
 function updateSubtitle(count) {
@@ -223,7 +415,8 @@ function showMarkerPicker(entry) {
 }
 
 async function fetchMissingData() {
-    const missing = savedEntriesMerged.filter(e => !e.anilistData);
+    // Fetch if no AniList data OR if description is missing (user requested richer data for existing entries)
+    const missing = savedEntriesMerged.filter(e => !e.anilistData || !e.anilistData.description);
     if (missing.length === 0) return;
 
     fetchInProgress = true;
@@ -236,6 +429,10 @@ async function fetchMissingData() {
             if (data) {
                 entry.anilistData = data;
                 chrome.storage.local.set({ savedEntriesMerged });
+                
+                // Refresh filters if new genres are found
+                if (data.genres) populateGenreFilter();
+                
                 filterEntries();
             }
         }

@@ -485,6 +485,10 @@
                                 <option value="Dropped">Dropped</option>
                                 <!-- Custom markers will be added dynamically -->
                             </select>
+                            <select id="savedGenreFilter" class="select-field">
+                                <option value="All">All Genres</option>
+                                <!-- Genres will be added dynamically -->
+                            </select>
                             <select id="savedFormatFilter" class="select-field">
                                 <option value="All">All Formats</option>
                                 <option value="Manga">Manga</option>
@@ -596,13 +600,13 @@
                         </div>
 
                         <div class="drop-zone-container" id="dropZone">
-                            <input type="file" id="importDataInput" accept=".json" style="display: none;">
+                            <input type="file" id="importDataInput" accept=".json,.xml" style="display: none;">
                             <div class="drop-zone-content">
                                 <div class="drop-zone-icon">
                                     <svg class="icon-svg icon-file" style="width: 24px; height: 24px;"></svg>
                                 </div>
                                 <span class="drop-zone-text">Click to upload or drag and drop</span>
-                                <span class="drop-zone-subtext">Supports .json files (max 10MB)</span>
+                                <span class="drop-zone-subtext">Supports .json or .xml files (max 10MB)</span>
                             </div>
                         </div>
 
@@ -642,6 +646,56 @@
     <button id="scrollToTopBtn" class="scroll-to-top" title="Go to top">
         <svg class="icon-svg icon-arrow-up"></svg>
     </button>
+
+    <!-- Manga Details Modal -->
+    <div id="mangaDetailsModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content fade-in">
+            <button class="modal-close" id="closeMangaDetails">&times;</button>
+            <div id="modalBanner" class="modal-banner"></div>
+            <div class="modal-body">
+                <div class="modal-layout">
+                    <div class="modal-sidebar">
+                        <img id="modalCover" src="" alt="Cover" class="modal-cover">
+                        <div class="modal-sidebar-info">
+                            <div class="modal-meta-row">
+                                <span class="modal-meta-label">Status</span>
+                                <div id="modalStatusBadge" class="manga-card-status"></div>
+                            </div>
+                            <div class="modal-meta-row">
+                                <span class="modal-meta-label">Format</span>
+                                <div id="modalFormatBadge" class="format-badge"></div>
+                            </div>
+                            <div class="modal-meta-row">
+                                <span class="modal-meta-label">Popularity</span>
+                                <div class="modal-meta-value" id="modalPopularity">-</div>
+                            </div>
+                            <div class="modal-meta-row">
+                                <span class="modal-meta-label">Average Score</span>
+                                <div class="modal-score">
+                                    <span class="score-value" id="modalScoreValue">-</span>
+                                </div>
+                            </div>
+                            <div class="modal-meta-row">
+                                <span class="modal-meta-label">Released</span>
+                                <div class="modal-meta-value" id="modalReleased">-</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-main">
+                        <h2 id="modalTitle">Manga Title</h2>
+                        <div id="modalSynonyms" class="modal-synonyms"></div>
+                        <div id="modalGenres" class="modal-genres"></div>
+                        <div id="modalTags" class="modal-tags"></div>
+                        <div class="modal-description">
+                            <h3>Synopsis</h3>
+                            <p id="modalDescriptionText">No description available.</p>
+                        </div>
+                        <div id="modalExternalLinks" class="modal-external-links"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="options.js" type="module"></script>
 </body>
