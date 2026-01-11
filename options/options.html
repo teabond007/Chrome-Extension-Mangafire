@@ -14,11 +14,19 @@
         (function () {
             try {
                 const localTheme = localStorage.getItem("theme");
-                // Default is dark mode. Only remove if specifically set to light.
+                const html = document.documentElement;
+                // Remove existing theme classes
+                html.classList.remove("dark-mode", "black-mode", "neon-mode");
+
                 if (localTheme === "light") {
-                    document.documentElement.classList.remove("dark-mode");
+                    // Stay light
+                } else if (localTheme === "black") {
+                    html.classList.add("black-mode");
+                } else if (localTheme === "neon") {
+                    html.classList.add("neon-mode");
                 } else {
-                    document.documentElement.classList.add("dark-mode");
+                    // Default to dark
+                    html.classList.add("dark-mode");
                 }
             } catch (e) { }
         })();
@@ -31,6 +39,14 @@
 
         .dark-mode {
             --bg-load: #0B1437;
+        }
+
+        .black-mode {
+            --bg-load: #000000;
+        }
+
+        .neon-mode {
+            --bg-load: #030303;
         }
 
         body {
@@ -76,7 +92,7 @@
                     <span class="icon-moon">🌙</span>
                     <span class="label">Toggle Theme</span>
                 </button>
-                <div class="version-info">Version 3.3.5</div>
+                <div class="version-info">Version 3.4.0</div>
             </div>
         </aside>
 

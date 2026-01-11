@@ -44,6 +44,37 @@
     --input-border: #2B3674;
 }
 
+/* Black Mode Variables - High contrast AMOLED black */
+.black-mode {
+    --bg-body: #000000;
+    --bg-sidebar: #010101;
+    --bg-card: #0d0a13;
+    --text-primary: #FFFFFF;
+    --text-secondary: #A3AED0;
+
+    --border-color: #1A1A1A;
+    --input-bg: #050505;
+    --input-border: #222222;
+}
+
+/* Neon Mode Variables - Cyberpunk aesthetic */
+.neon-mode {
+    --bg-body: #030303;
+    --bg-sidebar: #050505;
+    --bg-card: #100e14;
+    --text-primary: #FFFFFF;
+    /* Neon Green */
+    --text-secondary: #1E90FF;
+    /* Cyan */
+    --accent-primary: #00FF85;
+    /* Neon Magenta */
+    --accent-hover: #FF0099;
+    --border-color: #39FF1433;
+    --input-bg: #000000;
+    --input-border: #FF00FF;
+}
+
+
 /* Global Reset */
 * {
     box-sizing: border-box;
