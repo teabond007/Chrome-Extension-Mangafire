@@ -1,5 +1,5 @@
-import { createMangaCard, getFormatName, getStatusInfo } from './manga-card-factory.js';
-import { fetchMangaFromAnilist } from './anilist-api.js';
+import { createMangaCard, getFormatName, getStatusInfo } from '../ui/manga-card-factory.js';
+import { fetchMangaFromAnilist } from '../core/anilist-api.js';
 
 let savedEntriesMerged = [];
 let customMarkers = [];
@@ -153,6 +153,10 @@ function setViewSize(size) {
     }
 }
 
+/**
+ * Populates the status filter dropdown with default statuses and any custom markers.
+ * @returns {void}
+ */
 function populateStatusFilter() {
     if (!elements.statusFilter) return;
     // Keep original options, add custom ones
@@ -179,6 +183,11 @@ function populateStatusFilter() {
     }
 }
 
+/**
+ * Populates the genre filter dropdown with unique genres found in the `anilistData`
+ * of the `savedEntriesMerged`.
+ * @returns {void}
+ */
 function populateGenreFilter() {
     if (!elements.genreFilter) return;
     
@@ -202,6 +211,13 @@ function populateGenreFilter() {
     });
 }
 
+/**
+ * Filters the `savedEntriesMerged` array based on the current values of the
+ * status, format, genre filters, and search input.
+ * It also applies a family-friendly filter if enabled.
+ * After filtering, it calls `renderEntries` to update the displayed grid.
+ * @returns {void}
+ */
 export function filterEntries() {
     const statusVal = elements.statusFilter?.value || "All";
     const formatVal = elements.formatFilter?.value || "All";
@@ -255,6 +271,13 @@ export function filterEntries() {
     });
 }
 
+/**
+ * Renders a given array of manga entries into the grid.
+ * Clears the existing grid and appends new manga cards.
+ * Displays an empty message if no entries are provided.
+ * @param {Array<Object>} entries - The array of manga entries to be rendered.
+ * @returns {void}
+ */
 function renderEntries(entries) {
     if (!elements.grid) return;
     elements.grid.innerHTML = "";
@@ -274,6 +297,12 @@ function renderEntries(entries) {
     updateSubtitle(entries.length);
 }
 
+/**
+ * Displays a modal with detailed information about a specific manga entry.
+ * Populates the modal elements with data from the entry's `anilistData`.
+ * @param {Object} entry - The manga entry object for which to show details.
+ * @returns {void}
+ */
 function showMangaDetails(entry) {
     const ani = entry.anilistData;
     if (!ani) return;

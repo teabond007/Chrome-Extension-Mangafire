@@ -1,0 +1,535 @@
+/* Cards */
+.card {
+    background-color: var(--bg-card);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    /* Subtle shadow light mode */
+}
+
+.dark-mode .card {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    /* Stronger shadow dark mode */
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.card-icon {
+    font-size: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgba(67, 24, 255, 0.1);
+    /* Light purple tint */
+    color: var(--accent-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card h3 {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.description {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+/* Form Inputs */
+.input-group-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.input-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.flex-grow {
+    flex: 1;
+    min-width: 200px;
+}
+
+label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.input-field,
+.select-field {
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--text-primary);
+    padding: 10px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    height: 42px;
+}
+
+.input-field:focus,
+.select-field:focus {
+    border-color: var(--accent-primary);
+}
+
+.color-picker-wrapper input[type="color"] {
+    width: 60px;
+    height: 42px;
+    padding: 0;
+    border: 1px solid var(--input-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    background: none;
+}
+
+/* Buttons */
+.button-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 30px;
+}
+
+.button-group.bottom-align {
+    margin-top: auto;
+    display: flex;
+    gap: 12px;
+}
+
+
+.btn {
+    padding: 10px 24px;
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background-color: var(--accent-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-hover);
+    transform: translateY(-1px);
+}
+
+.btn-outline-danger {
+    background: transparent;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+}
+
+.btn-outline-danger:hover {
+    background-color: rgba(238, 93, 80, 0.1);
+}
+
+.btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+}
+
+.btn-ghost:hover {
+    color: var(--text-primary);
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Markers Section */
+.active-markers-section {
+    border-top: 1px solid var(--border-color);
+    padding-top: 24px;
+}
+
+.markers-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+    min-height: 40px;
+}
+
+.marker-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #fff;
+    /* Most markers will have dark colors, assume white text for now or add shadow */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    /* Ensure readability on light marker colors */
+}
+
+/* Grid for sub-cards */
+.cards-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.card.full-height {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.input-with-button {
+    display: flex;
+    gap: 12px;
+}
+
+/* Range Slider */
+.range-wrapper {
+    margin-bottom: 20px;
+}
+
+.range-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+#rangeValueDisplay {
+    font-weight: 700;
+    color: var(--accent-primary);
+}
+
+.range-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: var(--input-border);
+    border-radius: 5px;
+    outline: none;
+}
+
+.range-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent-primary);
+    cursor: pointer;
+    box-shadow: 0 0 0 4px rgba(67, 24, 255, 0.2);
+}
+
+.range-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+/* Highlight Card (Manual Sync) */
+.highlight-card {
+    border-left: 4px solid var(--warning);
+}
+
+.flex-row-center {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.info-list {
+    margin-top: 10px;
+    margin-left: 20px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.info-list li {
+    margin-bottom: 4px;
+}
+
+.btn-warning-large {
+    background-color: var(--warning);
+    color: #1E222D;
+    /* Dark text on yellow */
+    font-weight: 700;
+    padding: 12px 24px;
+    font-size: 15px;
+}
+
+.btn-warning-large:hover {
+    background-color: #e09b33;
+    transform: scale(1.02);
+}
+
+.tiny-text {
+    font-size: 11px;
+    text-align: center;
+    margin-top: 8px;
+    color: var(--text-secondary);
+}
+
+.status-text {
+    font-size: 12px;
+    color: var(--success);
+    margin-top: 8px;
+    height: 18px;
+    /* Prevent jump */
+}
+
+/* Terminal Log */
+.bg-terminal {
+    background-color: #0E121E;
+    padding: 0;
+    overflow: hidden;
+}
+
+.terminal-log {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+    color: #00FF00;
+    padding: 20px;
+    height: 150px;
+    overflow-y: auto;
+}
+
+/* Switch / Toggle Styles */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 26px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--border-color);
+    /* Inactive color */
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+input:checked+.slider {
+    background-color: var(--accent-primary);
+}
+
+input:focus+.slider {
+    box-shadow: 0 0 1px var(--accent-primary);
+}
+
+input:checked+.slider:before {
+    transform: translateX(22px);
+}
+
+/* Rounded sliders */
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+/* Small variation */
+.switch.small-switch {
+    width: 36px;
+    height: 20px;
+}
+
+.switch.small-switch .slider:before {
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+}
+
+.switch.small-switch input:checked+.slider:before {
+    transform: translateX(16px);
+}
+
+
+/* Feature Toggle Components */
+.feature-toggle-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background-color: var(--bg-body);
+    border-radius: var(--radius-sm);
+    margin-right: 16px;
+    flex: 1;
+    /* evenly distribute if multiple in row */
+}
+
+.feature-toggle-wrapper:last-child {
+    margin-right: 0;
+}
+
+.feature-toggle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+}
+
+.toggle-label-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.toggle-main-label {
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    font-size: 14px;
+}
+
+.toggle-sub-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* Inline Add Button Wrapper */
+.input-button-wrapper {
+    display: flex;
+    align-items: flex-end;
+    /* Align to bottom to match inputs */
+}
+
+/* Height matching */
+.btn-input-height {
+    height: 40px;
+    /* Standard input height */
+    padding: 0 24px;
+    margin-bottom: 2px;
+    /* Slight adjustment for alignment */
+}
+
+/* Active Markers Header */
+.active-markers-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+    margin-bottom: 12px;
+}
+
+.section-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    letter-spacing: 0.5px;
+}
+
+/* Marker Pill Styles extended */
+.markers-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    min-height: 60px;
+    /* Prevent collapse if empty */
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px dashed var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+}
+
+/* Initial State */
+.marker-pill {
+    padding: 6px 12px;
+    border-radius: 4px;
+    /* Slightly sharper than buttons */
+    color: #FFF;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+    /* For overlay */
+    overflow: hidden;
+    cursor: default;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+/* Hover Effect: Show Delete State */
+.marker-pill:hover {
+    padding-right: 32px;
+    /* Make space for X */
+    cursor: pointer;
+}
+
+/* Delete Icon (Pseudo-element) */
+.marker-pill::after {
+    content: "✕";
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 10px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.marker-pill:hover::after {
+    opacity: 1;
+}
+
+/* Hover visual cues */
+.marker-pill:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+    filter: brightness(1.1);
+}
+
+/* Ensure remove all button is subtle */
+.btn-sm {
+    height: 28px;
+    padding: 0 12px;
+    font-size: 12px;
+}

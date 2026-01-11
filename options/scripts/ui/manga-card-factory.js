@@ -1,13 +1,16 @@
 /**
- * Component factory for Manga Cards in the library
+ * @fileoverview Component factory for generating Manga Card DOM elements.
+ * Handles layout, dynamic status coloring, and AniList metadata display.
  */
 
 /**
- * Create a manga card element
- * @param {Object} entry - Merged entry data
- * @param {Array} customMarkers - List of custom markers for color resolution
- * @param {Function} onMarkerClick - Callback when marker button is clicked
- * @returns {HTMLElement}
+ * Creates a complete manga card element ready to be appended to the library grid.
+ * Combines cover, status, and metadata sections into a single interactive card.
+ * 
+ * @param {Object} entry - The merged manga entry data from storage.
+ * @param {Array<Object>} customMarkers - User-defined markers for dynamic styling.
+ * @param {Function} onMarkerClick - Callback executed when the marker management button is clicked.
+ * @returns {HTMLElement} The fully constructed manga card container.
  */
 export function createMangaCard(entry, customMarkers, onMarkerClick) {
     const card = document.createElement("div");
@@ -17,7 +20,7 @@ export function createMangaCard(entry, customMarkers, onMarkerClick) {
     const aniData = entry.anilistData;
     const statusInfo = getStatusInfo(entry.status, entry.customMarker, customMarkers);
 
-    // Apply styles for dynamic coloring
+    // Apply styles for dynamic coloring based on status or active marker
     card.style.border = `2px solid ${statusInfo.borderColor}`;
     if (statusInfo.borderStyle) {
         card.style.borderStyle = statusInfo.borderStyle;
@@ -27,17 +30,27 @@ export function createMangaCard(entry, customMarkers, onMarkerClick) {
         card.classList.add("has-custom-marker");
     }
 
-    // Create cover section
+    // Create cover section (includes image and hover actions)
     const cover = createCardCover(entry, aniData, statusInfo.borderColor, onMarkerClick);
     card.appendChild(cover);
 
-    // Create body section
+    // Create body section (includes title and badges)
     const body = createCardBody(entry, aniData, statusInfo);
     card.appendChild(body);
     
     return card;
 }
 
+/**
+ * Constructs the cover image section of the manga card.
+ * Handles fallback images and the hover action overlay.
+ * 
+ * @param {Object} entry - The manga entry data.
+ * @param {Object|null} aniData - Optional AniList metadata object.
+ * @param {string} statusColor - The resolved color for status indicators.
+ * @param {Function} onMarkerClick - Callback for marker interaction.
+ * @returns {HTMLElement} The constructed cover element.
+ */
 function createCardCover(entry, aniData, statusColor, onMarkerClick) {
     const coverUrl = aniData?.coverImage?.large ?? 
                      aniData?.coverImage?.medium ?? 
@@ -47,17 +60,17 @@ function createCardCover(entry, aniData, statusColor, onMarkerClick) {
     cover.className = "manga-card-cover";
     cover.style.backgroundImage = `url('${coverUrl}')`;
 
-    // Status dot indicator
+    // Status dot indicator (top-right small dot)
     const statusDot = document.createElement("div");
     statusDot.className = "card-status-dot";
     statusDot.style.backgroundColor = statusColor;
     cover.appendChild(statusDot);
 
-    // Hover actions
+    // Hover actions overlay
     const actions = document.createElement("div");
     actions.className = "manga-card-actions";
 
-    // View on AniList button
+    // "View" button - redirects to the AniList page
     if (aniData?.siteUrl) {
         const viewBtn = document.createElement("a");
         viewBtn.className = "card-action-btn";
@@ -68,7 +81,7 @@ function createCardCover(entry, aniData, statusColor, onMarkerClick) {
         actions.appendChild(viewBtn);
     }
 
-    // Add/Change marker button
+    // "Marker" button - opens marker assignment dialog
     const markerBtn = document.createElement("button");
     markerBtn.className = "card-action-btn";
     markerBtn.textContent = entry.customMarker ? `✓ ${entry.customMarker}` : "+ Marker";
@@ -82,22 +95,31 @@ function createCardCover(entry, aniData, statusColor, onMarkerClick) {
     return cover;
 }
 
+/**
+ * Constructs the text body of the manga card.
+ * Displays title, format (Manhwa/Manga), and reading progress progress badges.
+ * 
+ * @param {Object} entry - The manga entry data.
+ * @param {Object|null} aniData - Optional AniList metadata object.
+ * @param {Object} statusInfo - The resolved status styling object.
+ * @returns {HTMLElement} The constructed body element.
+ */
 function createCardBody(entry, aniData, statusInfo) {
     const body = document.createElement("div");
     body.className = "manga-card-body";
 
-    // Title
+    // Primary Title display
     const title = document.createElement("h3");
     title.className = "manga-card-title";
     title.textContent = aniData?.title?.english || aniData?.title?.romaji || entry.title;
     title.title = title.textContent;
     body.appendChild(title);
 
-    // Metadata section
+    // Metadata section (badges and info)
     const meta = document.createElement("div");
     meta.className = "manga-card-meta";
 
-    // Saved status badge
+    // Saved status badge (e.g., "Reading", "Completed")
     const savedStatus = document.createElement("span");
     savedStatus.className = "manga-card-status";
     savedStatus.textContent = entry.status;
@@ -105,11 +127,12 @@ function createCardBody(entry, aniData, statusInfo) {
     savedStatus.style.color = statusInfo.badgeText;
     meta.appendChild(savedStatus);
 
-    // AniList details
+    // Detailed AniList info (Format, Chapter Count)
     if (aniData) {
         const info = document.createElement("div");
         info.className = "manga-card-info";
 
+        // Display normalized format name (Manga, Manhwa, etc.)
         const formatName = getFormatName(aniData.format, aniData.countryOfOrigin);
         if (formatName && formatName !== "Unknown") {
             const formatItem = document.createElement("div");
@@ -118,6 +141,7 @@ function createCardBody(entry, aniData, statusInfo) {
             info.appendChild(formatItem);
         }
 
+        // Display progress (Read Chapters / Total Chapters)
         const readChapters = entry.readChapters || 0;
         const totalChapters = aniData.chapters || "?";
         
@@ -128,6 +152,7 @@ function createCardBody(entry, aniData, statusInfo) {
         
         meta.appendChild(info);
     } else {
+        // Fallback message while AniList data is being fetched
         const loading = document.createElement("div");
         loading.className = "info-item";
         loading.textContent = "Loading info...";
@@ -140,12 +165,21 @@ function createCardBody(entry, aniData, statusInfo) {
 }
 
 /**
- * Resolved status appearance info
+ * Resolves the visual styling (colors, borders) for a manga entry.
+ * Prioritizes custom markers over default status colors.
+ * 
+ * @param {string} status - The current reading status string.
+ * @param {string|null} customMarkerName - The name of any manually assigned custom marker.
+ * @param {Array<Object>} customMarkers - The list of all defined custom markers.
+ * @returns {Object} An object containing borderColor, borderStyle, badgeBg, and badgeText keys.
  */
 export function getStatusInfo(status, customMarkerName, customMarkers) {
     const statusLower = status.toLowerCase();
+    
+    // Check if the status matches a marker name directly (legacy/auto mapping)
     let marker = customMarkers.find(m => m.name.toLowerCase() === statusLower);
     
+    // Check if an explicit marker is assigned
     if (!marker && customMarkerName) {
         marker = customMarkers.find(m => m.name === customMarkerName);
     }
@@ -159,6 +193,7 @@ export function getStatusInfo(status, customMarkerName, customMarkers) {
         };
     }
 
+    /** @type {Object} Map of default reading status colors and styles */
     const DEFAULT_STATUS_COLORS = {
         reading: { color: "#4CAF50", bg: "rgba(76, 175, 80, 0.15)" },
         read: { color: "#9f9f9f", bg: "rgba(159, 159, 159, 0.15)" },
@@ -169,6 +204,7 @@ export function getStatusInfo(status, customMarkerName, customMarkers) {
         default: { color: "#8B95A5", bg: "rgba(139, 149, 165, 0.15)" }
     };
 
+    // Keyword matching for status categorization
     let type = "default";
     if (statusLower.includes("reading")) type = "reading";
     else if (statusLower === "read") type = "read";
@@ -187,7 +223,12 @@ export function getStatusInfo(status, customMarkerName, customMarkers) {
 }
 
 /**
- * Normalize format name from AniList
+ * Normalizes AniList format data into human-readable strings.
+ * Specially identifies Manhwa (Korean) and Manhua (Chinese) as distinct formats.
+ * 
+ * @param {string} format - Raw AniList format code.
+ * @param {string} country - Two-letter country code of origin.
+ * @returns {string} Normalized format name (e.g., 'Manhwa', 'Light Novel').
  */
 export function getFormatName(format, country) {
     if (country === 'KR' && format === 'MANGA') return 'Manhwa';
@@ -200,3 +241,4 @@ export function getFormatName(format, country) {
     };
     return formats[format] || 'Manga';
 }
+

@@ -1,14 +1,25 @@
+/**
+ * @fileoverview AniList API interaction module for the MangaBook extension.
+ * Provides functions for fetching manga metadata, title cleaning, and rate-limited API calls.
+ */
+
+/** @type {string} Base URL for AniList GraphQL API */
 const ANILIST_API_URL = 'https://graphql.anilist.co';
 
+/** @type {string|null} Cached string content of the GraphQL query file */
 let cachedQuery = null;
 
 /**
- * Load GraphQL query from external file
+ * Loads the GraphQL query from the external .graphql file.
+ * Uses caching to avoid repeated file system reads/network requests.
+ * 
+ * @async
+ * @returns {Promise<string|null>} The GraphQL query string, or null if loading fails.
  */
 async function getQuery() {
     if (cachedQuery) return cachedQuery;
     try {
-        const response = await fetch(chrome.runtime.getURL('options/anilist-query.graphql'));
+        const response = await fetch(chrome.runtime.getURL('options/scripts/core/anilist-query.graphql'));
         cachedQuery = await response.text();
         return cachedQuery;
     } catch (err) {
@@ -17,14 +28,24 @@ async function getQuery() {
     }
 }
 
-// Rate limiting configuration
+/** @type {number} Timestamp of the last successful API request to AniList */
 let lastRequestTime = 0;
-const MIN_REQUEST_INTERVAL = 2000; // Increased to 2 seconds for reliability
-const MAX_RETRIES = 3; // Increased retries for rate limit handling
-const RETRY_DELAY_BASE = 3000; // Increased base delay
+
+/** @const {number} Minimum interval between requests in milliseconds to avoid rate limits */
+const MIN_REQUEST_INTERVAL = 2000;
+
+/** @const {number} Maximum number of retry attempts for failed or rate-limited requests */
+const MAX_RETRIES = 3;
+
+/** @const {number} Base delay in milliseconds for exponential backoff during retries */
+const RETRY_DELAY_BASE = 3000;
 
 /**
- * Sleep for specified milliseconds with optional jitter
+ * Utility function to pause execution for a specified duration, optionally adding jitter.
+ * 
+ * @param {number} ms - The number of milliseconds to sleep.
+ * @param {boolean} [useJitter=true] - Whether to add a small random delay to prevent synchronized retries.
+ * @returns {Promise<void>}
  */
 function sleep(ms, useJitter = true) {
   const jitter = useJitter ? Math.floor(Math.random() * 500) : 0;
@@ -32,7 +53,11 @@ function sleep(ms, useJitter = true) {
 }
 
 /**
- * Clean manga title for better search results
+ * Normalizes and cleans manga titles to improve search accuracy on AniList.
+ * 
+ * @param {string} title - The raw manga title string.
+ * @param {boolean} [aggressive=false] - If true, performs more destructive cleaning (removes common noise words and special characters).
+ * @returns {string} The cleaned and normalized title.
  */
 function cleanTitle(title, aggressive = false) {
   let cleaned = title
@@ -62,13 +87,14 @@ function cleanTitle(title, aggressive = false) {
   return cleaned;
 }
 
-
-
 /**
- * Fetches manga details from AniList by title with retry logic.
+ * Fetches manga details from AniList by title with automatic retry logic and exponential backoff.
+ * Scales cleaning strategy based on retry attempts.
+ * 
+ * @async
  * @param {string} title - The title of the manga to search for.
- * @param {number} retryCount - Current retry attempt (internal use)
- * @returns {Promise<object|null>} - The manga media object or null if not found.
+ * @param {number} [retryCount=0] - Internal tracker for the current retry attempt.
+ * @returns {Promise<object|null>} The primary manga data object from AniList, or null if no match found.
  */
 export async function fetchMangaFromAnilist(title, retryCount = 0) {
   // Rate limiting - ensure minimum interval between requests
@@ -180,7 +206,12 @@ export async function fetchMangaFromAnilist(title, retryCount = 0) {
 }
 
 /**
- * Get readable format name from AniList format code
+ * Converts AniList format codes and country information into human-readable strings.
+ * Correctly identifies Manhwa (Korean) and Manhua (Chinese) based on origin.
+ * 
+ * @param {string} format - The AniList format code (e.g., 'MANGA', 'NOVEL').
+ * @param {string} countryOfOrigin - Two-letter country code (e.g., 'KR', 'CN').
+ * @returns {string} Human-readable format name.
  */
 function getFormatName(format, countryOfOrigin) {
   // Use country of origin to differentiate manhwa/manhua
@@ -194,3 +225,4 @@ function getFormatName(format, countryOfOrigin) {
   };
   return formatMap[format] || format || 'Unknown';
 }
+

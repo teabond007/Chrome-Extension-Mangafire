@@ -8,7 +8,7 @@
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-body.dark-mode .secondary-bg-card {
+.dark-mode .secondary-bg-card {
     background-color: #111C44;
     border: 1px solid #1B254B;
 }
@@ -45,7 +45,7 @@ body.dark-mode .secondary-bg-card {
     margin-bottom: 20px;
 }
 
-body.dark-mode .inner-info-card {
+.dark-mode .inner-info-card {
     background-color: rgba(255, 255, 255, 0.02);
     border-color: #2B3674;
 }
@@ -102,7 +102,7 @@ body.dark-mode .inner-info-card {
     margin-bottom: 24px;
 }
 
-body.dark-mode .drop-zone-container {
+.dark-mode .drop-zone-container {
     background-color: rgba(255, 255, 255, 0.02);
     border-color: #2B3674;
 }

@@ -1,29 +1,49 @@
-import { Log, decodeHTMLEntities } from './utils.js';
+import { Log, decodeHTMLEntities } from '../core/utils.js';
 
-// --- Import & Export Logic ---
+/**
+ * @fileoverview Manages Data Portability (Import and Export) for the extension.
+ * Supports exporting data to JSON and importing from both JSON and external XML bookmarks.
+ */
+
+/**
+ * --- Import & Export Logic ---
+ * Initializes the Import/Export module.
+ * Attaches listeners to file drop zones, hidden file inputs, and export buttons.
+ * 
+ * @returns {void}
+ */
 export function initImportExport() {
     const exportBtn = document.getElementById('exportDataBtn');
-    const startImportBtn = document.getElementById('startImportBtn'); // Changed ID to be unique
+    const startImportBtn = document.getElementById('startImportBtn');
     const importInput = document.getElementById('importDataInput');
     const dropZone = document.getElementById('dropZone');
     const mergeToggle = document.getElementById('mergeImportToggle');
     const lastBackupDisplay = document.getElementById('lastBackupDisplay');
 
-    // Update Last Backup Display
+    /**
+     * Updates the UI to show the timestamp of the most recent data backup.
+     * @returns {void}
+     */
     const updateLastBackupDisplay = () => {
         chrome.storage.local.get("LastBackupDate", (data) => {
-            if (data.LastBackupDate) {
-                const date = new Date(data.LastBackupDate);
-                lastBackupDisplay.textContent = date.toLocaleString();
-            } else {
-                lastBackupDisplay.textContent = "Never";
+            if (lastBackupDisplay) {
+                if (data.LastBackupDate) {
+                    const date = new Date(data.LastBackupDate);
+                    lastBackupDisplay.textContent = date.toLocaleString();
+                } else {
+                    lastBackupDisplay.textContent = "Never";
+                }
             }
         });
     };
     updateLastBackupDisplay();
 
-    // Export Logic
-    exportBtn.addEventListener('click', () => {
+    /**
+     * Exports all relevant extension data into a single JSON file.
+     * Triggers a browser download of the generated file and updates the backup timestamp.
+     * @returns {void}
+     */
+    const exportData = () => {
         const keysToExport = [
             "userBookmarks",
             "customBookmarks",
@@ -60,9 +80,19 @@ export function initImportExport() {
                 if (typeof Log === 'function') Log("Data exported successfully.");
             });
         });
-    });
+    };
 
-    // Import Logic
+    // Export Logic
+    if (exportBtn) {
+        exportBtn.addEventListener('click', exportData);
+    }
+
+    /**
+     * Handles the selected file for import.
+     * Determines the file type (JSON or XML) and routes to the appropriate parser.
+     * @param {File} file - The file object to handle.
+     * @returns {void}
+     */
     const handleFile = (file) => {
         if (!file) return;
 
@@ -88,7 +118,7 @@ export function initImportExport() {
                     throw new Error("Failed to parse data");
                 }
 
-                const isMerge = mergeToggle.checked;
+                const isMerge = mergeToggle?.checked;
                 if (isMerge) {
                     processMergeImport(importedData);
                 } else {
@@ -102,6 +132,11 @@ export function initImportExport() {
         reader.readAsText(file);
     };
 
+    /**
+     * Parses manga bookmarks from an XML string, typically from MyAnimeList export.
+     * @param {string} xmlString - The raw XML content.
+     * @returns {object} An object containing userBookmarks in the expected format.
+     */
     const parseXMLBookmarks = (xmlString) => {
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(xmlString, "text/xml");
@@ -130,6 +165,11 @@ export function initImportExport() {
         return { userBookmarks };
     };
 
+    /**
+     * Processes an import by overwriting all existing data with the new data.
+     * @param {object} data - The data object to import.
+     * @returns {void}
+     */
     const processOverwriteImport = (data) => {
         if (confirm("This will overwrite all your current data. Are you sure?")) {
             chrome.storage.local.clear(() => {
@@ -142,11 +182,17 @@ export function initImportExport() {
         }
     };
 
+    /**
+     * Processes an import by merging the incoming data with the current storage content.
+     * Prevents duplicates by checking titles and marker names.
+     * @param {object} data - The data object to merge.
+     * @returns {void}
+     */
     const processMergeImport = (data) => {
         chrome.storage.local.get(null, (currentData) => {
             const mergedData = { ...currentData, ...data };
 
-            // Special handling for bookmarks and custom markers
+            // Special handling for bookmarks and custom markers to avoid duplicates
             if (data.userBookmarks && currentData.userBookmarks) {
                 const bookmarkMap = new Map();
                 currentData.userBookmarks.forEach(b => bookmarkMap.set(b.title.toLowerCase(), b));
@@ -161,7 +207,7 @@ export function initImportExport() {
                 mergedData.customBookmarks = Array.from(markerMap.values());
             }
 
-            // Merge anilistCache
+            // Merge anilistCache if present
             if (data.anilistCache && currentData.anilistCache) {
                mergedData.anilistCache = { ...currentData.anilistCache, ...data.anilistCache };
             }
@@ -174,31 +220,38 @@ export function initImportExport() {
         });
     };
 
-    // Drag and Drop
-    dropZone.addEventListener('click', () => importInput.click());
-    if (startImportBtn) {
-        startImportBtn.addEventListener('click', () => importInput.click());
+    // Drag and Drop Logic
+    if (dropZone) {
+        dropZone.addEventListener('click', () => importInput?.click());
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            if (e.dataTransfer.files.length > 0) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
     }
-    importInput.addEventListener('change', (e) => {
-        if (e.target.files.length > 0) {
-            handleFile(e.target.files[0]);
-        }
-    });
 
-    dropZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropZone.classList.add('drag-over');
-    });
+    if (startImportBtn) {
+        startImportBtn.addEventListener('click', () => importInput?.click());
+    }
 
-    dropZone.addEventListener('dragleave', () => {
-        dropZone.classList.remove('drag-over');
-    });
-
-    dropZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('drag-over');
-        if (e.dataTransfer.files.length > 0) {
-            handleFile(e.dataTransfer.files[0]);
-        }
-    });
+    if (importInput) {
+        importInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+    }
 }
+

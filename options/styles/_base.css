@@ -1,0 +1,62 @@
+:root {
+    /* Color Palette - Light Mode (Default) */
+    --bg-body: #F4F7FE;
+    --bg-sidebar: #1E222D;
+    /* Always dark in reference */
+    --bg-card: #FFFFFF;
+    --text-primary: #1E222D;
+    --text-secondary: #8B95A5;
+    --text-on-dark: #FFFFFF;
+    --text-muted-on-dark: #A0AEC0;
+
+    --accent-primary: #4318FF;
+    /* Vivid Purple/Blue */
+    --accent-hover: #3311CC;
+    --accent-secondary: #6AD2FF;
+
+    --border-color: #E0E5F2;
+    --input-bg: #F8F9FA;
+    --input-border: #E0E5F2;
+
+    --success: #01B574;
+    --warning: #FFB547;
+    --danger: #EE5D50;
+
+    /* Spacing & Radius */
+    --radius-sm: 8px;
+    --radius-md: 16px;
+    --radius-lg: 20px;
+    --nav-width: 260px;
+}
+
+/* Dark Mode Variables - Applied when .dark-mode class is present on root */
+.dark-mode {
+    --bg-body: #0B1437;
+    /* Deep Blue/Black */
+    --bg-sidebar: #111C44;
+    --bg-card: #111C44;
+    /* Match sidebar or slightly lighter */
+    --text-primary: #FFFFFF;
+    --text-secondary: #A3AED0;
+
+    --border-color: #2B3674;
+    --input-bg: #1B254B;
+    --input-border: #2B3674;
+}
+
+/* Global Reset */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text-primary);
+    /* Transition removed to prevent flash on load */
+    height: 100vh;
+    overflow: hidden;
+    /* App container handles scroll */
+}

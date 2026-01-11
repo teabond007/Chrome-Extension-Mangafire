@@ -10,7 +10,33 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="import-export.css">
+    <script>
+        (function () {
+            try {
+                const localTheme = localStorage.getItem("theme");
+                // Default is dark mode. Only remove if specifically set to light.
+                if (localTheme === "light") {
+                    document.documentElement.classList.remove("dark-mode");
+                } else {
+                    document.documentElement.classList.add("dark-mode");
+                }
+            } catch (e) { }
+        })();
+    </script>
+    <style>
+        /* Instant theme background to prevent blinding flash */
+        :root {
+            --bg-load: #ffffff;
+        }
+
+        .dark-mode {
+            --bg-load: #0B1437;
+        }
+
+        body {
+            background-color: var(--bg-load);
+        }
+    </style>
 </head>
 
 <body>
@@ -697,7 +723,7 @@
         </div>
     </div>
 
-    <script src="options.js" type="module"></script>
+    <script src="scripts/options.js" type="module"></script>
 </body>
 
 </html>

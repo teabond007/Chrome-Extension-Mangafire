@@ -2,11 +2,21 @@
  * General Settings management (Sync Interval, Border Size)
  */
 
+/**
+ * Initializes the settings management module.
+ * Attaches listeners for preference changes and management actions.
+ * @returns {void}
+ */
 export function initSettings() {
     initSyncInterval();
     initBorderSize();
 }
 
+/**
+ * Initializes the synchronization interval settings.
+ * Loads the saved interval, handles saving new intervals, and resetting to default.
+ * @returns {void}
+ */
 function initSyncInterval() {
     const saveBtn = document.getElementById("AutoSyncSetDaysButton");
     const resetBtn = document.getElementById("AutoSyncSetDaysButtonReset");

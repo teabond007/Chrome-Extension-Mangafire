@@ -1,8 +1,17 @@
 /**
- * Custom Marker management
+ * @fileoverview Manages Custom Markers for the extension.
+ * Allows users to create, view, and delete personalized markers with custom colors and border styles.
  */
-import { Log } from './utils.js';
 
+import { Log } from '../core/utils.js';
+
+/**
+ * Initializes the marker manager module.
+ * Attaches listeners for adding new markers and resetting the entire list.
+ * Triggers the initial render of existing markers.
+ * 
+ * @returns {void}
+ */
 export function initMarkerManager() {
     const addBtn = document.getElementById("addBookmarkButton");
     const resetBtn = document.getElementById("resetBookmarkButton");
@@ -17,8 +26,10 @@ export function initMarkerManager() {
                 chrome.storage.local.get("customBookmarks", (data) => {
                     const existing = Array.isArray(data.customBookmarks) ? data.customBookmarks : [];
                     const newMarker = { name, color, style };
+                    
+                    // Add the new marker to the local storage array
                     chrome.storage.local.set({ customBookmarks: [...existing, newMarker] }, () => {
-                        Log(`Added marker: ${name}`);
+                        Log(`Added custom marker: ${name}`);
                         document.getElementById("bookmarkName").value = "";
                         renderMarkers();
                     });
@@ -40,9 +51,16 @@ export function initMarkerManager() {
         });
     }
 
+    // Perform initial render
     renderMarkers();
 }
 
+/**
+ * Renders the list of active custom markers from storage into the UI container.
+ * Creates interactive pills for each marker that allow for individual deletion.
+ * 
+ * @returns {void}
+ */
 export function renderMarkers() {
     chrome.storage.local.get("customBookmarks", (data) => {
         const bookmarks = data.customBookmarks || [];
@@ -51,6 +69,7 @@ export function renderMarkers() {
 
         container.innerHTML = "";
 
+        // Display empty state message if no markers exist
         if (bookmarks.length === 0) {
             const emptyMsg = document.createElement("span");
             emptyMsg.className = "description";
@@ -60,10 +79,13 @@ export function renderMarkers() {
             return;
         }
 
+        // Construct and append marker pills
         bookmarks.forEach((bookmark, index) => {
             const pill = document.createElement("div");
             pill.className = "marker-pill";
+            // Use 20% opacity for the background color background
             pill.style.backgroundColor = `${bookmark.color}33`;
+            // Use 80% opacity for the border
             pill.style.border = `2px ${bookmark.style} ${bookmark.color}CC`;
             pill.textContent = bookmark.name;
             pill.title = "Click to remove";
@@ -79,15 +101,23 @@ export function renderMarkers() {
     });
 }
 
+/**
+ * Removes a single marker from the list by its index.
+ * Persists the updated list back to storage and re-renders the UI.
+ * 
+ * @param {number} index - The index of the marker to remove from the array.
+ * @returns {void}
+ */
 function removeMarker(index) {
     chrome.storage.local.get("customBookmarks", (data) => {
         const bookmarks = data.customBookmarks || [];
         if (index >= 0 && index < bookmarks.length) {
-            bookmarks.splice(index, 1);
+            const removed = bookmarks.splice(index, 1);
             chrome.storage.local.set({ customBookmarks: bookmarks }, () => {
-                Log("Marker removed.");
+                Log(`Marker removed: ${removed[0].name}`);
                 renderMarkers();
             });
         }
     });
 }
+
