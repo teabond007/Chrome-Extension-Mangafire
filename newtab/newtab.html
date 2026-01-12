@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manga Dashboard</title>
+    <link rel="stylesheet" href="newtab.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="loading">
+    <div id="bg-overlay" class="bg-overlay"></div>
+
+    <div class="dashboard-container">
+        <!-- Top Bar with Clock & Greeting -->
+        <header class="top-bar">
+            <div class="clock-section">
+                <span id="digital-clock" class="digital-clock">00:00</span>
+                <span id="greeting-text" class="greeting-text">Good morning</span>
+            </div>
+            <div class="quick-links">
+                <a href="https://mangafire.to/home" class="quick-link-btn" title="MangaFire Home">MangaFire</a>
+                <a href="https://anilist.co/home" class="quick-link-btn" title="AniList Home">AniList</a>
+                <a href="#" id="open-settings-btn" class="quick-link-btn" title="Extension Settings">Settings</a>
+            </div>
+        </header>
+
+        <!-- Search Bar -->
+        <section class="search-section">
+            <div class="search-box">
+                <input type="text" id="manga-search-input" placeholder="Search for manga..." autocomplete="off">
+                <button id="search-btn" title="Search MangaFire">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </button>
+            </div>
+        </section>
+
+        <!-- Continue Reading Section -->
+        <section class="reading-section">
+            <div class="section-header">
+                <h2>Continue Reading</h2>
+                <span id="reading-count" class="count-badge">0</span>
+            </div>
+            <div id="reading-grid" class="reading-grid">
+                <!-- Manga cards injected here -->
+                <div class="loading-state">Loading your library...</div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>MangaFire Bookmark Color Marker • v3.4.0</p>
+        </footer>
+    </div>
+
+    <script src="newtab.js" type="module"></script>
+</body>
+
+</html>

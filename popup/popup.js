@@ -27,7 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: "CustomBookmarks", storageKey: "CustomBookmarksfeatureEnabled" },
         { id: "CustomBorderSize", storageKey: "CustomBorderSizefeatureEnabled" },
         { id: "MarkHomePage", storageKey: "MarkHomePagefeatureEnabled" },
-        { id: "SyncandMarkRead", storageKey: "SyncandMarkReadfeatureEnabled" }
+        { id: "SyncandMarkRead", storageKey: "SyncandMarkReadfeatureEnabled" },
+        { id: "NewTabDashboard", storageKey: "NewTabDashboardfeatureEnabled" }
     ];
 
     features.forEach(feature => {
