@@ -6,11 +6,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const isEnabled = data.NewTabDashboardfeatureEnabled !== false; // Default to true if not set
 
     if (!isEnabled) {
-        // Feature disabled - redirect to default
-        // In most cases, extensions can't easily jump back to the internal default NTP once overridden,
-        // so we redirect to Google or a blank page, or just show a message.
-        // For now, let's redirect to Google to avoid an empty screen.
-        window.location.href = "https://www.google.com";
+        // Feature disabled - redirect to the native New Tab Page
+        chrome.tabs.getCurrent((tab) => {
+            if (tab) {
+                chrome.tabs.update(tab.id, { url: "chrome://new-tab-page" });
+            } else {
+                window.location.href = "chrome://new-tab-page";
+            }
+        });
         return;
     }
 
