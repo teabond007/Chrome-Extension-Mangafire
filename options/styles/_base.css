@@ -47,8 +47,8 @@
 /* Black Mode Variables - High contrast AMOLED black */
 .black-mode {
     --bg-body: #000000;
-    --bg-sidebar: #010101;
-    --bg-card: #0d0a13;
+    --bg-sidebar: #000000;
+    --bg-card: #111141d0;
     --text-primary: #FFFFFF;
     --text-secondary: #A3AED0;
 
@@ -72,6 +72,26 @@
     --border-color: #39FF1433;
     --input-bg: #000000;
     --input-border: #FF00FF;
+}
+
+/* Glassy Mode Variables - Semi-transparent and blur */
+.glassy-mode {
+    --bg-body: #0b1437;
+    --bg-sidebar: rgba(17, 28, 68, 0.8);
+    --bg-card: rgba(17, 28, 68, 0.4);
+    --text-primary: #FFFFFF;
+    --text-secondary: #A3AED0;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --input-bg: rgba(255, 255, 255, 0.05);
+    --input-border: rgba(255, 255, 255, 0.1);
+    --accent-primary: #7551FF;
+}
+
+.glassy-mode .card,
+.glassy-mode .sidebar,
+.glassy-mode .modal-content {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 }
 
 

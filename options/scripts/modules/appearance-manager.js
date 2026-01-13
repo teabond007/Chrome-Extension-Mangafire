@@ -38,10 +38,12 @@ function initPresetThemes() {
 function applyPresetTheme(theme) {
     currentTheme = theme;
     const html = document.documentElement;
-    html.classList.remove('dark-mode', 'black-mode', 'neon-mode', 'light-mode');
+    html.classList.remove('dark-mode', 'black-mode', 'neon-mode', 'light-mode', 'glassy-mode');
     
     if (theme === 'light') {
         html.classList.add('light-mode');
+    } else if (theme === 'glassy') {
+        html.classList.add('glassy-mode');
     } else {
         html.classList.add(`${theme}-mode`);
     }

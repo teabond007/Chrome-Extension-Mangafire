@@ -56,6 +56,11 @@
     background: linear-gradient(135deg, #030303 0%, #00ff41 100%);
 }
 
+.glassy-swatch {
+    background: linear-gradient(135deg, rgba(11, 20, 55, 0.8) 0%, rgba(117, 81, 255, 0.4) 100%);
+    backdrop-filter: blur(8px);
+}
+
 .theme-label {
     font-size: 0.9rem;
     font-weight: 500;

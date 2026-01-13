@@ -404,6 +404,12 @@ input:checked+.slider:before {
     /* evenly distribute if multiple in row */
 }
 
+.feature-toggle-wrapper.no-bg-padding {
+    background-color: transparent;
+    padding: 0;
+    margin-right: 0;
+}
+
 .feature-toggle-wrapper:last-child {
     margin-right: 0;
 }
