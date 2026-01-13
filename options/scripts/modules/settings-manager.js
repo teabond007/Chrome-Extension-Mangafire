@@ -9,7 +9,6 @@
  */
 export function initSettings() {
     initSyncInterval();
-    initBorderSize();
 }
 
 /**
@@ -53,48 +52,4 @@ function initSyncInterval() {
     }
 }
 
-function initBorderSize() {
-    const saveBtn = document.getElementById("CustomBorderSizeButton");
-    const resetBtn = document.getElementById("CustomBorderSizeButtonReset");
-    const slider = document.getElementById("BorderSetSize");
-    const display = document.getElementById("rangeValueDisplay");
-    const status = document.getElementById("logContainerCustomBorderSize");
 
-    // Load initial
-    chrome.storage.local.get("CustomBorderSize", (data) => {
-        const val = data.CustomBorderSize || 4;
-        if (slider) slider.value = val;
-        if (display) display.textContent = `${val}px`;
-    });
-
-    if (slider) {
-        slider.addEventListener("input", (e) => {
-            if (display) display.textContent = `${e.target.value}px`;
-        });
-    }
-
-    if (saveBtn) {
-        saveBtn.addEventListener("click", () => {
-            const val = slider.value;
-            chrome.storage.local.set({ CustomBorderSize: val }, () => {
-                if (status) {
-                    status.textContent = `Saved: Border size ${val}px.`;
-                    setTimeout(() => status.textContent = "", 3000);
-                }
-            });
-        });
-    }
-
-    if (resetBtn) {
-        resetBtn.addEventListener("click", () => {
-            chrome.storage.local.set({ CustomBorderSize: 4 }, () => {
-                if (slider) slider.value = 4;
-                if (display) display.textContent = "4px";
-                if (status) {
-                    status.textContent = "Reset to default (4px).";
-                    setTimeout(() => status.textContent = "", 3000);
-                }
-            });
-        });
-    }
-}

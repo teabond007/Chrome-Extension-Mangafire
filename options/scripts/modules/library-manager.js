@@ -65,6 +65,14 @@ export function initLibrary() {
     // Genre filter
     elements.genreFilter = document.getElementById("savedGenreFilter");
 
+    // Advanced elements
+    elements.statsContainer = document.getElementById("library-stats-container");
+    elements.statsGrid = document.getElementById("stats-dashboard-grid");
+    elements.bulkBar = document.getElementById("bulk-ops-bar");
+    elements.bulkStatusSelect = document.getElementById("bulkStatusSelect");
+    elements.btnApplyBulk = document.getElementById("btnApplyBulkUpdate");
+    elements.freshSyncBtn = document.getElementById("BtnTrashAndSyncEntries");
+
     if (!elements.grid) return;
 
     // Load initial data
@@ -129,16 +137,41 @@ function attachListeners() {
         }
     });
 
-    const freshSyncBtn = document.getElementById("BtnTrashAndSyncEntries");
-    if (freshSyncBtn) {
-        freshSyncBtn.addEventListener("click", async () => {
+    if (elements.freshSyncBtn) {
+        elements.freshSyncBtn.addEventListener("click", async () => {
             if (confirm("Reset library cache and fresh sync from AniList?")) {
                 await chrome.storage.local.remove(["savedEntriesMerged"]);
                 location.reload();
             }
         });
     }
+
+    // Stats Toggle
+    const showStatsBtn = document.getElementById("BtnShowStats");
+    showStatsBtn?.addEventListener("click", () => {
+        const isVisible = elements.statsContainer.style.display === "block";
+        elements.statsContainer.style.display = isVisible ? "none" : "block";
+        if (!isVisible) renderStatistics();
+    });
+
+    // Bulk Toggle
+    const toggleBulkBtn = document.getElementById("btnToggleBulk");
+    toggleBulkBtn?.addEventListener("click", () => {
+        isBulkMode = !isBulkMode;
+        elements.bulkBar.style.display = isBulkMode ? "flex" : "none";
+        toggleBulkBtn.classList.toggle("active", isBulkMode);
+        filterEntries();
+    });
+
+    elements.btnApplyBulk?.addEventListener("click", applyBulkUpdate);
+    
+    document.getElementById("btnCloseBulkOps")?.addEventListener("click", () => {
+        isBulkMode = false;
+        elements.bulkBar.style.display = "none";
+    });
 }
+
+let isBulkMode = false;
 
 function setViewSize(size) {
     if (!elements.grid) return;
@@ -268,6 +301,7 @@ export function filterEntries() {
         });
 
         renderEntries(filtered);
+        renderStatistics();
     });
 }
 
@@ -295,6 +329,66 @@ function renderEntries(entries) {
     });
 
     updateSubtitle(entries.length);
+}
+
+function renderStatistics() {
+    if (!elements.statsGrid || !savedEntriesMerged) return;
+    
+    const stats = {
+        total: savedEntriesMerged.length,
+        reading: savedEntriesMerged.filter(e => e.status === 'Reading').length,
+        completed: savedEntriesMerged.filter(e => e.status === 'Completed').length,
+        planning: savedEntriesMerged.filter(e => e.status === 'Plan to Read').length,
+        onhold: savedEntriesMerged.filter(e => e.status === 'On Hold').length,
+        dropped: savedEntriesMerged.filter(e => e.status === 'Dropped').length
+    };
+
+    const items = [
+        { label: 'Total', count: stats.total, color: 'var(--primary)' },
+        { label: 'Reading', count: stats.reading, color: '#4CAF50' },
+        { label: 'Completed', count: stats.completed, color: '#2196F3' },
+        { label: 'Plan to Read', count: stats.planning, color: '#9C27B0' },
+        { label: 'On Hold', count: stats.onhold, color: '#FFC107' },
+        { label: 'Dropped', count: stats.dropped, color: '#F44336' }
+    ];
+
+    elements.statsGrid.innerHTML = items.map(item => `
+        <div class="stat-item-compact">
+            <span class="stat-value-large" style="color: ${item.color}">${item.count}</span>
+            <span class="stat-label-small">${item.label}</span>
+        </div>
+    `).join('');
+}
+
+async function applyBulkUpdate() {
+    const newStatus = elements.bulkStatusSelect.value;
+    const searchVal = elements.searchInput?.value.toLowerCase() || "";
+    const statusVal = elements.statusFilter?.value || "All";
+
+    const filtered = savedEntriesMerged.filter(entry => {
+        const matchesStatus = statusVal === "All" || (statusVal.startsWith("marker:") ? entry.customMarker === statusVal.substring(7) : entry.status === statusVal);
+        const matchesSearch = searchVal === "" || entry.title.toLowerCase().includes(searchVal);
+        return matchesStatus && matchesSearch;
+    });
+
+    if (filtered.length === 0) {
+        alert("No items matched the current filter to update.");
+        return;
+    }
+
+    if (confirm(`Update all ${filtered.length} filtered items to "${newStatus}"?`)) {
+        filtered.forEach(e => {
+            e.status = newStatus;
+            e.customMarker = null;
+        });
+
+        chrome.storage.local.set({ savedEntriesMerged }, () => {
+            filterEntries();
+            alert(`Successfully updated ${filtered.length} items.`);
+            isBulkMode = false;
+            elements.bulkBar.style.display = "none";
+        });
+    }
 }
 
 /**

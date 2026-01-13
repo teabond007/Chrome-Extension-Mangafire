@@ -85,41 +85,38 @@
     text-align: center;
 }
 
-/* Theme Toggle Button */
-.theme-toggle {
+/* Sidebar Buttons */
+.sidebar-btn {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--text-on-dark);
-    padding: 8px;
+    padding: 10px 12px;
     border-radius: var(--radius-sm);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    font-size: 13px;
-    transition: background 0.2s;
+    gap: 10px;
+    font-size: 14px;
+    transition: all 0.2s;
+    text-decoration: none;
+    font-weight: 500;
 }
 
-.theme-toggle:hover {
-    background: rgba(255, 255, 255, 0.15);
+.sidebar-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-.theme-toggle .icon-moon {
-    display: inline;
+.support-sidebar-btn {
+    border-color: rgba(117, 81, 255, 0.3);
+    background: linear-gradient(135deg, rgba(117, 81, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
 }
 
-.theme-toggle .icon-sun {
-    display: none;
-}
-
-/* In dark mode, show sun, hide moon */
-.dark-mode .theme-toggle .icon-moon {
-    display: none;
-}
-
-.dark-mode .theme-toggle .icon-sun {
-    display: inline;
+.support-sidebar-btn:hover {
+    border-color: var(--accent-primary);
+    background: linear-gradient(135deg, rgba(117, 81, 255, 0.2) 0%, rgba(255, 255, 255, 0.08) 100%);
 }
 
 

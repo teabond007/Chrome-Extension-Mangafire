@@ -2,7 +2,7 @@
  * Options Page Entry Point (Modular)
  */
 
-import { initTheme } from './ui/theme-manager.js';
+// Redundant theme import removed
 import { initTabs, initInfoRedirects, initScrollToTop } from './ui/ui-navigation.js';
 import { initFeatureToggles } from './modules/feature-toggles.js';
 import { initSettings } from './modules/settings-manager.js';
@@ -10,6 +10,7 @@ import { initMarkerManager } from './modules/marker-manager.js';
 import { initImportExport } from './modules/import-export.js';
 import { initLibrary } from './modules/library-manager.js';
 import { initQuickAccessManager } from './modules/quick-access-manager.js';
+import { initAppearanceManager } from './modules/appearance-manager.js';
 import { Log } from './core/utils.js';
 
 /**
@@ -18,11 +19,6 @@ import { Log } from './core/utils.js';
  * Sequentially initializes all subsystems to ensure the options page is fully functional.
  */
 document.addEventListener("DOMContentLoaded", () => {
-    // 1. Theme
-    /**
-     * Initializes the theme settings for the options page.
-     */
-    initTheme();
 
     // 2. Navigation
     /**
@@ -71,6 +67,12 @@ document.addEventListener("DOMContentLoaded", () => {
      * Initializes the quick access shortcuts manager.
      */
     initQuickAccessManager();
+    
+    // 8. Appearance & Themes
+    /**
+     * Initializes the appearance manager for themes and global styles.
+     */
+    initAppearanceManager();
 
     // 8. Manual Sync Button
     const syncBtn = document.getElementById("sendMessageBtnSyncBookmarks");
