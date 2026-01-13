@@ -26,7 +26,8 @@ export function initFeatureToggles() {
         { id: "AutoSync", storageKey: "AutoSyncfeatureEnabled" },
         { id: "CustomBorderSize", storageKey: "CustomBorderSizefeatureEnabled" },
         { id: "FamilyFriendly", storageKey: "FamilyFriendlyfeatureEnabled" },
-        { id: "NewTabDashboard", storageKey: "NewTabDashboardfeatureEnabled" }
+        { id: "NewTabDashboard", storageKey: "NewTabDashboardfeatureEnabled" },
+        { id: "DashboardLayoutStyle", storageKey: "DashboardLayoutStylePacked" }
     ];
 
     features.forEach(feature => {

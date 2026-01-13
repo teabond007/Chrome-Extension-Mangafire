@@ -177,6 +177,77 @@ body.loaded {
     transform: scale(1.05);
 }
 
+/* Quick Access Section */
+.quick-access-section {
+    display: flex;
+    justify-content: center;
+}
+
+.quick-access-grid {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.quick-access-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    transition: var(--transition);
+    width: 90px;
+}
+
+.shortcut-icon {
+    width: 64px;
+    height: 64px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--text-white);
+    transition: var(--transition);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.shortcut-icon img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+}
+
+.shortcut-name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    transition: var(--transition);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+.quick-access-item:hover {
+    transform: translateY(-5px);
+}
+
+.quick-access-item:hover .shortcut-icon {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--primary);
+    box-shadow: 0 12px 24px rgba(79, 70, 229, 0.3);
+}
+
+.quick-access-item:hover .shortcut-name {
+    color: var(--text-white);
+}
+
 /* Reading Section */
 .reading-section {
     display: flex;
@@ -276,12 +347,150 @@ body.loaded {
     justify-content: space-between;
 }
 
-/* Footer */
+/* Layout Controls */
+body.layout-clean .packed-only {
+    display: none !important;
+}
+
+body.layout-clean .dashboard-container {
+    align-items: center;
+    text-align: center;
+}
+
+.dashboard-content-wrapper {
+    display: flex;
+    gap: 3rem;
+    width: 100%;
+}
+
+.main-dashboard-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4rem;
+}
+
+/* Sidebar Styling */
+.dashboard-sidebar {
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
+    padding: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.glass-card h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+    color: var(--text-white);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.stat-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1rem;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Recent History List */
+.recent-history-section {
+    margin-top: 2rem;
+}
+
+.recent-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.history-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--text-white);
+    transition: var(--transition);
+}
+
+.history-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--primary);
+    transform: translateX(10px);
+}
+
+.history-icon {
+    font-size: 1.25rem;
+}
+
+.history-link-text {
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-muted);
+}
+
+.history-item:hover .history-link-text {
+    color: var(--text-white);
+}
+
+/* Discovery Card */
+#random-suggestion-text {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+/* Footer Styling */
 .footer {
     text-align: center;
     color: var(--text-muted);
     font-size: 0.8rem;
-    margin-top: 2rem;
+    margin-top: 4rem;
+}
+
+@media (max-width: 1100px) {
+    .dashboard-content-wrapper {
+        flex-direction: column;
+    }
+
+    .dashboard-sidebar {
+        width: 100%;
+    }
 }
 
 @media (max-width: 768px) {

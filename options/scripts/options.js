@@ -9,6 +9,7 @@ import { initSettings } from './modules/settings-manager.js';
 import { initMarkerManager } from './modules/marker-manager.js';
 import { initImportExport } from './modules/import-export.js';
 import { initLibrary } from './modules/library-manager.js';
+import { initQuickAccessManager } from './modules/quick-access-manager.js';
 import { Log } from './core/utils.js';
 
 /**
@@ -65,7 +66,13 @@ document.addEventListener("DOMContentLoaded", () => {
      */
     initLibrary();
 
-    // 7. Manual Sync Button
+    // 7. Quick Access
+    /**
+     * Initializes the quick access shortcuts manager.
+     */
+    initQuickAccessManager();
+
+    // 8. Manual Sync Button
     const syncBtn = document.getElementById("sendMessageBtnSyncBookmarks");
     if (syncBtn) {
         syncBtn.addEventListener("click", () => {
@@ -76,6 +83,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else {
                     Log("Sync process initiated...");
                 }
+            });
+        });
+    }
+
+    // 9. Clear Reading History
+    const clearHistoryBtn = document.getElementById("ClearReadingHistoryBtn");
+    if (clearHistoryBtn) {
+        clearHistoryBtn.addEventListener("click", () => {
+            chrome.storage.local.remove("userbookmarkshistory", () => {
+                Log("Reading history cleared.");
+                alert("Reading history cleared!");
             });
         });
     }

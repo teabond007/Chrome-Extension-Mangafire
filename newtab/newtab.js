@@ -2,7 +2,13 @@ import { createMangaCardSmall } from './manga-card-small.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     // 1. Check if feature is enabled
-    const data = await chrome.storage.local.get(['NewTabDashboardfeatureEnabled', 'savedEntriesMerged']);
+    const data = await chrome.storage.local.get([
+        'NewTabDashboardfeatureEnabled', 
+        'savedEntriesMerged', 
+        'DashboardLayoutStylePacked',
+        'userbookmarkshistory',
+        'userBookmarks'
+    ]);
     const isEnabled = data.NewTabDashboardfeatureEnabled !== false; // Default to true if not set
 
     if (!isEnabled) {
@@ -17,19 +23,147 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
+    // 1.5 Handle Layout
+    const isPacked = data.DashboardLayoutStylePacked === true;
+    document.body.classList.add(isPacked ? 'layout-packed' : 'layout-clean');
     // Show body
     document.body.classList.add('loaded');
 
     const savedEntries = data.savedEntriesMerged || [];
+    const bookmarks = data.userBookmarks || [];
+    const history = data.userbookmarkshistory || [];
     
     // 2. Initialize UI Components
     initClock();
     initGreeting();
     initBackground(savedEntries);
+    initQuickAccess(); // Add this
     initSearch();
     initSettingsLink();
     renderReadingList(savedEntries);
+
+    if (isPacked) {
+        renderLibraryStats(bookmarks);
+        renderReadingHistory(history);
+        initDiscovery(bookmarks);
+    }
 });
+
+function renderLibraryStats(bookmarks) {
+    const statsContainer = document.getElementById('library-stats');
+    if (!statsContainer) return;
+
+    const stats = {
+        'Reading': 0,
+        'Plan to Read': 0,
+        'Completed': 0,
+        'Total': bookmarks.length
+    };
+
+    bookmarks.forEach(b => {
+        if (stats[b.status] !== undefined) stats[b.status]++;
+    });
+
+    statsContainer.innerHTML = `
+        <div class="stat-item">
+            <span class="stat-value">${stats['Reading']}</span>
+            <span class="stat-label">Reading</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value">${stats['Plan to Read']}</span>
+            <span class="stat-label">Planner</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value">${stats['Completed']}</span>
+            <span class="stat-label">Finished</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value">${stats['Total']}</span>
+            <span class="stat-label">Library</span>
+        </div>
+    `;
+}
+
+function renderReadingHistory(history) {
+    const list = document.getElementById('recent-history-list');
+    if (!list || history.length === 0) {
+        if (list) list.innerHTML = '<div class="loading-state">No recent reading history found. Start reading to see links here!</div>';
+        return;
+    }
+
+    list.innerHTML = "";
+    history.forEach(url => {
+        const item = document.createElement('a');
+        item.className = 'history-item';
+        item.href = url;
+        
+        // Extract a "clean" name from the URL for now
+        let displayName = url.split('/read/')[1] || "Manga Link";
+        displayName = displayName.split('/')[0].replace(/-/g, ' ');
+
+        item.innerHTML = `
+            <div class="history-icon">📖</div>
+            <div class="history-info">
+                <div class="shortcut-name">${displayName}</div>
+                <div class="history-link-text">${url}</div>
+            </div>
+        `;
+        list.appendChild(item);
+    });
+}
+
+function initDiscovery(bookmarks) {
+    const text = document.getElementById('random-suggestion-text');
+    const btn = document.getElementById('random-suggestion-btn');
+    if (!text || !btn) return;
+
+    const showRandom = () => {
+        if (bookmarks.length === 0) return;
+        const random = bookmarks[Math.floor(Math.random() * bookmarks.length)];
+        text.innerHTML = `How about reading <strong>${random.title}</strong>? It's currently marked as <em>${random.status}</em>.`;
+    };
+
+    btn.addEventListener('click', showRandom);
+    showRandom();
+}
+
+async function initQuickAccess() {
+    const grid = document.getElementById('quick-access-grid');
+    if (!grid) return;
+
+    const defaultShortcuts = [
+        { name: 'YouTube', url: 'https://www.youtube.com' },
+        { name: 'ChatGPT', url: 'https://chat.openai.com' },
+        { name: 'Spotify', url: 'https://open.spotify.com' },
+        { name: 'Gmail', url: 'https://mail.google.com' },
+        { name: 'Discord', url: 'https://discord.com' }
+    ];
+
+    const data = await chrome.storage.local.get(['QuickAccessShortcuts']);
+    const shortcuts = data.QuickAccessShortcuts || defaultShortcuts;
+
+    grid.innerHTML = "";
+    shortcuts.forEach(site => {
+        if (!site.url) return;
+
+        const item = document.createElement('a');
+        item.className = 'quick-access-item';
+        item.href = site.url;
+        item.title = site.name;
+
+        // Use Google's favicon service for high-quality icons
+        const domain = new URL(site.url).hostname;
+        const iconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+
+        item.innerHTML = `
+            <div class="shortcut-icon">
+                <img src="${iconUrl}" alt="${site.name}" onerror="this.src='../icons/favicon128.png'">
+            </div>
+            <span class="shortcut-name">${site.name}</span>
+        `;
+        grid.appendChild(item);
+    });
+}
 
 function initClock() {
     const clockEl = document.getElementById('digital-clock');
@@ -76,7 +210,8 @@ function initSearch() {
     const doSearch = () => {
         const query = input.value.trim();
         if (query) {
-            window.location.href = `https://mangafire.to/filter?keyword=${encodeURIComponent(query)}`;
+            // Using /search might be more compatible or redirect to a page that generates the required 'vrf'
+            window.location.href = `https://mangafire.to/search?keyword=${encodeURIComponent(query)}`;
         }
     };
 

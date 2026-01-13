@@ -42,21 +42,59 @@
             </div>
         </section>
 
-        <!-- Continue Reading Section -->
-        <section class="reading-section">
-            <div class="section-header">
-                <h2>Continue Reading</h2>
-                <span id="reading-count" class="count-badge">0</span>
-            </div>
-            <div id="reading-grid" class="reading-grid">
-                <!-- Manga cards injected here -->
-                <div class="loading-state">Loading your library...</div>
+        <!-- Quick Access Shortcuts -->
+        <section class="quick-access-section">
+            <div id="quick-access-grid" class="quick-access-grid">
+                <!-- Shortcuts injected here -->
             </div>
         </section>
 
+        <div class="dashboard-content-wrapper">
+            <!-- Main Content Area -->
+            <div class="main-dashboard-content">
+                <!-- Continue Reading Section -->
+                <section class="reading-section">
+                    <div class="section-header">
+                        <h2>Continue Reading</h2>
+                        <span id="reading-count" class="count-badge">0</span>
+                    </div>
+                    <div id="reading-grid" class="reading-grid">
+                        <!-- Manga cards injected here -->
+                        <div class="loading-state">Loading your library...</div>
+                    </div>
+                </section>
+
+                <!-- Recent History Section (Packed Only) -->
+                <section id="recent-history-section" class="recent-history-section packed-only">
+                    <div class="section-header">
+                        <h2>Recently Viewed (Exact Chapters)</h2>
+                    </div>
+                    <div id="recent-history-list" class="recent-history-list">
+                        <!-- History links injected here -->
+                    </div>
+                </section>
+            </div>
+
+            <!-- Sidebar (Packed Only) -->
+            <aside class="dashboard-sidebar packed-only">
+                <div class="stats-card glass-card">
+                    <h3>Library Overview</h3>
+                    <div id="library-stats" class="stats-grid">
+                        <!-- Stats injected here -->
+                    </div>
+                </div>
+
+                <div class="discovery-card glass-card">
+                    <h3>Quick Discovery</h3>
+                    <p id="random-suggestion-text">Sync your library to see suggestions!</p>
+                    <button id="random-suggestion-btn" class="quick-link-btn">Show Random</button>
+                </div>
+            </aside>
+        </div>
+
         <!-- Footer -->
         <footer class="footer">
-            <p>MangaFire Bookmark Color Marker • v3.4.0</p>
+            <p>MangaFire Bookmark Color Marker • v3.5.0</p>
         </footer>
     </div>
 

@@ -346,6 +346,22 @@ window.addEventListener("load", () => {
   } else {
     applyContainerStyles();
   }
+
+  // Capture reading history if on a reader page
+  if (window.location.pathname.startsWith("/read/")) {
+    const currentUrl = window.location.href;
+    chrome.storage.local.get(["userbookmarkshistory"], (data) => {
+      let history = data.userbookmarkshistory || [];
+      // Remove if already exists to move to top
+      history = history.filter(url => url !== currentUrl);
+      // Add to front
+      history.unshift(currentUrl);
+      // Keep only 10
+      if (history.length > 10) history = history.slice(0, 10);
+      
+      chrome.storage.local.set({ userbookmarkshistory: history });
+    });
+  }
 });
 
 function Log(txt) {
