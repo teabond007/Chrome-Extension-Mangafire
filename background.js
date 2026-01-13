@@ -245,5 +245,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 });
 
 function Log(txt) {
-  chrome.runtime.sendMessage({ type: "log", text: txt });
+  const text = typeof txt === "object" ? JSON.stringify(txt) : txt;
+  chrome.runtime.sendMessage({ type: "log", text: text });
 }

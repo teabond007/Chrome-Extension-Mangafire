@@ -47,8 +47,8 @@
 /* Black Mode Variables - High contrast AMOLED black */
 .black-mode {
     --bg-body: #000000;
-    --bg-sidebar: #010101;
-    --bg-card: #0d0a13;
+    --bg-sidebar: #000000;
+    --bg-card: #111141d0;
     --text-primary: #FFFFFF;
     --text-secondary: #A3AED0;
 

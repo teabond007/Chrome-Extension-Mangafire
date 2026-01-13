@@ -156,18 +156,35 @@ function applyContainerStylesHomePage() {
  * @param {Array} foundMangaTitles all found bookmarks on the page
  */
 function crossRefrencBookmarks(foundMangaTitles, callback) {
-  Log(`crossRefrencBookmarks(), foundMangaTitles: ${foundMangaTitles}`);
-  chrome.storage.local.get("userBookmarks", (data) => {
-    // finds title of mangas on page and croos refrences them with saved bookmarks
-    const bookmarks = data.userBookmarks || [];
+  Log(`crossRefrencBookmarks(), foundMangaTitles length: ${foundMangaTitles.length}`);
+  chrome.storage.local.get(["userBookmarks", "savedEntriesMerged"], (data) => {
+    // Priority: savedEntriesMerged (fuller data), fallback to userBookmarks (sync data)
+    let bookmarks = [];
+    
+    const savedEntries = Array.isArray(data.savedEntriesMerged) ? data.savedEntriesMerged : [];
+    const userBookmarks = Array.isArray(data.userBookmarks) ? data.userBookmarks : [];
+
+    // Map titles for easy lookup
+    const bookmarksMap = new Map();
+
+    // Fill with userBookmarks first
+    userBookmarks.forEach(b => {
+      if (b && b.title) bookmarksMap.set(b.title, b);
+    });
+
+    // Overwrite/Add with savedEntries (preferred)
+    savedEntries.forEach(b => {
+      if (b && b.title) bookmarksMap.set(b.title, b);
+    });
+
+    bookmarks = Array.from(bookmarksMap.values());
 
     const matchedBookmarks = bookmarks.filter((bookmark) =>
       foundMangaTitles.includes(bookmark.title)
     );
-    matchedBookmarks.forEach((item) => {
-      Log(`Title: ${item.title}, Status: ${item.status}`);
-    });
-    callback(matchedBookmarks); // return via callback
+    
+    Log(`Matched ${matchedBookmarks.length} bookmarks`);
+    callback(matchedBookmarks);
   });
 }
 
@@ -195,50 +212,51 @@ function applyAndColorBorders(
         `querySelectToTitle: ${querySelectToTitle};    elementClosestSelector: ${elementClosestSelector}`
       );
       mangasToColor.forEach((bookmark) => {
-        const status = bookmark.status.trim().toLowerCase(); //".inner .info a"
+        if (!bookmark || !bookmark.title || !bookmark.status) return;
+        
+        const status = bookmark.status.trim().toLowerCase();
         const element = [...document.querySelectorAll(querySelectToTitle)].find(
           (el) => el.textContent.trim() === bookmark.title
         );
 
         if (element) {
-          //  Log(`applyColors title: ${bookmark.title}`)
-          // at end of chain colors the border with set size 4px if true; custom size if false
-
-          var borderColor;
+          var borderColor = "transparent";
           var borderStyle = "solid";
-          const borderSize = data.CustomBorderSize;
+          const borderSize = data.CustomBorderSize || 4;
 
-            if (status === "reading") {
+          // Standard status matching
+          if (status.includes("reading")) {
             borderColor = "green";
-          } else if (status === "dropped") {
+          } else if (status.includes("dropped")) {
             borderColor = "darkred";
-          } else if (status === "completed") {
+          } else if (status.includes("completed")) {
             borderColor = "blue";
-          } else if (status === "on-hold") {
+          } else if (status.includes("on-hold") || status.includes("hold")) {
             borderColor = "orange";
-          } else if (status === "plan to read") {
+          } else if (status.includes("plan to read")) {
             borderColor = "lightgreen";
-          } else if (status === "read" && data.SyncandMarkReadfeatureEnabled) {
+          } else if (status.includes("read") && data.SyncandMarkReadfeatureEnabled) {
             borderColor = "grey";
           }
+
+          // Custom Bookmark overrides
           if (data.CustomBookmarksfeatureEnabled) {
             const customBookmarks = data.customBookmarks || [];
             customBookmarks.forEach((custombookmark) => {
-              if (custombookmark.name == status) {
+              if (custombookmark.name && status.includes(custombookmark.name.toLowerCase())) {
                 borderColor = custombookmark.color;
-                borderStyle = custombookmark.style;
+                borderStyle = custombookmark.style || "solid";
               }
             });
           }
 
-          if (data.CustomBorderSizefeatureEnabled) {
-            element.closest(
-              elementClosestSelector
-            ).style.border = `${borderSize}px ${borderStyle} ${borderColor}`;
-          } else {
-            element.closest(
-              elementClosestSelector
-            ).style.border = `4px ${borderStyle} ${borderColor}`;
+          const target = element.closest(elementClosestSelector);
+          if (target) {
+            if (data.CustomBorderSizefeatureEnabled) {
+              target.style.border = `${borderSize}px ${borderStyle} ${borderColor}`;
+            } else {
+              target.style.border = `4px ${borderStyle} ${borderColor}`;
+            }
           }
         }
       });
@@ -261,54 +279,50 @@ function applyAndColorBordersForTopTrendingMangas(mangasToColor) {
     (data) => {
       Log("applyAndColorBordersForTopTrendingMangas()");
       mangasToColor.forEach((bookmark) => {
-        const status = bookmark.status.trim().toLowerCase(); //".inner .info a"
+        if (!bookmark || !bookmark.title || !bookmark.status) return;
+
+        const status = bookmark.status.trim().toLowerCase();
         const element = [...document.querySelectorAll("#top-trending .swiper-inner .info .above a")].find(
           (el) => el.textContent.trim() === bookmark.title
         );
-        Log("1")
-        Log("bookmark title: " + bookmark.title);
+        
         if (element) {
-          //  Log(`applyColors title: ${bookmark.title}`)
-          // at end of chain colors the border with set size 4px if true; custom size if false
-
-          var borderColor;
-          var borderStyle;
-          const borderSize = data.CustomBorderSize;
-          Log("2")
+          var borderColor = "transparent";
+          var borderStyle = "solid";
+          const borderSize = data.CustomBorderSize || 4;
           
+          if (status.includes("reading")) {
+            borderColor = "green";
+          } else if (status.includes("dropped")) {
+            borderColor = "darkred";
+          } else if (status.includes("completed")) {
+            borderColor = "blue";
+          } else if (status.includes("on-hold") || status.includes("hold")) {
+            borderColor = "orange";
+          } else if (status.includes("plan to read")) {
+            borderColor = "lightgreen";
+          } else if (status.includes("read") && data.SyncandMarkReadfeatureEnabled) {
+            borderColor = "grey";
+          }
+
           if (data.CustomBookmarksfeatureEnabled) {
             const customBookmarks = data.customBookmarks || [];
             customBookmarks.forEach((custombookmark) => {
-              if (custombookmark.name === status) {
+              if (custombookmark.name && status.includes(custombookmark.name.toLowerCase())) {
                 borderColor = custombookmark.color;
-                borderStyle = custombookmark.style;
+                borderStyle = custombookmark.style || "solid";
               }
             });
-          } else if (status === "reading") {
-            borderColor = "green";
-          } else if (status === "dropped") {
-            borderColor = "darkred";
-          } else if (status === "completed") {
-            borderColor = "blue";
-          } else if (status === "on-hold") {
-            borderColor = "orange";
-          } else if (status === "plan to read") {
-            borderColor = "lightgreen";
-          } else if (status === "read" && data.SyncandMarkReadfeatureEnabled) {
-            borderColor = "grey";
           }
-         Log("3")
-          if (data.CustomBorderSizefeatureEnabled) {
-            element.closest(
-              ".info"
-            ).style.setProperty("border-left", `${borderSize}px ${borderStyle} ${borderColor}`, "important");
-          } else {
-            let gej = element.closest(
-              ".swiper-inner"
-            )
-            gej.querySelector(".info").style.setProperty("border-left", `4px solid red`, "important");
+
+          const target = element.closest(".info");
+          if (target) {
+            if (data.CustomBorderSizefeatureEnabled) {
+              target.style.setProperty("border-left", `${borderSize}px ${borderStyle} ${borderColor}`, "important");
+            } else {
+              target.style.setProperty("border-left", `4px solid ${borderColor}`, "important");
+            }
           }
-          Log("4")
         }
       });
     }
@@ -365,7 +379,8 @@ window.addEventListener("load", () => {
 });
 
 function Log(txt) {
-  chrome.runtime.sendMessage({ type: "log", text: txt });
+  const text = typeof txt === "object" ? JSON.stringify(txt) : txt;
+  chrome.runtime.sendMessage({ type: "log", text: text });
 }
 
 function waitForMessage(filterFn) {
