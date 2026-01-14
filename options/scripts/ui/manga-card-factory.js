@@ -7,23 +7,36 @@
  * Creates a complete manga card element ready to be appended to the library grid.
  * Combines cover, status, and metadata sections into a single interactive card.
  * 
- * @param {Object} entry - The merged manga entry data from storage.
- * @param {Array<Object>} customMarkers - User-defined markers for dynamic styling.
- * @param {Function} onMarkerClick - Callback executed when the marker management button is clicked.
+ * @param {Object} [librarySettings] - Optional settings for library view (borders, display modes).
  * @returns {HTMLElement} The fully constructed manga card container.
  */
-export function createMangaCard(entry, customMarkers, onMarkerClick) {
+export function createMangaCard(entry, customMarkers, onMarkerClick, librarySettings = null) {
     const card = document.createElement("div");
     card.className = "manga-card";
     card.dataset.title = entry.title;
 
     const aniData = entry.anilistData;
     const statusInfo = getStatusInfo(entry.status, entry.customMarker, customMarkers);
+    
+    // Border Styling Logic
+    // If librarySettings is present, it takes precedence for border visibility/thickness
+    let showBorder = true;
+    let thickness = '2px'; // Default from CSS assumption, though usually controlled by global valid
+    
+    if (librarySettings) {
+        showBorder = librarySettings.bordersEnabled;
+        if (librarySettings.borderThickness) {
+            thickness = `${librarySettings.borderThickness}px`;
+        }
+    }
 
-    // Apply styles for dynamic coloring based on status or active marker
-    card.style.border = `2px solid ${statusInfo.borderColor}`;
-    if (statusInfo.borderStyle) {
-        card.style.borderStyle = statusInfo.borderStyle;
+    if (showBorder) {
+        card.style.border = `${thickness} solid ${statusInfo.borderColor}`;
+        if (statusInfo.borderStyle) {
+            card.style.borderStyle = statusInfo.borderStyle;
+        }
+    } else {
+        card.style.border = 'none';
     }
     
     if (entry.customMarker) {
@@ -141,6 +154,17 @@ function createCardBody(entry, aniData, statusInfo) {
             info.appendChild(formatItem);
         }
 
+        // Display Demographic Badge
+        const demographic = getDemographic(aniData.tags);
+        if (demographic) {
+            const demoItem = document.createElement("div");
+            demoItem.className = `info-item format-badge demo-${demographic.toLowerCase()}`;
+            // Simple styling for now, can be enhanced in CSS
+            demoItem.style.marginLeft = "4px";
+            demoItem.textContent = demographic;
+            info.appendChild(demoItem);
+        }
+
         // Display progress (Read Chapters / Total Chapters)
         const readChapters = entry.readChapters || 0;
         const totalChapters = aniData.chapters || "?";
@@ -240,5 +264,27 @@ export function getFormatName(format, country) {
         'NOVEL': 'Light Novel'
     };
     return formats[format] || 'Manga';
+}
+
+/**
+ * Extracts demographic information from AniList tags.
+ * Prioritizes: Seinen > Josei > Shounen > Shoujo (Detailed specs can follow user preference, but this addresses overlap)
+ * 
+ * @param {Array<Object>} tags - Array of tag objects from AniList.
+ * @returns {string|null} The extracted demographic or null if not found.
+ */
+function getDemographic(tags) {
+    if (!tags || !Array.isArray(tags)) return null;
+    
+    // Normalize tag names to lower case for comparison
+    const tagNames = tags.map(t => t.name.toLowerCase());
+    
+    // Check for explicit demographic tags
+    if (tagNames.includes('seinen')) return 'Seinen';
+    if (tagNames.includes('josei')) return 'Josei';
+    if (tagNames.includes('shounen')) return 'Shonen';
+    if (tagNames.includes('shoujo')) return 'Shoujo';
+    
+    return null;
 }
 

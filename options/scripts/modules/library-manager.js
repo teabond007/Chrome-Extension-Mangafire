@@ -4,6 +4,11 @@ import { fetchMangaFromAnilist } from '../core/anilist-api.js';
 let savedEntriesMerged = [];
 let customMarkers = [];
 let fetchInProgress = false;
+let currentFilteredEntries = []; // Cache for re-rendering without re-filtering
+let librarySettings = {
+    bordersEnabled: true,
+    borderThickness: 2
+};
 
 let elements = {
     grid: null,
@@ -12,6 +17,8 @@ let elements = {
     statusFilter: null,
     formatFilter: null,
     genreFilter: null,
+    demographicFilter: null, // New
+    sortFilter: null, // New
     searchInput: null,
     // Modal elements
     modal: null,
@@ -28,6 +35,8 @@ let elements = {
     modalPopularity: null,
     modalReleased: null,
     modalExternalLinks: null,
+    modalReadChaptersBtn: null,
+    modalReadChaptersList: null,
     closeModal: null
 };
 
@@ -36,6 +45,9 @@ export function initLibrary() {
         grid: document.getElementById("manga-grid"),
         statusFilter: document.getElementById("savedStatusFilter"),
         formatFilter: document.getElementById("savedFormatFilter"),
+        genreFilter: document.getElementById("savedGenreFilter"),
+        demographicFilter: document.getElementById("savedDemographicFilter"), // New
+        sortFilter: document.getElementById("savedSortFilter"), // New
         searchInput: document.getElementById("savedSearchInput"),
         subtitle: document.getElementById("library-subtitle"),
         progressBar: document.getElementById("progress-bar-fill"),
@@ -59,6 +71,8 @@ export function initLibrary() {
         modalPopularity: document.getElementById("modalPopularity"),
         modalReleased: document.getElementById("modalReleased"),
         modalExternalLinks: document.getElementById("modalExternalLinks"),
+        modalReadChaptersBtn: document.getElementById("modalReadChaptersBtn"),
+        modalReadChaptersList: document.getElementById("modalReadChaptersList"),
         closeModal: document.getElementById("closeMangaDetails")
     };
 
@@ -76,10 +90,30 @@ export function initLibrary() {
     if (!elements.grid) return;
 
     // Load initial data
-    chrome.storage.local.get(["customBookmarks", "savedEntriesMerged", "userBookmarks", "cardViewSize", "FamilyFriendlyfeatureEnabled"], (data) => {
+    chrome.storage.local.get([
+        "customBookmarks", 
+        "savedEntriesMerged", 
+        "userBookmarks", 
+        "cardViewSize", 
+        "FamilyFriendlyfeatureEnabled",
+        "LibraryCardBordersEnabled", // New
+        "LibraryCardBorderThickness" // New
+    ], (data) => {
         customMarkers = Array.isArray(data.customBookmarks) ? data.customBookmarks : [];
         savedEntriesMerged = Array.isArray(data.savedEntriesMerged) ? data.savedEntriesMerged : [];
         
+        // Load independent border settings
+        librarySettings.bordersEnabled = data.LibraryCardBordersEnabled !== false; // Default true
+        librarySettings.borderThickness = data.LibraryCardBorderThickness || 2;
+        
+        // Init UI controls for borders
+        const borderToggle = document.getElementById("LibraryCardBordersEnabled");
+        const borderRange = document.getElementById("LibraryCardBorderThickness");
+        const borderDisplay = document.getElementById("libraryBorderValue");
+        
+        if (borderToggle) borderToggle.checked = librarySettings.bordersEnabled;
+        if (borderRange) borderRange.value = librarySettings.borderThickness;
+        if (borderDisplay) borderDisplay.textContent = `${librarySettings.borderThickness}px`;
         // Rebuild if merged data is missing but base bookmarks exist
         if (savedEntriesMerged.length === 0 && Array.isArray(data.userBookmarks) && data.userBookmarks.length > 0) {
             console.log("Rebuilding library display from stored bookmarks...");
@@ -94,13 +128,68 @@ export function initLibrary() {
             chrome.storage.local.set({ savedEntriesMerged });
         }
 
+        // Deduplication pass to clean up any potential sync errors or duplicates
+        const originalCount = savedEntriesMerged.length;
+        const seenIds = new Set();
+        const seenSlugs = new Set();
+        const slugify = (str) => str.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
+        savedEntriesMerged = savedEntriesMerged.filter(e => {
+            if (e.anilistData && e.anilistData.id) {
+                if (seenIds.has(e.anilistData.id)) return false;
+                seenIds.add(e.anilistData.id);
+            }
+            // Use mangaSlug without the last dot ID part for robust matching
+            const eSlug = e.mangaSlug ? e.mangaSlug.split('.')[0] : slugify(e.title);
+            if (seenSlugs.has(eSlug)) return false;
+            seenSlugs.add(eSlug);
+            return true;
+        });
+
+        if (savedEntriesMerged.length !== originalCount) {
+            console.warn(`Deduplicated library on load: Removed ${originalCount - savedEntriesMerged.length} duplicates.`);
+            chrome.storage.local.set({ savedEntriesMerged });
+        }
+
         populateStatusFilter();
         populateGenreFilter();
         
         const viewSize = data.cardViewSize || "large";
         setViewSize(viewSize);
         
-        filterEntries();
+        // Backfill history data (lastRead/lastChapterRead) for existing entries from savedReadChapters
+        chrome.storage.local.get(["savedReadChapters"], (historyData) => {
+            const history = historyData.savedReadChapters || {};
+            let updated = false;
+
+            savedEntriesMerged.forEach(entry => {
+                if (!entry.lastRead || !entry.lastChapterRead) {
+                    const titleLower = entry.title.toLowerCase();
+                    const mangaSlug = entry.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+                    
+                    const historyKey = Object.keys(history).find(key => 
+                        key.toLowerCase() === titleLower || 
+                        key.toLowerCase() === mangaSlug ||
+                        mangaSlug === key.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+                    );
+
+                    if (historyKey) {
+                        const chapters = history[historyKey];
+                        if (chapters && chapters.length > 0) {
+                            if (!entry.lastChapterRead) entry.lastChapterRead = chapters[chapters.length - 1];
+                            if (!entry.lastRead) entry.lastRead = 1; // Mark as having history but unknown date
+                            updated = true;
+                        }
+                    }
+                }
+            });
+
+            if (updated) {
+                chrome.storage.local.set({ savedEntriesMerged });
+            }
+            
+            filterEntries();
+        });
         
         if (!fetchInProgress) {
             fetchMissingData();
@@ -114,7 +203,33 @@ function attachListeners() {
     elements.statusFilter?.addEventListener("change", filterEntries);
     elements.formatFilter?.addEventListener("change", filterEntries);
     elements.genreFilter?.addEventListener("change", filterEntries);
+    elements.demographicFilter?.addEventListener("change", filterEntries);
+    elements.sortFilter?.addEventListener("change", filterEntries);
     elements.searchInput?.addEventListener("input", filterEntries);
+
+
+    // Border Settings Listeners
+    const borderToggle = document.getElementById("LibraryCardBordersEnabled");
+    borderToggle?.addEventListener("change", (e) => {
+        librarySettings.bordersEnabled = e.target.checked;
+        chrome.storage.local.set({ LibraryCardBordersEnabled: e.target.checked });
+        renderEntries(currentFilteredEntries); // Re-render without full filter
+    });
+
+    const borderRange = document.getElementById("LibraryCardBorderThickness");
+    const borderDisplay = document.getElementById("libraryBorderValue");
+    borderRange?.addEventListener("input", (e) => {
+        const val = parseInt(e.target.value);
+        librarySettings.borderThickness = val;
+        if (borderDisplay) borderDisplay.textContent = `${val}px`;
+        chrome.storage.local.set({ LibraryCardBorderThickness: val });
+        // Live update existing cards for performance
+        document.querySelectorAll(".manga-card").forEach(card => {
+            if (librarySettings.bordersEnabled) {
+                card.style.borderWidth = `${val}px`;
+            }
+        });
+    });
 
     elements.viewCompactBtn?.addEventListener("click", () => {
         setViewSize("compact");
@@ -126,9 +241,46 @@ function attachListeners() {
         chrome.storage.local.set({ cardViewSize: "large" });
     });
 
+    document.getElementById("BtnCleanLibrary")?.addEventListener("click", () => {
+        const originalCount = savedEntriesMerged.length;
+        cleanLibraryDuplicates();
+        const newCount = savedEntriesMerged.length;
+        if (originalCount > newCount) {
+             alert(`Cleaned up ${originalCount - newCount} duplicate entries!`);
+             filterEntries();
+        } else {
+             alert("Your library is already clean!");
+        }
+    });
+
+    document.getElementById("BtnShowStats")?.addEventListener("click", () => {
+        const statsContainer = document.getElementById("library-stats-container");
+        if (statsContainer) {
+            statsContainer.classList.toggle("visible");
+            const isVisible = statsContainer.classList.contains("visible");
+            
+            if (isVisible) {
+                try {
+                    renderStatistics();
+                } catch (e) {
+                    console.error("Error rendering statistics:", e);
+                }
+            }
+        } else {
+            console.error("Stats container element not found in DOM");
+        }
+    });
+
     // Modal listeners
     elements.closeModal?.addEventListener("click", () => {
         if (elements.modal) elements.modal.style.display = "none";
+    });
+
+    elements.modalReadChaptersBtn?.addEventListener("click", () => {
+        if (!elements.modalReadChaptersList) return;
+        const isHidden = elements.modalReadChaptersList.style.display === "none";
+        elements.modalReadChaptersList.style.display = isHidden ? "flex" : "none";
+        elements.modalReadChaptersBtn.textContent = isHidden ? "Hide Chapters" : "Show Chapters";
     });
 
     window.addEventListener("click", (e) => {
@@ -270,7 +422,12 @@ export function filterEntries() {
             let matchesStatus = true;
             if (statusVal !== "All") {
                 if (statusVal.startsWith("marker:")) {
-                    matchesStatus = entry.customMarker === statusVal.substring(7);
+                    const markerName = statusVal.substring(7);
+                    // Check explicit customMarker field OR if the status string itself matches (legacy/auto-mapped)
+                    matchesStatus = (entry.customMarker === markerName) || (entry.status === markerName);
+                } else if (statusVal === "HasHistory") {
+                    // Check if there is any history (lastRead or lastChapterRead)
+                    matchesStatus = !!(entry.lastRead || entry.lastChapterRead);
                 } else {
                     matchesStatus = entry.status === statusVal;
                 }
@@ -297,9 +454,49 @@ export function filterEntries() {
                 ani?.title?.english?.toLowerCase().includes(searchVal) ||
                 ani?.title?.romaji?.toLowerCase().includes(searchVal);
 
-            return matchesStatus && matchesFormat && matchesGenre && matchesSearch;
+
+            let matchesDemographic = true;
+            if (elements.demographicFilter && elements.demographicFilter.value !== "All") {
+                // We need to check tags for the demographic
+                // Note: We use the helper logic on the fly or pre-calculated
+                // Ideally, getDemographic logic should be reused. 
+                // Since this module doesn't import getDemographic from factory (factory exports createMangaCard),
+                // we'll rely on simple tag checking here for efficiency.
+                const targetDemo = elements.demographicFilter.value.toLowerCase();
+                const tags = ani?.tags || [];
+                // Simple check
+                matchesDemographic = tags.some(t => t.name.toLowerCase() === targetDemo);
+            }
+
+            return matchesStatus && matchesFormat && matchesGenre && matchesSearch && matchesDemographic;
         });
 
+        // Sorting Logic
+        if (elements.sortFilter) {
+            const sortMode = elements.sortFilter.value;
+            filtered.sort((a, b) => {
+                const titleA = (a.anilistData?.title?.english || a.title).toLowerCase();
+                const titleB = (b.anilistData?.title?.english || b.title).toLowerCase();
+                
+                switch (sortMode) {
+                    case 'title-asc': return titleA.localeCompare(titleB);
+                    case 'title-desc': return titleB.localeCompare(titleA);
+                    case 'pop-desc': 
+                        return (b.anilistData?.popularity || 0) - (a.anilistData?.popularity || 0);
+                    case 'pop-asc': 
+                        return (a.anilistData?.popularity || 0) - (b.anilistData?.popularity || 0);
+                    case 'score-desc': 
+                        return (b.anilistData?.averageScore || 0) - (a.anilistData?.averageScore || 0);
+                    case 'added-desc': 
+                        return (b.lastUpdated || 0) - (a.lastUpdated || 0);
+                    case 'last-read-desc': 
+                        return (b.lastRead || 0) - (a.lastRead || 0);
+                    default: return 0;
+                }
+            });
+        }
+        
+        currentFilteredEntries = filtered; // Update cache
         renderEntries(filtered);
         renderStatistics();
     });
@@ -323,28 +520,53 @@ function renderEntries(entries) {
     }
 
     entries.forEach(entry => {
-        const card = createMangaCard(entry, customMarkers, (e) => showMarkerPicker(e));
+        const card = createMangaCard(entry, customMarkers, (e) => showMarkerPicker(e), librarySettings);
         card.addEventListener("click", () => showMangaDetails(entry));
         elements.grid.appendChild(card);
     });
 
     updateSubtitle(entries.length);
+
+    // Animate cards only if not currently syncing to prevent "buggy" resets
+    if (!fetchInProgress && typeof anime !== 'undefined') {
+        anime({
+            targets: '.manga-card',
+            opacity: [0, 1],
+            translateY: [20, 0],
+            delay: anime.stagger(50),
+            duration: 600,
+            easing: 'easeOutQuad'
+        });
+    }
 }
 
 function renderStatistics() {
+    // Fallback: Re-fetch grid if missing
+    if (!elements.statsGrid) {
+        elements.statsGrid = document.getElementById("stats-dashboard-grid");
+    }
+
     if (!elements.statsGrid || !savedEntriesMerged) return;
     
+    // Safety check for statsGrid display
+    if (elements.statsContainer && elements.statsContainer.style.display === "none") {
+        // Don't render if hidden (optimization)
+        return;
+    }
+
     const stats = {
         total: savedEntriesMerged.length,
         reading: savedEntriesMerged.filter(e => e.status === 'Reading').length,
         completed: savedEntriesMerged.filter(e => e.status === 'Completed').length,
         planning: savedEntriesMerged.filter(e => e.status === 'Plan to Read').length,
         onhold: savedEntriesMerged.filter(e => e.status === 'On Hold').length,
-        dropped: savedEntriesMerged.filter(e => e.status === 'Dropped').length
+        dropped: savedEntriesMerged.filter(e => e.status === 'Dropped').length,
+        chapters: savedEntriesMerged.reduce((sum, e) => sum + (parseInt(e.readChapters) || 0), 0)
     };
-
+    
     const items = [
         { label: 'Total', count: stats.total, color: 'var(--primary)' },
+        { label: 'Chapters', count: stats.chapters, color: '#00BCD4' }, // Cyan
         { label: 'Reading', count: stats.reading, color: '#4CAF50' },
         { label: 'Completed', count: stats.completed, color: '#2196F3' },
         { label: 'Plan to Read', count: stats.planning, color: '#9C27B0' },
@@ -421,9 +643,16 @@ function showMangaDetails(entry) {
     
     // Banner
     if (elements.modalBanner) {
-        if (ani.bannerImage) {
-            elements.modalBanner.style.backgroundImage = `url('${ani.bannerImage}')`;
+        const bannerUrl = ani.bannerImage || ani.coverImage?.extraLarge || ani.coverImage?.large;
+        if (bannerUrl) {
+            elements.modalBanner.style.backgroundImage = `url('${bannerUrl}')`;
             elements.modalBanner.style.display = "block";
+            // If it's a fallback cover, maybe add a blur or specific styling
+            if (!ani.bannerImage) {
+                elements.modalBanner.style.filter = "blur(4px) brightness(0.7)";
+            } else {
+                elements.modalBanner.style.filter = "none";
+            }
         } else {
             elements.modalBanner.style.display = "none";
         }
@@ -484,7 +713,7 @@ function showMangaDetails(entry) {
         }
     }
 
-    // External Links
+    // External Links & English Filtering
     if (elements.modalExternalLinks) {
         elements.modalExternalLinks.innerHTML = "";
         
@@ -498,13 +727,92 @@ function showMangaDetails(entry) {
             elements.modalExternalLinks.appendChild(a);
         }
 
-        (ani.externalLinks || []).forEach(link => {
+        const externalLinks = ani.externalLinks || [];
+        
+        // Filter: Keep only English ones if multiple languages exist for the same site
+        const filteredLinks = [];
+        const sitesProcessed = new Map(); // site -> Array of links
+
+        externalLinks.forEach(link => {
+            if (!sitesProcessed.has(link.site)) {
+                sitesProcessed.set(link.site, []);
+            }
+            sitesProcessed.get(link.site).push(link);
+        });
+
+        sitesProcessed.forEach((links, site) => {
+            if (links.length > 1) {
+                // If duplicates exist, look for English preferentially
+                // Checking language field (newly added) and URL patterns
+                const englishLink = links.find(l => {
+                    const lang = (l.language || "").toLowerCase();
+                    const url = (l.url || "").toLowerCase();
+                    return lang === "english" || 
+                           url.includes("/en/") || 
+                           url.includes("/english") || 
+                           url.includes("language=en");
+                });
+                
+                if (englishLink) {
+                    filteredLinks.push(englishLink);
+                } else {
+                    // If no English found, keep the first one
+                    filteredLinks.push(links[0]);
+                }
+            } else {
+                filteredLinks.push(links[0]);
+            }
+        });
+
+        filteredLinks.forEach(link => {
             const a = document.createElement("a");
             a.className = "external-link-btn";
             a.href = link.url;
             a.target = "_blank";
             a.textContent = link.site;
             elements.modalExternalLinks.appendChild(a);
+        });
+    }
+
+    // Read Chapters History
+    if (elements.modalReadChaptersList) {
+        elements.modalReadChaptersList.innerHTML = "";
+        elements.modalReadChaptersList.style.display = "none";
+        if (elements.modalReadChaptersBtn) elements.modalReadChaptersBtn.textContent = "Show Chapters";
+        
+        chrome.storage.local.get(["savedReadChapters"], (data) => {
+            const history = data.savedReadChapters || {};
+            
+            // Robust matching: Try original title, slugified title, and case-insensitive versions
+            const titleLower = entry.title.toLowerCase();
+            const mangaSlug = entry.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+            
+            // Find key in history that matches (case-insensitive)
+            const historyKey = Object.keys(history).find(key => 
+                key.toLowerCase() === titleLower || 
+                key.toLowerCase() === mangaSlug ||
+                mangaSlug === key.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+            );
+
+            const chapters = historyKey ? history[historyKey] : [];
+            
+            if (chapters.length > 0) {
+                // Sort chapters numerically for better display
+                const sortedChapters = [...chapters].sort((a, b) => {
+                    const numA = parseFloat(a.replace(/[^\d.]/g, '')) || 0;
+                    const numB = parseFloat(b.replace(/[^\d.]/g, '')) || 0;
+                    return numB - numA; // Descending
+                });
+
+                sortedChapters.forEach(ch => {
+                    const span = document.createElement("span");
+                    span.className = "chapter-pill";
+                    span.textContent = ch;
+                    elements.modalReadChaptersList.appendChild(span);
+                });
+            } else {
+                elements.modalReadChaptersList.innerHTML = '<span style="color: var(--text-secondary); font-style: italic;">No history found</span>';
+            }
         });
     }
 
@@ -515,6 +823,21 @@ function showMangaDetails(entry) {
         if (body) body.scrollTop = 0;
     }
 }
+
+// Global storage listener to keep library in sync with background/content script updates
+chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local') {
+        if (changes.savedEntriesMerged) {
+            savedEntriesMerged = changes.savedEntriesMerged.newValue || [];
+            filterEntries();
+        }
+        if (changes.customBookmarks) {
+            customMarkers = Array.isArray(changes.customBookmarks.newValue) ? changes.customBookmarks.newValue : [];
+            populateStatusFilter();
+            filterEntries();
+        }
+    }
+});
 
 function updateSubtitle(count) {
     if (elements.subtitle) {
@@ -571,4 +894,34 @@ function updateProgress(curr, total) {
     if (elements.progressBar) elements.progressBar.style.width = percent + "%";
     if (elements.progressPercent) elements.progressPercent.textContent = percent + "%";
     if (elements.progressText) elements.progressText.textContent = `Syncing AniList data (${curr}/${total})`;
+}
+
+function cleanLibraryDuplicates() {
+    if (!savedEntriesMerged) return;
+    
+    const originalCount = savedEntriesMerged.length;
+    const seenIds = new Set();
+    const seenSlugs = new Set();
+    const slugify = (str) => str.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
+    // Favor entries with anilistData and higher lastRead
+    savedEntriesMerged.sort((a, b) => {
+        if (!!a.anilistData !== !!b.anilistData) return b.anilistData ? 1 : -1;
+        return (b.lastRead || 0) - (a.lastRead || 0);
+    });
+
+    savedEntriesMerged = savedEntriesMerged.filter(e => {
+        if (e.anilistData && e.anilistData.id) {
+            if (seenIds.has(e.anilistData.id)) return false;
+            seenIds.add(e.anilistData.id);
+        }
+        const eSlug = e.mangaSlug ? e.mangaSlug.split('.')[0] : slugify(e.title);
+        if (seenSlugs.has(eSlug)) return false;
+        seenSlugs.add(eSlug);
+        return true;
+    });
+
+    if (savedEntriesMerged.length !== originalCount) {
+        chrome.storage.local.set({ savedEntriesMerged });
+    }
 }

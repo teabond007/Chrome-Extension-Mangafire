@@ -1,5 +1,5 @@
-// Main function run on mangafire/ page load
 function applyContainerStyles() {
+  if (!chrome.runtime?.id) return;
   //doesnt run on pages that are loaded multiple times because of scrapers
   if (window.location.pathname === "/user/bookmark") {
     return;
@@ -7,6 +7,8 @@ function applyContainerStyles() {
     return;
   } else if (window.location.pathname === "/home") {
     applyContainerStylesHomePage();
+    return;
+  } else if (window.location.pathname === "/read") {
     return;
   }
 
@@ -34,6 +36,78 @@ function applyContainerStyles() {
   autoSync();
 }
 
+/**
+ * Saves the current chapter to the reading history for the specific manga title.
+ * Data structure: { "manga-title": ["chapter-1", "chapter-2"] }
+ */
+function getReadChapters() {
+  if (!chrome.runtime?.id) return; // Extension context invalidated
+
+  const href = window.location.href;
+  const { title, chapter, slugWithId } = cleanHrefToTitle(href);
+  if (!title || !chapter) return;
+
+  chrome.storage.local.get(["savedReadChapters"], (data) => {
+    if (chrome.runtime.lastError) return;
+    
+    let history = data.savedReadChapters || {};
+    let isNewChapter = false;
+
+    if (!history[title]) {
+      history[title] = [];
+    }
+    
+    // Only add if it's a new chapter for this title
+    if (!history[title].includes(chapter)) {
+      history[title].push(chapter);
+      isNewChapter = true;
+    }
+
+    const historyCount = history[title] ? history[title].length : 0;
+
+    // Always notify background to update lastRead timestamp and current slug/chapter
+    chrome.runtime.sendMessage({ 
+      type: "autoSyncEntry", 
+      title: title, 
+      chapter: chapter,
+      slugWithId: slugWithId,
+      readChapters: historyCount
+    }, () => {
+      // Ignore errors if context invalidates during message
+      if (chrome.runtime.lastError) return;
+    });
+
+    if (isNewChapter) {
+      chrome.storage.local.set({ savedReadChapters: history }, () => {
+        if (chrome.runtime.lastError) return;
+        Log(`Saved chapter ${chapter} for ${title} to history`);
+      });
+    }
+  });
+}
+function cleanHrefToTitle(href) {
+  if (!href) return { title: "", chapter: "", slugWithId: "" };
+
+  // Improved regex to handle various MangaFire URL patterns
+  // Pattern: .../read/[slug].[id]/[lang]/chapter-[num]
+  const match = href.match(/\/read\/([^\/]+)\/(?:[^\/]+\/)?chapter-([^\/\?#]+)/);
+  if (!match) return { title: "", chapter: "", slugWithId: "" };
+
+  const slugWithId = match[1];
+  const chapter = match[2];
+
+  // Remove ID (everything after the last dot) for the "human" title
+  let title = slugWithId.includes('.')
+    ? slugWithId.substring(0, slugWithId.lastIndexOf('.'))
+    : slugWithId;
+
+  // Specific cleaning for MangaFire slugs (e.g., solo-levelingg -> solo-leveling)
+  if (title.endsWith('gg')) {
+    title = title.slice(0, -1);
+  }
+
+  return { title, chapter, slugWithId };
+}
 
 function applyContainerStylesHomePageOnLoad(){
 //second part
@@ -156,8 +230,10 @@ function applyContainerStylesHomePage() {
  * @param {Array} foundMangaTitles all found bookmarks on the page
  */
 function crossRefrencBookmarks(foundMangaTitles, callback) {
+  if (!chrome.runtime?.id) return;
   Log(`crossRefrencBookmarks(), foundMangaTitles length: ${foundMangaTitles.length}`);
   chrome.storage.local.get(["userBookmarks", "savedEntriesMerged"], (data) => {
+    if (chrome.runtime.lastError) return;
     // Priority: savedEntriesMerged (fuller data), fallback to userBookmarks (sync data)
     let bookmarks = [];
     
@@ -198,6 +274,7 @@ function applyAndColorBorders(
   querySelectToTitle,
   elementClosestSelector
 ) {
+  if (!chrome.runtime?.id) return;
   chrome.storage.local.get(
     [
       "CustomBookmarksfeatureEnabled",
@@ -207,6 +284,7 @@ function applyAndColorBorders(
       "SyncandMarkReadfeatureEnabled",
     ],
     (data) => {
+      if (chrome.runtime.lastError) return;
       Log("massive local storage get done");
       Log(
         `querySelectToTitle: ${querySelectToTitle};    elementClosestSelector: ${elementClosestSelector}`
@@ -268,6 +346,7 @@ function applyAndColorBorders(
  * @param {Array} mangasToColor 
  */
 function applyAndColorBordersForTopTrendingMangas(mangasToColor) {
+    if (!chrome.runtime?.id) return;
     chrome.storage.local.get(
     [
       "CustomBookmarksfeatureEnabled",
@@ -277,6 +356,7 @@ function applyAndColorBordersForTopTrendingMangas(mangasToColor) {
       "SyncandMarkReadfeatureEnabled",
     ],
     (data) => {
+      if (chrome.runtime.lastError) return;
       Log("applyAndColorBordersForTopTrendingMangas()");
       mangasToColor.forEach((bookmark) => {
         if (!bookmark || !bookmark.title || !bookmark.status) return;
@@ -330,6 +410,8 @@ function applyAndColorBordersForTopTrendingMangas(mangasToColor) {
 }
 
 window.addEventListener("load", () => {
+  if (!chrome.runtime?.id) return;
+
   if (window.location.pathname === "/home") {
     chrome.storage.local.get(
       ["MarkHomePagefeatureEnabled"],
@@ -350,7 +432,6 @@ window.addEventListener("load", () => {
     mostViewedTab.addEventListener("click", applyContainerStylesHomePage);
     mostViewedTab = document.getElementsByClassName("trending-button-prev")[0];
     mostViewedTab.addEventListener("click", applyContainerStylesHomePage);
-
     const tabs = document.querySelectorAll(".tabs");
     tabs.forEach((tab) => {
       tab.addEventListener("click", applyContainerStylesHomePage);
@@ -363,8 +444,11 @@ window.addEventListener("load", () => {
 
   // Capture reading history if on a reader page
   if (window.location.pathname.startsWith("/read/")) {
+    getReadChapters();
     const currentUrl = window.location.href;
+    if (!chrome.runtime?.id) return;
     chrome.storage.local.get(["userbookmarkshistory"], (data) => {
+      if (chrome.runtime.lastError) return;
       let history = data.userbookmarkshistory || [];
       // Remove if already exists to move to top
       history = history.filter(url => url !== currentUrl);
@@ -373,15 +457,37 @@ window.addEventListener("load", () => {
       // Keep only 10
       if (history.length > 10) history = history.slice(0, 10);
       
-      chrome.storage.local.set({ userbookmarkshistory: history });
+      chrome.storage.local.set({ userbookmarkshistory: history }, () => {
+        if (chrome.runtime.lastError) { /* ignore */ }
+      });
     });
   }
 });
 
+// Helper to Log
 function Log(txt) {
+  if (!chrome.runtime?.id) return; // Prevent "Extension context invalidated" error
+  
   const text = typeof txt === "object" ? JSON.stringify(txt) : txt;
-  chrome.runtime.sendMessage({ type: "log", text: text });
+  chrome.runtime.sendMessage({ type: "log", text: text }, () => {
+    if (chrome.runtime.lastError) { /* ignore */ }
+  });
 }
+
+// Observe URL changes for SPA navigation (MangaFire reader)
+let lastUrl = location.href;
+const urlObserver = new MutationObserver(() => {
+  if (!chrome.runtime?.id) return; // Prevent "Extension context invalidated" error
+
+  if (location.href !== lastUrl) {
+    lastUrl = location.href;
+    if (location.pathname.startsWith("/read/")) {
+      Log("SPA Navigation detected, capturing chapter in 500ms...");
+      setTimeout(getReadChapters, 500); // Small delay to ensure URL is fully updated
+    }
+  }
+});
+urlObserver.observe(document, { subtree: true, childList: true });
 
 function waitForMessage(filterFn) {
   return new Promise((resolve) => {
@@ -396,16 +502,20 @@ function waitForMessage(filterFn) {
 }
 
 function autoSync() {
+  if (!chrome.runtime?.id) return;
   chrome.storage.local.get(
     ["AutoSyncfeatureEnabled", "SyncLastDate", "SyncEverySetDate"],
     (data) => {
+      if (chrome.runtime.lastError) return;
       datebool = data.AutoSyncfeatureEnabled ?? false;
       if (datebool) {
         if (
           Date.now() - data.SyncLastDate >=
           data.SyncEverySetDate * 24 * 60 * 60 * 1000
         ) {
-          chrome.runtime.sendMessage({ type: "scrapeBookmarks", value: 1 });
+          chrome.runtime.sendMessage({ type: "scrapeBookmarks", value: 1 }, () => {
+            if (chrome.runtime.lastError) { /* ignore */ }
+          });
         }
       }
     }

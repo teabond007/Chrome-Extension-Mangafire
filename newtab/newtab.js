@@ -40,13 +40,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     initQuickAccess(); // Add this
     initSearch();
     initSettingsLink();
-    renderReadingList(savedEntries);
+    
+    const familyFriendly = data.FamilyFriendlyfeatureEnabled === true;
+    renderReadingList(savedEntries, familyFriendly);
 
     if (isPacked) {
         renderLibraryStats(bookmarks);
         renderReadingHistory(history);
         initDiscovery(bookmarks);
     }
+    
+    // 3. Start Animations
+    setTimeout(animateIntro, 100);
+
+    // 4. Listen for storage changes to refresh dashboard
+    chrome.storage.onChanged.addListener((changes, area) => {
+        if (area === 'local' && (changes.savedEntriesMerged || changes.savedReadChapters)) {
+            chrome.storage.local.get(['savedEntriesMerged'], (newData) => {
+                renderReadingList(newData.savedEntriesMerged || [], familyFriendly);
+            });
+        }
+    });
+
+    // 5. Refresh on Tab Focus to ensure latest data
+    window.addEventListener('focus', async () => {
+        const newData = await chrome.storage.local.get(['savedEntriesMerged']);
+        renderReadingList(newData.savedEntriesMerged || [], familyFriendly);
+    });
 });
 
 function renderLibraryStats(bookmarks) {
@@ -229,14 +249,39 @@ function initSettingsLink() {
     });
 }
 
-function renderReadingList(entries) {
+function renderReadingList(entries, familyFriendly = false) {
     const grid = document.getElementById('reading-grid');
     const countBadge = document.getElementById('reading-count');
 
-    // Filter "Reading" manga
-    const readingManga = entries
-        .filter(e => e.status === "Reading")
-        .sort((a, b) => (b.lastUpdated || 0) - (a.lastUpdated || 0))
+    // Deduplicate entries by ID or slug
+    const seen = new Set();
+    const uniqueEntries = entries.filter(e => {
+        const id = e.anilistData?.id || e.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        if (seen.has(id)) return false;
+        seen.add(id);
+        return true;
+    });
+
+    // Filter "Reading" manga or anything with recent history
+    const readingManga = uniqueEntries
+        .filter(e => {
+            // Include if status is Reading OR if it has ANY recorded lastRead history
+            const isReading = e.status === "Reading";
+            const isRecent = !!e.lastRead;
+            
+            if (!isReading && !isRecent) return false;
+
+            // Apply Family Friendly filter
+            if (familyFriendly && e.anilistData?.genres) {
+                if (e.anilistData.genres.some(g => ['Ecchi', 'Hentai'].includes(g))) return false;
+            }
+            return true;
+        })
+        .sort((a, b) => {
+            const timeA = Math.max(a.lastRead || 0, a.lastUpdated || 0);
+            const timeB = Math.max(b.lastRead || 0, b.lastUpdated || 0);
+            return timeB - timeA;
+        })
         .slice(0, 5);
 
     grid.innerHTML = "";
@@ -251,4 +296,37 @@ function renderReadingList(entries) {
         const card = createMangaCardSmall(entry);
         grid.appendChild(card);
     });
+
+    // Update section title if we are showing history
+    const sectionTitle = document.querySelector('.reading-section h2');
+    if (sectionTitle) {
+        sectionTitle.textContent = "Recently Read";
+    }
+}
+
+function animateIntro() {
+    if (typeof anime === 'undefined') return;
+    
+    anime.timeline({
+        easing: 'easeOutExpo',
+        duration: 800
+    })
+    .add({
+        targets: '.top-bar',
+        translateY: [-20, 0],
+        opacity: [0, 1],
+        delay: 200
+    })
+    .add({
+        targets: '.search-section, .quick-access-section',
+        translateY: [20, 0],
+        opacity: [0, 1],
+        delay: anime.stagger(100)
+    }, '-=600')
+    .add({
+        targets: '.dashboard-content-wrapper > *',
+        translateY: [30, 0],
+        opacity: [0, 1],
+        delay: anime.stagger(150)
+    }, '-=500');
 }

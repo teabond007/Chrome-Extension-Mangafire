@@ -6,6 +6,12 @@ export function createMangaCardSmall(entry) {
     const ani = entry.anilistData;
     const coverUrl = ani?.coverImage?.large || 'https://via.placeholder.com/200x300?text=No+Cover';
     const title = ani?.title?.english || ani?.title?.romaji || entry.title;
+    
+    // Get last chapter from savedReadChapters if available
+    // We'll pass it in or fetch it from entry. 
+    // In background.js we don't save the chapter number to the entry yet, only the timestamp.
+    // Let's assume we might want to pass more info in the future.
+    // For now, let's just stick to what we have or use the chapters count.
     const chapters = entry.readChapters || 0;
     
     // Create card element
@@ -24,17 +30,23 @@ export function createMangaCardSmall(entry) {
         <div class="card-content">
             <h3 title="${title}">${title}</h3>
             <div class="card-info">
-                <span>Ch. ${chapters}</span>
+                <span>Ch. ${entry.lastChapterRead || entry.readChapters || 0}</span>
                 <span>${ani?.format || 'Manga'}</span>
             </div>
         </div>
     `;
 
-    // Click to visit MangaFire
+    // Click to visit MangaFire (Direct Link if possible)
     card.addEventListener('click', () => {
-        // We try to reconstruct the URL or just search for it
-        const query = encodeURIComponent(entry.title);
-        window.location.href = `https://mangafire.to/filter?keyword=${query}`;
+        if (entry.mangaSlug && entry.lastChapterRead) {
+            // Reconstruct the direct reader URL: /read/[slug]/en/chapter-[num]
+            // We assume /en/ as requested
+            window.location.href = `https://mangafire.to/read/${entry.mangaSlug}/en/chapter-${entry.lastChapterRead}`;
+        } else {
+            // Fallback to search if slug is missing
+            const query = encodeURIComponent(entry.title);
+            window.location.href = `https://mangafire.to/filter?keyword=${query}`;
+        }
     });
 
     return card;

@@ -393,9 +393,37 @@
     font-weight: 600;
 }
 
+
 .dark-mode .format-badge {
     background: rgba(179, 157, 219, 0.2);
     color: #B39DDB;
+}
+
+/* Demographic Badges */
+.demo-shonen {
+    background: rgba(255, 87, 34, 0.15);
+    color: #FF5722;
+}
+
+.demo-seinen {
+    background: rgba(96, 125, 139, 0.15);
+    color: #455A64;
+    /* Darker slate for readability */
+}
+
+.dark-mode .demo-seinen {
+    color: #90A4AE;
+    background: rgba(144, 164, 174, 0.15);
+}
+
+.demo-shoujo {
+    background: rgba(233, 30, 99, 0.15);
+    color: #E91E63;
+}
+
+.demo-josei {
+    background: rgba(156, 39, 176, 0.15);
+    color: #9C27B0;
 }
 
 
@@ -455,19 +483,32 @@
 
 /* Statistics Dashboard */
 .stats-dashboard-card {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid var(--glass-border);
+    background: var(--bg-card);
+    /* Fallback */
+    border: 1px solid var(--border-color);
     border-radius: 16px;
     padding: 1.5rem;
     margin-bottom: 2rem;
     display: none;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    /* Added shadow for visibility */
+}
+
+.stats-dashboard-card.visible {
+    display: block !important;
     animation: slideDown 0.3s ease-out;
+}
+
+.dark-mode .stats-dashboard-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
 }
 
 .stats-header h3 {
     margin: 0 0 1rem 0;
     font-size: 1.1rem;
-    color: var(--text-white);
+    color: var(--text-primary);
+    /* Fixed: Was undefined --text-white */
 }
 
 .stats-grid-compact {
@@ -487,14 +528,16 @@
 
 .stat-item-compact:hover {
     background: rgba(255, 255, 255, 0.08);
-    border-color: var(--primary);
+    border-color: var(--accent-primary);
+    /* Fixed: Was --primary */
 }
 
 .stat-value-large {
     display: block;
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--primary);
+    color: var(--accent-primary);
+    /* Fixed: Was --primary */
 }
 
 .stat-label-small {

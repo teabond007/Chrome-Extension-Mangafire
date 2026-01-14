@@ -63,4 +63,4 @@ This extension is built with a **Privacy-First** approach:
 - Icons and CSS inspired by [Uiverse.io](https://uiverse.io/) (MIT License).
 
 ---
-*Version 3.5.0*
+*Version 3.5.1*

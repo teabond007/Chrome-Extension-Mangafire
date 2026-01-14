@@ -76,7 +76,7 @@
                     <span class="icon">☕</span>
                     <span class="label">Support Dev</span>
                 </a>
-                <div class="version-info">Version 3.5.0</div>
+                <div class="version-info">Version 3.5.1</div>
             </div>
         </aside>
 
@@ -154,6 +154,7 @@
                             </div>
                         </div>
                     </div>
+
 
                     <!-- Card 1: Custom Markers -->
                     <div class="card">
@@ -555,7 +556,8 @@
                             </div>
                             <div class="card-body">
                                 <p class="guide-text">Enable or disable the <b>Manga Dashboard</b> new tab page. Use
-                                    <b>Packed Layout</b> to show more detailed statistics if you have many entries.</p>
+                                    <b>Packed Layout</b> to show more detailed statistics if you have many entries.
+                                </p>
                             </div>
                         </div>
 
@@ -568,7 +570,8 @@
                             <div class="card-body">
                                 <p class="guide-text">Customize the default appearance of highlights. Choose between
                                     <b>Solid, Dashed, Dotted</b> styles and adjust the <b>Border Thickness</b> for
-                                    better visibility.</p>
+                                    better visibility.
+                                </p>
                             </div>
                         </div>
 
@@ -697,34 +700,72 @@
                         </div>
                     </div>
 
-                    <!-- Card: Advanced Borders -->
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-icon">🖼️</div>
-                            <h3>Highlight Styles</h3>
-                            <button class="info-redirect-btn" data-target="guide-personalization"
-                                title="About Highlight Styles">
-                                <svg class="icon-svg icon-info" style="width: 16px; height: 16px;"></svg>
-                            </button>
-                        </div>
-                        <div class="card-body">
-                            <div class="range-wrapper">
-                                <div class="range-header">
-                                    <label for="GlobalBorderSize">Border Thickness</label>
-                                    <span id="globalRangeValue">4px</span>
+                    <!-- Layout for Style Cards (Two Columns) -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+
+                        <!-- Card 2: Highlight Styles (Existing) -->
+                        <div class="card full-height">
+                            <div class="card-header">
+                                <div class="card-icon">🖼️</div>
+                                <h3>Highlight Styles</h3>
+                                <button class="info-redirect-btn" data-target="guide-personalization"
+                                    title="About Styles">
+                                    <svg class="icon-svg icon-info" style="width: 16px; height: 16px;"></svg>
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="feature-toggle-wrapper">
+                                    <label class="feature-label">
+                                        Border Style
+                                        <span class="feature-subtitle">Choose line style</span>
+                                    </label>
+                                    <select id="borderStyleSelect" class="select-field">
+                                        <option value="solid">Solid</option>
+                                        <option value="dashed">Dashed</option>
+                                        <option value="dotted">Dotted</option>
+                                    </select>
                                 </div>
-                                <input type="range" id="GlobalBorderSize" min="1" max="12" value="4"
+                                <div class="divider"></div>
+                                <div class="range-header">
+                                    <label>Highlight Thickness</label>
+                                    <span id="rangeValue" style="color: var(--primary); font-weight: bold;">4px</span>
+                                </div>
+                                <input type="range" id="borderThicknessRange" min="1" max="10" value="4"
                                     class="range-slider">
                             </div>
+                        </div>
 
-                            <div class="input-wrapper" style="margin-top: 20px;">
-                                <label>Default Border Style</label>
-                                <select id="GlobalBorderStyle" class="select-field">
-                                    <option value="solid">Solid</option>
-                                    <option value="dashed">Dashed</option>
-                                    <option value="dotted">Dotted</option>
-                                    <option value="double">Double</option>
-                                </select>
+                        <!-- Card 3: Library Styles (NEW) -->
+                        <div class="card full-height">
+                            <div class="card-header">
+                                <div class="card-icon">📚</div>
+                                <h3>Library Styles</h3>
+                                <button class="info-redirect-btn" data-target="guide-personalization"
+                                    title="About Library Customization">
+                                    <svg class="icon-svg icon-info" style="width: 16px; height: 16px;"></svg>
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="feature-toggle-wrapper">
+                                    <label class="feature-label">
+                                        Show Status Borders
+                                        <span class="feature-subtitle">Color borders in library</span>
+                                    </label>
+                                    <label class="switch">
+                                        <input type="checkbox" id="LibraryCardBordersEnabled" checked>
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                                <div class="divider"></div>
+                                <div class="range-header">
+                                    <label>Border Thickness</label>
+                                    <span id="libraryBorderValue"
+                                        style="color: var(--primary); font-weight: bold;">2px</span>
+                                </div>
+                                <input type="range" id="LibraryCardBorderThickness" min="1" max="10" value="2"
+                                    class="range-slider">
+
+
                             </div>
                         </div>
                     </div>
@@ -740,6 +781,8 @@
                     </div>
                     <div class="header-actions">
                         <button id="BtnShowStats" class="btn btn-ghost btn-sm">📊 Stats</button>
+                        <button id="BtnCleanLibrary" class="btn btn-ghost btn-sm" title="Remove Duplicates">🧹
+                            Clean</button>
                         <button id="BtnTrashAndSyncEntries" class="btn btn-warning-large">⚡Fresh Sync
                             Entries</button>
                     </div>
@@ -747,7 +790,7 @@
 
                 <div class="content-grid" style="max-width: 100%;">
                     <!-- Stats Section (Collapsible) -->
-                    <div id="library-stats-container" class="stats-dashboard-card glass-card" style="display: none;">
+                    <div id="library-stats-container" class="stats-dashboard-card glass-card">
                         <div class="stats-header">
                             <h3>Library Statistics</h3>
                         </div>
@@ -769,6 +812,7 @@
                                 <option value="On Hold">On Hold</option>
                                 <option value="Plan to Read">Plan to Read</option>
                                 <option value="Dropped">Dropped</option>
+                                <option value="HasHistory">Has History</option>
                             </select>
                             <button id="btnApplyBulkUpdate" class="btn btn-primary btn-sm">Apply
                                 Update</button>
@@ -794,6 +838,25 @@
                             </div>
                         </div>
                         <div class="library-controls">
+
+                            <select id="savedSortFilter" class="select-field" style="width: 140px;">
+                                <option value="title-asc">A-Z</option>
+                                <option value="title-desc">Z-A</option>
+                                <option value="pop-desc">Most Popular</option>
+                                <option value="pop-asc">Least Popular</option>
+                                <option value="score-desc">Highest Score</option>
+                                <option value="added-desc">Recently Added</option>
+                                <option value="last-read-desc">Recently Read</option>
+                            </select>
+
+                            <select id="savedDemographicFilter" class="select-field">
+                                <option value="All">All Demographics</option>
+                                <option value="Shonen">Shonen</option>
+                                <option value="Seinen">Seinen</option>
+                                <option value="Shoujo">Shoujo</option>
+                                <option value="Josei">Josei</option>
+                            </select>
+
                             <select id="savedStatusFilter" class="select-field">
                                 <option value="All">All Statuses</option>
                                 <option value="Reading">Reading</option>
@@ -801,6 +864,7 @@
                                 <option value="On Hold">On Hold</option>
                                 <option value="Plan to Read">Plan to Read</option>
                                 <option value="Dropped">Dropped</option>
+                                <option value="HasHistory">Has History</option>
                                 <!-- Custom markers will be added dynamically -->
                             </select>
                             <select id="savedGenreFilter" class="select-field">
@@ -1016,6 +1080,13 @@
                                 <span class="modal-meta-label">Released</span>
                                 <div class="modal-meta-value" id="modalReleased">-</div>
                             </div>
+                            <div class="modal-meta-row" id="modalHistoryRow">
+                                <span class="modal-meta-label">History</span>
+                                <button id="modalReadChaptersBtn" class="btn btn-ghost btn-sm"
+                                    style="padding: 2px 8px; font-size: 11px;">Show Chapters</button>
+                                <div id="modalReadChaptersList" class="modal-chapters-list" style="display: none;">
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-main">
@@ -1034,6 +1105,7 @@
         </div>
     </div>
 
+    <script src="../scripts/lib/anime.min.js"></script>
     <script src="scripts/options.js" type="module"></script>
 </body>
 

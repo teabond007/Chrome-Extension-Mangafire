@@ -14,7 +14,7 @@ export function initTabs() {
     const tabPanes = document.querySelectorAll('.tab-pane');
 
     navItems.forEach(item => {
-        item.addEventListener('click', (e) => {
+    item.addEventListener('click', (e) => {
             e.preventDefault();
 
             const targetTab = item.getAttribute('data-tab');
@@ -24,20 +24,78 @@ export function initTabs() {
             navItems.forEach(nav => nav.classList.remove('active'));
             item.classList.add('active');
 
-            // Toggle visibility of the target tab-pane content
-            tabPanes.forEach(pane => {
-                if (pane.id === `tab-${targetTab}`) {
-                    pane.style.display = 'block';
-                    // Delay adding the 'active' class slightly to trigger CSS transition animations
-                    setTimeout(() => pane.classList.add('active'), 10);
+            // Find current active pane
+            const currentPane = document.querySelector('.tab-pane.active');
+            const targetPane = document.getElementById(`tab-${targetTab}`);
+
+            if (currentPane === targetPane) return;
+
+            // Anime.js Transition
+            if (typeof anime !== 'undefined') {
+                if (currentPane) {
+                    anime({
+                        targets: currentPane,
+                        opacity: 0,
+                        translateY: -10,
+                        duration: 200,
+                        easing: 'easeInQuad',
+                        complete: () => {
+                            currentPane.style.display = 'none';
+                            currentPane.classList.remove('active');
+                            
+                            // Show target
+                            showTargetTab(targetPane);
+                        }
+                    });
                 } else {
-                    pane.style.display = 'none';
-                    pane.classList.remove('active');
+                    showTargetTab(targetPane);
                 }
-            });
+            } else {
+                // Fallback if anime is missing
+                tabPanes.forEach(pane => {
+                    if (pane.id === `tab-${targetTab}`) {
+                        pane.style.display = 'block';
+                        setTimeout(() => pane.classList.add('active'), 10);
+                    } else {
+                        pane.style.display = 'none';
+                        pane.classList.remove('active');
+                    }
+                });
+            }
         });
     });
 }
+
+function showTargetTab(pane) {
+    if (!pane) return;
+    pane.style.display = 'block';
+    pane.style.opacity = '0';
+    pane.style.transform = 'translateY(10px)';
+    pane.classList.add('active');
+
+    anime({
+        targets: pane,
+        opacity: [0, 1],
+        translateY: [10, 0],
+        duration: 400,
+        easing: 'easeOutQuad',
+        delay: 50 // Slight delay for smoothness
+    });
+
+    // Stagger cards inside if any
+    const cards = pane.querySelectorAll('.card');
+    if (cards.length > 0) {
+        anime({
+            targets: cards,
+            opacity: [0, 1],
+            translateY: [20, 0],
+            delay: anime.stagger(100, {start: 100}),
+            duration: 500,
+            easing: 'easeOutCubic'
+        });
+    }
+}
+
 
 /**
  * Initializes special "Info Redirect" buttons that link across tabs.

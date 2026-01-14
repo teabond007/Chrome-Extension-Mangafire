@@ -39,6 +39,7 @@ query ($search: String) {
       externalLinks {
         url
         site
+        language
       }
     }
   }

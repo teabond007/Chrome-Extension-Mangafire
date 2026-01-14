@@ -1,3 +1,5 @@
+import { fetchMangaFromAnilist } from './options/scripts/core/anilist-api.js';
+
 chrome.action.onClicked.addListener(() => {
   chrome.tabs.create({ url: chrome.runtime.getURL("options.html") });
 });
@@ -234,6 +236,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       Log(`Message received: scrapeBookmarks, value: ${msg.value}`);
       scrapeBookmarksFromUnopenedTab(msg.value);
     }
+  } else if (msg.type === "autoSyncEntry") {
+    handleAutoSyncEntry(msg.title, msg.chapter, msg.slugWithId, msg.readChapters);
   } else if (msg.type === "bookmarksExtracted") {
     chrome.tabs.remove(sender.tab.id);
     Log("Tab closed after scraping");
@@ -243,6 +247,114 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   sendResponse({ status: "received" });
   return true; 
 });
+
+async function handleAutoSyncEntry(title, chapter, slugWithId, readChaptersCount) {
+  Log(`handleAutoSyncEntry called for: ${title} (Ch. ${chapter}) with slug: ${slugWithId}. Chapters: ${readChaptersCount || 'unknown'}`);
+  chrome.storage.local.get(["savedEntriesMerged", "savedReadChapters"], async (data) => {
+    let savedEntries = Array.isArray(data.savedEntriesMerged) ? data.savedEntriesMerged : [];
+    let history = data.savedReadChapters || {};
+    
+    // 1. Deduplication Pass (Emergency Cleanup)
+    // Favor entries with anilistData and higher lastRead
+    const seenIds = new Set();
+    const seenSlugs = new Set();
+    const slugify = (str) => str.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    
+    savedEntries.sort((a, b) => {
+        if (!!a.anilistData !== !!b.anilistData) return b.anilistData ? 1 : -1;
+        return (b.lastRead || 0) - (a.lastRead || 0);
+    });
+
+    savedEntries = savedEntries.filter(e => {
+        if (e.anilistData && e.anilistData.id) {
+            if (seenIds.has(e.anilistData.id)) return false;
+            seenIds.add(e.anilistData.id);
+        }
+        const eSlug = e.mangaSlug ? e.mangaSlug.split('.')[0] : slugify(e.title);
+        if (seenSlugs.has(eSlug)) return false;
+        seenSlugs.add(eSlug);
+        return true;
+    });
+
+    const currentSlug = slugWithId ? slugWithId.split('.')[0] : slugify(title);
+
+    // Helper to get chapter count from history
+    const getHistoryCount = (t) => {
+        if (readChaptersCount) return readChaptersCount; // Use the one from message if available
+        const tLower = t.toLowerCase();
+        const tSlug = slugify(t);
+        const key = Object.keys(history).find(k => k.toLowerCase() === tLower || slugify(k) === tSlug);
+        return key ? history[key].length : 0;
+    };
+
+    // 2. Search for existing entry (Title or Slug)
+    let entryIndex = savedEntries.findIndex(e => {
+        const entryTitle = e.title.toLowerCase();
+        const entrySlug = e.mangaSlug ? e.mangaSlug.split('.')[0] : slugify(e.title);
+        return entryTitle === title.toLowerCase() || entrySlug === currentSlug;
+    });
+    
+    if (entryIndex !== -1) {
+      let entry = savedEntries[entryIndex];
+      Log(`Updating existing entry: ${entry.title}. Preserving status: ${entry.status || "Reading"}`);
+      
+      entry.lastRead = Date.now();
+      entry.lastChapterRead = chapter;
+      entry.readChapters = getHistoryCount(entry.title); // Update the count
+      if (slugWithId) entry.mangaSlug = slugWithId;
+      entry.lastUpdated = Date.now();
+      
+      chrome.storage.local.set({ savedEntriesMerged: savedEntries });
+      return;
+    }
+
+    // 3. Not found by title/slug, fetch from AniList
+    Log(`No match for ${title}, fetching AniList data...`);
+    try {
+      const aniData = await fetchMangaFromAnilist(title);
+      
+      if (aniData && aniData.id) {
+          // Double check if we have this AniList ID under a different name/slug
+          let aniIdMatchIndex = savedEntries.findIndex(e => e.anilistData && e.anilistData.id === aniData.id);
+          
+          if (aniIdMatchIndex !== -1) {
+              let entry = savedEntries[aniIdMatchIndex];
+              Log(`Found existing entry via AniList ID match: ${entry.title}. Updating history.`);
+              
+              entry.lastRead = Date.now();
+              entry.lastChapterRead = chapter;
+              entry.readChapters = getHistoryCount(entry.title); // Update the count
+              if (slugWithId) entry.mangaSlug = slugWithId;
+              entry.lastUpdated = Date.now();
+              
+              chrome.storage.local.set({ savedEntriesMerged: savedEntries });
+              return;
+          }
+      }
+
+      // 4. Create new entry
+      Log(`Creating new library entry for: ${title}`);
+      const newEntry = {
+        title: title,
+        status: "Reading", // Default for top-level new discoveries
+        readChapters: getHistoryCount(title) || 1, // Start with at least 1 if we're sync-ing it
+        lastChapterRead: chapter,
+        mangaSlug: slugWithId,
+        anilistData: aniData || null,
+        customMarker: null,
+        lastRead: Date.now(),
+        lastUpdated: Date.now()
+      };
+      
+      savedEntries.push(newEntry);
+      chrome.storage.local.set({ savedEntriesMerged: savedEntries }, () => {
+          Log(`Auto-synced new entry ${title} to library`);
+      });
+    } catch (err) {
+      Log(`Error auto-syncing ${title}: ${err.message}`);
+    }
+  });
+}
 
 function Log(txt) {
   const text = typeof txt === "object" ? JSON.stringify(txt) : txt;

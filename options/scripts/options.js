@@ -74,6 +74,18 @@ document.addEventListener("DOMContentLoaded", () => {
      */
     initAppearanceManager();
 
+    // 8.5 Initial Animation (Anime.js)
+    if (typeof anime !== 'undefined') {
+        anime({
+            targets: '.tab-pane.active .card',
+            opacity: [0, 1],
+            translateY: [20, 0],
+            delay: anime.stagger(100),
+            duration: 800,
+            easing: 'easeOutExpo'
+        });
+    }
+
     // 8. Manual Sync Button
     const syncBtn = document.getElementById("sendMessageBtnSyncBookmarks");
     if (syncBtn) {
