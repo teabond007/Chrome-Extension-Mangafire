@@ -11,6 +11,7 @@ import { initImportExport } from './modules/import-export.js';
 import { initLibrary } from './modules/library-manager.js';
 import { initQuickAccessManager } from './modules/quick-access-manager.js';
 import { initAppearanceManager } from './modules/appearance-manager.js';
+import { CrystalSelect } from './ui/custom-select.js';
 import { Log } from './core/utils.js';
 
 /**
@@ -111,6 +112,17 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
     }
+
+    // 10. Premium Custom Selects
+    // Delay slightly to allow dynamic content (like genres/markers) to start loading
+    setTimeout(() => {
+        document.querySelectorAll('select').forEach(sel => {
+            if (!sel.closest('.custom-select-container')) {
+                new CrystalSelect(sel);
+                Log(`CrystalSelect initialized for: ${sel.id || 'anonymous select'}`);
+            }
+        });
+    }, 200);
 });
 
 /**

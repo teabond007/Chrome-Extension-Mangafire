@@ -43,6 +43,16 @@ export function createMangaCard(entry, customMarkers, onMarkerClick, librarySett
         card.classList.add("has-custom-marker");
     }
 
+    // Smart Inactivity Check
+    if (librarySettings?.smartInactivity && entry.status === "Reading" && entry.lastRead) {
+        const diff = Date.now() - entry.lastRead;
+        const days = diff / (1000 * 60 * 60 * 24);
+        if (days > 30) {
+            card.classList.add("stale-entry");
+            card.title = `Inactive for ${Math.floor(days)} days`;
+        }
+    }
+
     // Create cover section (includes image and hover actions)
     const cover = createCardCover(entry, aniData, statusInfo.borderColor, onMarkerClick);
     card.appendChild(cover);

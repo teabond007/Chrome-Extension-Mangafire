@@ -44,6 +44,8 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+    position: relative;
+    /* Base for indicator */
 }
 
 .nav-item {
@@ -57,14 +59,28 @@
     font-weight: 500;
 }
 
-.nav-item:hover,
-.nav-item.active {
-    background-color: rgba(255, 255, 255, 0.1);
+.nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
     color: var(--text-on-dark);
 }
 
 .nav-item.active {
-    border-right: 3px solid var(--accent-primary);
+    color: var(--text-on-dark);
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.nav-indicator {
+    position: absolute;
+    left: -20px;
+    /* Offset to overlap sidebar edge slightly for 'floating' look */
+    width: 4px;
+    height: 30px;
+    background: var(--accent-primary);
+    border-radius: 0 4px 4px 0;
+    pointer-events: none;
+    box-shadow: 0 0 15px var(--accent-primary);
+    transition: width 0.3s;
+    /* Horizontal stretch during move if we want */
 }
 
 .nav-icon {

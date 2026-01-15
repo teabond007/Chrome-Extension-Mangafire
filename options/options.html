@@ -68,6 +68,7 @@
                     <span class="nav-icon">ℹ️</span>
                     About
                 </a>
+                <div class="nav-indicator"></div>
             </nav>
 
             <div class="sidebar-footer">
@@ -155,6 +156,54 @@
                         </div>
                     </div>
 
+
+                    <!-- Card 1: Custom Markers -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: rgba(79, 70, 229, 0.1); color: var(--primary);">⚡
+                            </div>
+                            <h3>Smart Automation</h3>
+                            <button class="info-redirect-btn" data-target="guide-general"
+                                title="How to use Smart Features">
+                                <svg class="icon-svg icon-info" style="width: 16px; height: 16px;"></svg>
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="feature-toggle-wrapper">
+                                <div class="toggle-label-group">
+                                    <label for="SmartAutoComplete" class="toggle-main-label">Smart Auto-Complete</label>
+                                    <span class="toggle-sub-label">Mark as 'Completed' when reaching last chapter</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="SmartAutoComplete">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+
+                            <div class="feature-toggle-wrapper" style="margin-top: 10px;">
+                                <div class="toggle-label-group">
+                                    <label for="SmartInactivityFade" class="toggle-main-label">Inactivity
+                                        Dimming</label>
+                                    <span class="toggle-sub-label">Dim 'Reading' manga untouched for 30+ days</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="SmartInactivityFade">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+
+                            <div class="feature-toggle-wrapper" style="margin-top: 10px;">
+                                <div class="toggle-label-group">
+                                    <label for="SmartResumeLink" class="toggle-main-label">Smart Resume</label>
+                                    <span class="toggle-sub-label">Dashboard opens next chapter (Predictive)</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="SmartResumeLink">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Card 1: Custom Markers -->
                     <div class="card">
@@ -753,6 +802,16 @@
                                     </label>
                                     <label class="switch">
                                         <input type="checkbox" id="LibraryCardBordersEnabled" checked>
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                                <div class="feature-toggle-wrapper">
+                                    <label class="feature-label">
+                                        Only Show with History
+                                        <span class="feature-subtitle">Hide entries with no progress</span>
+                                    </label>
+                                    <label class="switch">
+                                        <input type="checkbox" id="LibraryHideNoHistory">
                                         <span class="slider round"></span>
                                     </label>
                                 </div>

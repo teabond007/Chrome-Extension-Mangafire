@@ -7,7 +7,18 @@ let fetchInProgress = false;
 let currentFilteredEntries = []; // Cache for re-rendering without re-filtering
 let librarySettings = {
     bordersEnabled: true,
-    borderThickness: 2
+    borderThickness: 2,
+    hideNoHistory: false
+};
+
+let statsData = {
+    total: 0,
+    chapters: 0,
+    reading: 0,
+    completed: 0,
+    planning: 0,
+    onhold: 0,
+    dropped: 0
 };
 
 let elements = {
@@ -97,23 +108,29 @@ export function initLibrary() {
         "cardViewSize", 
         "FamilyFriendlyfeatureEnabled",
         "LibraryCardBordersEnabled", // New
-        "LibraryCardBorderThickness" // New
+        "LibraryCardBorderThickness", // New
+        "LibraryHideNoHistory", // New
+        "SmartInactivityFadefeatureEnabled" // New
     ], (data) => {
         customMarkers = Array.isArray(data.customBookmarks) ? data.customBookmarks : [];
         savedEntriesMerged = Array.isArray(data.savedEntriesMerged) ? data.savedEntriesMerged : [];
         
-        // Load independent border settings
+        // Load independent library settings
         librarySettings.bordersEnabled = data.LibraryCardBordersEnabled !== false; // Default true
         librarySettings.borderThickness = data.LibraryCardBorderThickness || 2;
+        librarySettings.hideNoHistory = data.LibraryHideNoHistory === true;
+        librarySettings.smartInactivity = data.SmartInactivityFadefeatureEnabled === true;
         
-        // Init UI controls for borders
+        // Init UI controls
         const borderToggle = document.getElementById("LibraryCardBordersEnabled");
         const borderRange = document.getElementById("LibraryCardBorderThickness");
         const borderDisplay = document.getElementById("libraryBorderValue");
+        const historyToggle = document.getElementById("LibraryHideNoHistory");
         
         if (borderToggle) borderToggle.checked = librarySettings.bordersEnabled;
         if (borderRange) borderRange.value = librarySettings.borderThickness;
         if (borderDisplay) borderDisplay.textContent = `${librarySettings.borderThickness}px`;
+        if (historyToggle) historyToggle.checked = librarySettings.hideNoHistory;
         // Rebuild if merged data is missing but base bookmarks exist
         if (savedEntriesMerged.length === 0 && Array.isArray(data.userBookmarks) && data.userBookmarks.length > 0) {
             console.log("Rebuilding library display from stored bookmarks...");
@@ -165,13 +182,18 @@ export function initLibrary() {
             savedEntriesMerged.forEach(entry => {
                 if (!entry.lastRead || !entry.lastChapterRead) {
                     const titleLower = entry.title.toLowerCase();
-                    const mangaSlug = entry.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-                    
-                    const historyKey = Object.keys(history).find(key => 
-                        key.toLowerCase() === titleLower || 
-                        key.toLowerCase() === mangaSlug ||
-                        mangaSlug === key.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
-                    );
+                    const mangaSlugBase = entry.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+                    const explicitSlug = entry.mangaSlug ? entry.mangaSlug.split('.')[0] : null;
+
+                    const historyKey = Object.keys(history).find(key => {
+                        const kLower = key.toLowerCase();
+                        const kSlug = kLower.replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+                        
+                        return kLower === titleLower || 
+                               kSlug === mangaSlugBase || 
+                               (explicitSlug && kSlug === explicitSlug) ||
+                               (explicitSlug && kLower === explicitSlug);
+                    });
 
                     if (historyKey) {
                         const chapters = history[historyKey];
@@ -229,6 +251,12 @@ function attachListeners() {
                 card.style.borderWidth = `${val}px`;
             }
         });
+    });
+    
+    document.getElementById("LibraryHideNoHistory")?.addEventListener("change", (e) => {
+        librarySettings.hideNoHistory = e.target.checked;
+        chrome.storage.local.set({ LibraryHideNoHistory: e.target.checked });
+        filterEntries();
     });
 
     elements.viewCompactBtn?.addEventListener("click", () => {
@@ -347,9 +375,9 @@ function populateStatusFilter() {
     // Keep original options, add custom ones
     const originalCount = 7; // All, Reading, Completed, On Hold, Plan to Read, Dropped, marker header
     
-    // Reset to base 6 options (All + 5 default statuses)
-    while (elements.statusFilter.options.length > 6) {
-        elements.statusFilter.remove(6);
+    // Reset to base 7 options (All + 5 default statuses + Has History)
+    while (elements.statusFilter.options.length > 7) {
+        elements.statusFilter.remove(7);
     }
 
     if (customMarkers.length > 0) {
@@ -426,11 +454,17 @@ export function filterEntries() {
                     // Check explicit customMarker field OR if the status string itself matches (legacy/auto-mapped)
                     matchesStatus = (entry.customMarker === markerName) || (entry.status === markerName);
                 } else if (statusVal === "HasHistory") {
-                    // Check if there is any history (lastRead or lastChapterRead)
-                    matchesStatus = !!(entry.lastRead || entry.lastChapterRead);
+                    // Check if there is any history (lastRead, lastChapterRead, or progress)
+                    matchesStatus = !!(entry.lastRead || entry.lastChapterRead || (entry.readChapters > 0));
                 } else {
                     matchesStatus = entry.status === statusVal;
                 }
+            }
+
+            // Global history filter
+            if (librarySettings.hideNoHistory) {
+                const hasHistory = !!(entry.lastRead || entry.lastChapterRead || (entry.readChapters > 0));
+                if (!hasHistory) return false;
             }
 
             let matchesFormat = true;
@@ -541,7 +575,7 @@ function renderEntries(entries) {
 }
 
 function renderStatistics() {
-    // Fallback: Re-fetch grid if missing
+    // Fallback: Re-fetch components if missing
     if (!elements.statsGrid) {
         elements.statsGrid = document.getElementById("stats-dashboard-grid");
     }
@@ -549,12 +583,13 @@ function renderStatistics() {
     if (!elements.statsGrid || !savedEntriesMerged) return;
     
     // Safety check for statsGrid display
-    if (elements.statsContainer && elements.statsContainer.style.display === "none") {
-        // Don't render if hidden (optimization)
-        return;
+    const currentTab = document.querySelector('.tab-pane.active')?.id;
+    if (currentTab !== 'tab-saved-entries') {
+        // Only animate if we are on the library tab (or avoid wasting cycles)
+        // But we want it to render so it's ready when we switch
     }
 
-    const stats = {
+    const newStats = {
         total: savedEntriesMerged.length,
         reading: savedEntriesMerged.filter(e => e.status === 'Reading').length,
         completed: savedEntriesMerged.filter(e => e.status === 'Completed').length,
@@ -565,21 +600,70 @@ function renderStatistics() {
     };
     
     const items = [
-        { label: 'Total', count: stats.total, color: 'var(--primary)' },
-        { label: 'Chapters', count: stats.chapters, color: '#00BCD4' }, // Cyan
-        { label: 'Reading', count: stats.reading, color: '#4CAF50' },
-        { label: 'Completed', count: stats.completed, color: '#2196F3' },
-        { label: 'Plan to Read', count: stats.planning, color: '#9C27B0' },
-        { label: 'On Hold', count: stats.onhold, color: '#FFC107' },
-        { label: 'Dropped', count: stats.dropped, color: '#F44336' }
+        { key: 'total', label: 'Total', count: newStats.total, color: 'var(--primary)' },
+        { key: 'chapters', label: 'Chapters', count: newStats.chapters, color: '#00BCD4' },
+        { key: 'reading', label: 'Reading', count: newStats.reading, color: '#4CAF50' },
+        { key: 'completed', label: 'Completed', count: newStats.completed, color: '#2196F3' },
+        { key: 'planning', label: 'Plan to Read', count: newStats.planning, color: '#9C27B0' },
+        { key: 'onhold', label: 'On Hold', count: newStats.onhold, color: '#FFC107' },
+        { key: 'dropped', label: 'Dropped', count: newStats.dropped, color: '#F44336' }
     ];
 
-    elements.statsGrid.innerHTML = items.map(item => `
-        <div class="stat-item-compact">
-            <span class="stat-value-large" style="color: ${item.color}">${item.count}</span>
-            <span class="stat-label-small">${item.label}</span>
-        </div>
-    `).join('');
+    // Build static structure if empty
+    if (elements.statsGrid.innerHTML === "" || elements.statsGrid.children.length !== items.length) {
+        elements.statsGrid.innerHTML = items.map(item => `
+            <div class="stat-item-compact" style="opacity: 0; transform: translateY(10px)">
+                <span id="stat-val-${item.key}" class="stat-value-large" style="color: ${item.color}">0</span>
+                <span class="stat-label-small">${item.label}</span>
+            </div>
+        `).join('');
+
+        // Staggered Entrance
+        if (typeof anime !== 'undefined') {
+            anime({
+                targets: elements.statsGrid.children,
+                opacity: [0, 1],
+                translateY: [10, 0],
+                delay: anime.stagger(60),
+                duration: 800,
+                easing: 'easeOutElastic(1, .8)'
+            });
+        }
+    }
+
+    // Animate the numbers
+    if (typeof anime !== 'undefined') {
+        items.forEach(item => {
+            const el = document.getElementById(`stat-val-${item.key}`);
+            if (!el) return;
+
+            const startVal = statsData[item.key] || 0;
+            const endVal = item.count;
+
+            if (startVal === endVal && el.textContent != "0") return;
+
+            const obj = { val: startVal };
+            anime({
+                targets: obj,
+                val: endVal,
+                round: 1,
+                duration: 1000,
+                easing: 'easeOutExpo',
+                update: () => {
+                    el.textContent = obj.val;
+                }
+            });
+        });
+    } else {
+        // Fallback
+        items.forEach(item => {
+            const el = document.getElementById(`stat-val-${item.key}`);
+            if (el) el.textContent = item.count;
+        });
+    }
+
+    // Update global state
+    statsData = newStats;
 }
 
 async function applyBulkUpdate() {
@@ -783,16 +867,21 @@ function showMangaDetails(entry) {
         chrome.storage.local.get(["savedReadChapters"], (data) => {
             const history = data.savedReadChapters || {};
             
-            // Robust matching: Try original title, slugified title, and case-insensitive versions
+            // Robust matching: Try original title, slugified title, and entry-level mangaSlug
             const titleLower = entry.title.toLowerCase();
-            const mangaSlug = entry.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+            const mangaSlugBase = entry.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+            const explicitSlug = entry.mangaSlug ? entry.mangaSlug.split('.')[0] : null;
             
-            // Find key in history that matches (case-insensitive)
-            const historyKey = Object.keys(history).find(key => 
-                key.toLowerCase() === titleLower || 
-                key.toLowerCase() === mangaSlug ||
-                mangaSlug === key.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
-            );
+            // Find key in history that matches any of our identifiers
+            const historyKey = Object.keys(history).find(key => {
+                const kLower = key.toLowerCase();
+                const kSlug = kLower.replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+                
+                return kLower === titleLower || 
+                       kSlug === mangaSlugBase || 
+                       (explicitSlug && kSlug === explicitSlug) ||
+                       (explicitSlug && kLower === explicitSlug);
+            });
 
             const chapters = historyKey ? history[historyKey] : [];
             
@@ -861,8 +950,26 @@ function showMarkerPicker(entry) {
 }
 
 async function fetchMissingData() {
+    // Negative Cache Cooldown: 7 days
+    const NEGATIVE_CACHE_DAYS = 7;
+    const now = Date.now();
+
     // Fetch if no AniList data OR if description is missing (user requested richer data for existing entries)
-    const missing = savedEntriesMerged.filter(e => !e.anilistData || !e.anilistData.description);
+    // BUT skip if marked as NOT_FOUND within the cooldown period
+    const missing = savedEntriesMerged.filter(e => {
+        if (!e.anilistData) return true;
+        
+        // Check for Negative Cache
+        if (e.anilistData.status === 'NOT_FOUND' && e.anilistData.lastChecked) {
+            const diffDays = (now - e.anilistData.lastChecked) / (1000 * 60 * 60 * 24);
+            if (diffDays < NEGATIVE_CACHE_DAYS) {
+                return false; // Skip this entry
+            }
+        }
+        
+        return !e.anilistData.description;
+    });
+
     if (missing.length === 0) return;
 
     fetchInProgress = true;
@@ -874,13 +981,24 @@ async function fetchMissingData() {
             const data = await fetchMangaFromAnilist(entry.title);
             if (data) {
                 entry.anilistData = data;
-                chrome.storage.local.set({ savedEntriesMerged });
                 
                 // Refresh filters if new genres are found
                 if (data.genres) populateGenreFilter();
-                
-                filterEntries();
+            } else {
+                // Negative Cache: Mark as NOT_FOUND to prevent immediate re-fetch
+                console.warn(`Marking "${entry.title}" as NOT_FOUND in AniList cache.`);
+                entry.anilistData = {
+                    status: 'NOT_FOUND',
+                    lastChecked: Date.now(),
+                    // Preserve minimal structure to avoid breaking other checks
+                    title: { english: entry.title }, 
+                    format: 'Unknown'
+                };
             }
+            
+            // Save progress (both success and failure)
+            chrome.storage.local.set({ savedEntriesMerged });
+            filterEntries(); // Live update
         }
         updateProgress(i + 1, missing.length);
     }

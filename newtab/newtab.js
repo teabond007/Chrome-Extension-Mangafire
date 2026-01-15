@@ -26,7 +26,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 1.5 Handle Layout
     const isPacked = data.DashboardLayoutStylePacked === true;
     document.body.classList.add(isPacked ? 'layout-packed' : 'layout-clean');
-    // Show body
+    
+    // Smoothly reveal body by removing inline opacity and adding class
+    document.body.style.opacity = '';
     document.body.classList.add('loaded');
 
     const savedEntries = data.savedEntriesMerged || [];
@@ -265,11 +267,10 @@ function renderReadingList(entries, familyFriendly = false) {
     // Filter "Reading" manga or anything with recent history
     const readingManga = uniqueEntries
         .filter(e => {
-            // Include if status is Reading OR if it has ANY recorded lastRead history
-            const isReading = e.status === "Reading";
-            const isRecent = !!e.lastRead;
+            // Only show if it has recorded history (lastRead timestamp or chapter progress)
+            const hasHistory = !!e.lastRead || (e.readChapters > 0) || !!e.lastChapterRead;
             
-            if (!isReading && !isRecent) return false;
+            if (!hasHistory) return false;
 
             // Apply Family Friendly filter
             if (familyFriendly && e.anilistData?.genres) {
@@ -288,7 +289,7 @@ function renderReadingList(entries, familyFriendly = false) {
     countBadge.textContent = readingManga.length;
 
     if (readingManga.length === 0) {
-        grid.innerHTML = '<div class="loading-state">No manga currently in "Reading" list. Sync your bookmarks or add some manga!</div>';
+        grid.innerHTML = '<div class="loading-state">No recently read manga found. Start reading to see them here!</div>';
         return;
     }
 

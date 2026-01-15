@@ -72,6 +72,8 @@ body.loaded {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    opacity: 0;
+    /* Hidden initially for animation */
 }
 
 .clock-section {
@@ -122,6 +124,8 @@ body.loaded {
 .search-section {
     display: flex;
     justify-content: center;
+    opacity: 0;
+    /* Hidden initially for animation */
 }
 
 .search-box {
@@ -181,6 +185,8 @@ body.loaded {
 .quick-access-section {
     display: flex;
     justify-content: center;
+    opacity: 0;
+    /* Hidden initially for animation */
 }
 
 .quick-access-grid {
@@ -361,6 +367,11 @@ body.layout-clean .dashboard-container {
     display: flex;
     gap: 3rem;
     width: 100%;
+}
+
+.dashboard-content-wrapper>* {
+    opacity: 0;
+    /* Hidden initially for animation */
 }
 
 .main-dashboard-content {

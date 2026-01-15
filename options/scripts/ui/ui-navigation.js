@@ -12,9 +12,16 @@
 export function initTabs() {
     const navItems = document.querySelectorAll('.nav-item');
     const tabPanes = document.querySelectorAll('.tab-pane');
+    const indicator = document.querySelector('.nav-indicator');
+
+    // Initial positioning
+    const activeItem = document.querySelector('.nav-item.active');
+    if (activeItem && indicator) {
+        moveIndicator(activeItem, indicator, false);
+    }
 
     navItems.forEach(item => {
-    item.addEventListener('click', (e) => {
+        item.addEventListener('click', (e) => {
             e.preventDefault();
 
             const targetTab = item.getAttribute('data-tab');
@@ -23,6 +30,9 @@ export function initTabs() {
             // Reflect the active state in the sidebar navigation
             navItems.forEach(nav => nav.classList.remove('active'));
             item.classList.add('active');
+
+            // Move Indicator
+            if (indicator) moveIndicator(item, indicator);
 
             // Find current active pane
             const currentPane = document.querySelector('.tab-pane.active');
@@ -63,6 +73,33 @@ export function initTabs() {
                 });
             }
         });
+    });
+}
+
+/**
+ * Animates the sidebar selection indicator to the target item.
+ */
+function moveIndicator(target, indicator, animate = true) {
+    const container = document.querySelector('.nav-menu');
+    if (!container) return;
+
+    const targetRect = target.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+
+    const top = targetRect.top - containerRect.top;
+    const height = targetRect.height;
+
+    if (!animate) {
+        indicator.style.top = `${top + (height / 2) - 15}px`;
+        return;
+    }
+
+    anime({
+        targets: indicator,
+        top: top + (height / 2) - 15, // center it (height of indicator is 30px)
+        height: [30, 45, 30], // Elastic squash/stretch effect
+        duration: 500,
+        easing: 'easeOutElastic(1, .5)'
     });
 }
 

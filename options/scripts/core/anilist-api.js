@@ -147,6 +147,17 @@ export async function fetchMangaFromAnilist(title, retryCount = 0) {
       return null;
     }
 
+    // Handle Server Errors (500+)
+    if (response.status >= 500) {
+        console.warn(`AniList Server Error (${response.status}): ${response.statusText}. Retrying...`);
+        if (retryCount < MAX_RETRIES) {
+            // Use standard backoff
+            await sleep(RETRY_DELAY_BASE * Math.pow(2, retryCount));
+            return fetchMangaFromAnilist(title, retryCount + 1);
+        }
+        return null; // Give up after retries
+    }
+
     // Handle other HTTP errors
     if (!response.ok) {
       console.error(`AniList HTTP error: ${response.status} ${response.statusText} for title: "${searchTitle}"`);

@@ -37,11 +37,24 @@ export function createMangaCardSmall(entry) {
     `;
 
     // Click to visit MangaFire (Direct Link if possible)
-    card.addEventListener('click', () => {
+    card.addEventListener('click', async () => {
         if (entry.mangaSlug && entry.lastChapterRead) {
+            let targetChapter = entry.lastChapterRead;
+            
+            // Smart Resume: Try to go to next chapter
+            const data = await chrome.storage.local.get(['SmartResumeLinkfeatureEnabled']);
+            if (data.SmartResumeLinkfeatureEnabled) {
+               // Extract number, increment, preserve format? 
+               // Simple numeric increment is safest for now
+               const currentNum = parseFloat(String(targetChapter).replace(/[^\d.]/g, ''));
+               if (!isNaN(currentNum)) {
+                   targetChapter = currentNum + 1;
+               }
+            }
+
             // Reconstruct the direct reader URL: /read/[slug]/en/chapter-[num]
             // We assume /en/ as requested
-            window.location.href = `https://mangafire.to/read/${entry.mangaSlug}/en/chapter-${entry.lastChapterRead}`;
+            window.location.href = `https://mangafire.to/read/${entry.mangaSlug}/en/chapter-${targetChapter}`;
         } else {
             // Fallback to search if slug is missing
             const query = encodeURIComponent(entry.title);
