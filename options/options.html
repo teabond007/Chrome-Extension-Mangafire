@@ -205,6 +205,45 @@
                         </div>
                     </div>
 
+                    <!-- Card: MangaDex Highlighting -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: rgba(255, 103, 64, 0.1); color: #FF6740;">📖
+                            </div>
+                            <h3>MangaDex Highlighting</h3>
+                            <button class="info-redirect-btn" data-target="guide-general"
+                                title="MangaDex highlighting settings">
+                                <svg class="icon-svg icon-info" style="width: 16px; height: 16px;"></svg>
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="feature-toggle-wrapper">
+                                <div class="toggle-label-group">
+                                    <label for="MangaDexHighlightEnabled" class="toggle-main-label">Enable MangaDex
+                                        Highlighting</label>
+                                    <span class="toggle-sub-label">Show colored borders on mangadex.org</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="MangaDexHighlightEnabled" checked>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+
+                            <div class="feature-toggle-wrapper" style="margin-top: 10px;">
+                                <div class="toggle-label-group">
+                                    <label for="MangaDexShowProgress" class="toggle-main-label">Show Reading
+                                        Progress</label>
+                                    <span class="toggle-sub-label">Display "Ch. X/Y" on saved manga cards</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="MangaDexShowProgress" checked>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+
                     <!-- Card 1: Custom Markers -->
                     <div class="card">
                         <div class="card-header">
@@ -824,6 +863,52 @@
                                 <input type="range" id="LibraryCardBorderThickness" min="1" max="10" value="2"
                                     class="range-slider">
 
+                                <div class="divider"></div>
+                                <p class="section-label">✨ Visual Effects</p>
+
+                                <div class="feature-toggle-wrapper">
+                                    <label class="feature-label">
+                                        Glow Effect
+                                        <span class="feature-subtitle">Use glow instead of solid borders</span>
+                                    </label>
+                                    <label class="switch">
+                                        <input type="checkbox" id="LibraryGlowEffect">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+
+                                <div class="feature-toggle-wrapper">
+                                    <label class="feature-label">
+                                        Animated Borders
+                                        <span class="feature-subtitle">Pulse animation for "Reading" status</span>
+                                    </label>
+                                    <label class="switch">
+                                        <input type="checkbox" id="LibraryAnimatedBorders">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+
+                                <div class="feature-toggle-wrapper">
+                                    <label class="feature-label">
+                                        Status Icons
+                                        <span class="feature-subtitle">Show emoji overlay on cards</span>
+                                    </label>
+                                    <label class="switch">
+                                        <input type="checkbox" id="LibraryStatusIcons">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+
+                                <div class="feature-toggle-wrapper">
+                                    <label class="feature-label">
+                                        Progress Bars
+                                        <span class="feature-subtitle">Reading progress on card covers</span>
+                                    </label>
+                                    <label class="switch">
+                                        <input type="checkbox" id="LibraryProgressBars">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
 
                             </div>
                         </div>
@@ -904,6 +989,8 @@
                                 <option value="pop-desc">Most Popular</option>
                                 <option value="pop-asc">Least Popular</option>
                                 <option value="score-desc">Highest Score</option>
+                                <option value="rating-desc">My Rating ↓</option>
+                                <option value="rating-asc">My Rating ↑</option>
                                 <option value="added-desc">Recently Added</option>
                                 <option value="last-read-desc">Recently Read</option>
                             </select>
@@ -948,6 +1035,8 @@
                                 </button>
                             </div>
                         </div>
+
+
                     </div>
 
                     <!-- Progress Bar -->
@@ -1096,6 +1185,53 @@
                         </div>
                     </div>
 
+                    <!-- MangaDex MDList Import Card -->
+                    <div class="card secondary-bg-card" style="grid-column: 1 / -1;">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: rgba(255, 103, 64, 0.1);">
+                                <svg style="width: 20px; height: 20px;" viewBox="0 0 24 24" fill="none" stroke="#FF6740"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                                </svg>
+                            </div>
+                            <div class="card-title-group">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <h3>Import from MangaDex List</h3>
+                                </div>
+                                <p class="description compact">Import manga from a public MangaDex reading list
+                                    (MDList).</p>
+                            </div>
+                        </div>
+
+                        <div class="inner-info-card" style="flex-direction: column; gap: 12px;">
+                            <div class="format-info" style="width: 100%;">
+                                <span class="label-info">Paste MDList URL or ID:</span>
+                                <p class="sub-description">Example: https://mangadex.org/list/abc123... or just the UUID
+                                </p>
+                            </div>
+                            <div style="display: flex; gap: 10px; width: 100%; align-items: center;">
+                                <input type="text" id="mdlistInput" placeholder="https://mangadex.org/list/..."
+                                    class="input-field" style="flex: 1;">
+                                <button id="mdlistImportBtn" class="btn btn-primary btn-with-icon">
+                                    <svg style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7 10 12 15 17 10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                    Import
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card-footer-info">
+                            <span class="status-icon">📋</span>
+                            <span class="status-text-muted">Imported manga will be added with "Plan to Read"
+                                status</span>
+                        </div>
+                    </div>
+
 
                 </div>
             </div>
@@ -1153,6 +1289,30 @@
                         <div id="modalSynonyms" class="modal-synonyms"></div>
                         <div id="modalGenres" class="modal-genres"></div>
                         <div id="modalTags" class="modal-tags"></div>
+
+                        <!-- Personal Data Section -->
+                        <div class="modal-personal-section" id="modalPersonalSection">
+                            <h4>📝 Your Data</h4>
+                            <div class="modal-personal-row">
+                                <span class="modal-personal-label">Rating</span>
+                                <div class="modal-personal-content" id="modalPersonalRating">
+                                    <!-- Star rating component will be inserted here -->
+                                </div>
+                            </div>
+                            <div class="modal-personal-row">
+                                <span class="modal-personal-label">Tags</span>
+                                <div class="modal-personal-content" id="modalPersonalTags">
+                                    <!-- Tag input will be inserted here -->
+                                </div>
+                            </div>
+                            <div class="modal-personal-row">
+                                <span class="modal-personal-label">Notes</span>
+                                <div class="modal-personal-content" id="modalPersonalNotes">
+                                    <!-- Notes editor will be inserted here -->
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="modal-description">
                             <h3>Synopsis</h3>
                             <p id="modalDescriptionText">No description available.</p>

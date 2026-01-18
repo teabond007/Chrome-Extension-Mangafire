@@ -30,17 +30,21 @@ export function initFeatureToggles() {
         { id: "DashboardLayoutStyle", storageKey: "DashboardLayoutStylePacked" },
         { id: "SmartAutoComplete", storageKey: "SmartAutoCompletefeatureEnabled" },
         { id: "SmartInactivityFade", storageKey: "SmartInactivityFadefeatureEnabled" },
-        { id: "SmartResumeLink", storageKey: "SmartResumeLinkfeatureEnabled" }
+        { id: "SmartResumeLink", storageKey: "SmartResumeLinkfeatureEnabled" },
+        { id: "MangaDexHighlightEnabled", storageKey: "MangaDexHighlightEnabled", defaultValue: true },
+        { id: "MangaDexShowProgress", storageKey: "MangaDexShowProgress", defaultValue: true }
     ];
+
 
     features.forEach(feature => {
         const toggle = document.getElementById(feature.id);
         if (!toggle) return;
 
         // Load current state from storage on initialization.
-        // Defaults to 'false' (disabled) if no value is present.
+        // Uses feature.defaultValue if specified, otherwise defaults to false.
         chrome.storage.local.get(feature.storageKey, (data) => {
-            toggle.checked = data[feature.storageKey] || false;
+            const defaultVal = feature.defaultValue !== undefined ? feature.defaultValue : false;
+            toggle.checked = data[feature.storageKey] !== undefined ? data[feature.storageKey] : defaultVal;
         });
 
         // Listen for user interaction on the toggle.

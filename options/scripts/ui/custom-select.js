@@ -29,7 +29,18 @@ export class CrystalSelect {
         if (this.select.id) this.container.id = `${this.select.id}-crystal`;
         
         // 2. Insert Container after select
-        this.select.parentNode.insertBefore(this.container, this.select.nextSibling);
+        // Ensure we don't lose the reference position
+        const parent = this.select.parentNode;
+        const nextSibling = this.select.nextSibling;
+        
+        // Hide original select (JS fallback)
+        this.select.style.position = 'absolute';
+        this.select.style.opacity = '0';
+        this.select.style.pointerEvents = 'none';
+        this.select.style.width = '1px';
+        this.select.style.height = '1px';
+
+        parent.insertBefore(this.container, nextSibling);
         this.container.appendChild(this.select);
 
         // 3. Create Trigger (the visible box)
@@ -136,7 +147,7 @@ export class CrystalSelect {
     }
 
     open() {
-        // Close all other instances first (singleton-like behavior for UI)
+        // Close all other instances first
         document.querySelectorAll('.custom-select-container.is-open').forEach(el => {
             if (el !== this.container) el.classList.remove('is-open');
         });
@@ -163,8 +174,41 @@ export class CrystalSelect {
     }
 
     observeChanges() {
-        // Re-sync if original select options change (e.g. dynamic genres)
         const observer = new MutationObserver(() => this.syncOptions());
-        observer.observe(this.select, { childList: true });
+        observer.observe(this.select, { childList: true, subtree: true, attributes: true });
+    }
+
+    /**
+     * Automatically initializes CrystalSelect for all selects in the document
+     * and watches for new ones.
+     */
+    static autoInit() {
+        const init = (root) => {
+            root.querySelectorAll('select').forEach(sel => {
+                if (!sel.closest('.custom-select-container') && !sel.classList.contains('no-crystal')) {
+                    new CrystalSelect(sel);
+                }
+            });
+        };
+
+        // Init existing
+        init(document);
+
+        // Watch for new
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach(m => {
+                m.addedNodes.forEach(node => {
+                    if (node.nodeType === 1) {
+                        if (node.tagName === 'SELECT') {
+                            init(node.parentNode);
+                        } else {
+                            init(node);
+                        }
+                    }
+                });
+            });
+        });
+
+        observer.observe(document.body, { childList: true, subtree: true });
     }
 }

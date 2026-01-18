@@ -19,24 +19,45 @@ export function createMangaCard(entry, customMarkers, onMarkerClick, librarySett
     const statusInfo = getStatusInfo(entry.status, entry.customMarker, customMarkers);
     
     // Border Styling Logic
-    // If librarySettings is present, it takes precedence for border visibility/thickness
     let showBorder = true;
-    let thickness = '2px'; // Default from CSS assumption, though usually controlled by global valid
+    let thickness = '2px';
+    let useGlow = false;
+    let useAnimatedBorder = false;
+    let showStatusIcon = false;
+    let showProgressBar = false;
     
     if (librarySettings) {
         showBorder = librarySettings.bordersEnabled;
         if (librarySettings.borderThickness) {
             thickness = `${librarySettings.borderThickness}px`;
         }
+        useGlow = librarySettings.useGlowEffect === true;
+        useAnimatedBorder = librarySettings.animatedBorders === true;
+        showStatusIcon = librarySettings.showStatusIcon === true;
+        showProgressBar = librarySettings.showProgressBar === true;
     }
 
+    // Apply border or glow effect
     if (showBorder) {
-        card.style.border = `${thickness} solid ${statusInfo.borderColor}`;
-        if (statusInfo.borderStyle) {
-            card.style.borderStyle = statusInfo.borderStyle;
+        if (useGlow) {
+            // Use glow effect instead of solid border
+            card.classList.add('glow-effect');
+            card.style.setProperty('--glow-color', `${statusInfo.borderColor}80`);
+            card.style.border = 'none';
+        } else {
+            card.style.border = `${thickness} solid ${statusInfo.borderColor}`;
+            if (statusInfo.borderStyle) {
+                card.style.borderStyle = statusInfo.borderStyle;
+            }
         }
     } else {
         card.style.border = 'none';
+    }
+    
+    // Animated border for "Reading" status
+    if (useAnimatedBorder && entry.status === "Reading") {
+        card.classList.add('reading-pulse');
+        card.style.setProperty('--pulse-color', statusInfo.borderColor);
     }
     
     if (entry.customMarker) {
@@ -54,7 +75,7 @@ export function createMangaCard(entry, customMarkers, onMarkerClick, librarySett
     }
 
     // Create cover section (includes image and hover actions)
-    const cover = createCardCover(entry, aniData, statusInfo.borderColor, onMarkerClick);
+    const cover = createCardCover(entry, aniData, statusInfo, onMarkerClick, { showStatusIcon, showProgressBar });
     card.appendChild(cover);
 
     // Create body section (includes title and badges)
@@ -70,11 +91,13 @@ export function createMangaCard(entry, customMarkers, onMarkerClick, librarySett
  * 
  * @param {Object} entry - The manga entry data.
  * @param {Object|null} aniData - Optional AniList metadata object.
- * @param {string} statusColor - The resolved color for status indicators.
+ * @param {Object} statusInfo - The resolved status styling object.
  * @param {Function} onMarkerClick - Callback for marker interaction.
+ * @param {Object} visualOptions - Visual enhancement options (showStatusIcon, showProgressBar).
  * @returns {HTMLElement} The constructed cover element.
  */
-function createCardCover(entry, aniData, statusColor, onMarkerClick) {
+function createCardCover(entry, aniData, statusInfo, onMarkerClick, visualOptions = {}) {
+    const statusColor = statusInfo.borderColor;
     const coverUrl = aniData?.coverImage?.large ?? 
                      aniData?.coverImage?.medium ?? 
                      "../images/no-image-svgrepo-com.svg";
@@ -89,9 +112,49 @@ function createCardCover(entry, aniData, statusColor, onMarkerClick) {
     statusDot.style.backgroundColor = statusColor;
     cover.appendChild(statusDot);
 
+    // Status Icon Overlay (Phase 1 visual enhancement)
+    if (visualOptions.showStatusIcon) {
+        const statusIcon = document.createElement("div");
+        statusIcon.className = "manga-card-status-icon";
+        statusIcon.textContent = getStatusEmoji(entry.status);
+        statusIcon.title = entry.status;
+        cover.appendChild(statusIcon);
+    }
+
+    // Progress Bar Overlay (Phase 1 visual enhancement)
+    if (visualOptions.showProgressBar && aniData?.chapters && entry.readChapters) {
+        const totalChapters = aniData.chapters;
+        const readChapters = parseInt(entry.readChapters) || 0;
+        const percentage = Math.min(100, Math.round((readChapters / totalChapters) * 100));
+        
+        if (percentage > 0) {
+            const progressBar = document.createElement("div");
+            progressBar.className = "manga-card-progress-bar";
+            
+            const progressFill = document.createElement("div");
+            progressFill.className = "manga-card-progress-fill";
+            progressFill.style.width = `${percentage}%`;
+            
+            progressBar.appendChild(progressFill);
+            cover.appendChild(progressBar);
+        }
+    }
+
     // Hover actions overlay
     const actions = document.createElement("div");
     actions.className = "manga-card-actions";
+
+    // "Continue" button - resumes reading at last chapter (only if history exists)
+    if (entry.lastMangafireUrl) {
+        const continueBtn = document.createElement("a");
+        continueBtn.className = "card-action-btn card-action-continue";
+        continueBtn.textContent = `▶ Ch.${entry.lastChapterRead || '?'}`;
+        continueBtn.title = "Continue reading";
+        continueBtn.href = entry.lastMangafireUrl;
+        continueBtn.target = "_blank";
+        continueBtn.onclick = (e) => e.stopPropagation();
+        actions.appendChild(continueBtn);
+    }
 
     // "View" button - redirects to the AniList page
     if (aniData?.siteUrl) {
@@ -116,6 +179,21 @@ function createCardCover(entry, aniData, statusColor, onMarkerClick) {
 
     cover.appendChild(actions);
     return cover;
+}
+
+/**
+ * Maps reading status to a display emoji.
+ * @param {string} status - The reading status string.
+ * @returns {string} Emoji representing the status.
+ */
+function getStatusEmoji(status) {
+    const statusLower = (status || '').toLowerCase();
+    if (statusLower.includes('reading')) return '📖';
+    if (statusLower === 'read' || statusLower.includes('completed')) return '✅';
+    if (statusLower.includes('dropped')) return '❌';
+    if (statusLower.includes('hold')) return '⏸️';
+    if (statusLower.includes('plan')) return '📋';
+    return '📚';
 }
 
 /**

@@ -1,5 +1,8 @@
 import { createMangaCard, getFormatName, getStatusInfo } from '../ui/manga-card-factory.js';
 import { fetchMangaFromAnilist } from '../core/anilist-api.js';
+import { fetchMangaFromMangadex } from '../core/mangadex-api.js';
+import * as LibFeatures from './library-features.js';
+import { playSuccessAnimation, animateGridEntrance, animateModalEntry, initButtonMicroInteractions } from '../ui/anime-utils.js';
 
 let savedEntriesMerged = [];
 let customMarkers = [];
@@ -8,7 +11,12 @@ let currentFilteredEntries = []; // Cache for re-rendering without re-filtering
 let librarySettings = {
     bordersEnabled: true,
     borderThickness: 2,
-    hideNoHistory: false
+    hideNoHistory: false,
+    // Phase 1 Visual Enhancements
+    useGlowEffect: false,
+    animatedBorders: false,
+    showStatusIcon: false,
+    showProgressBar: false
 };
 
 let statsData = {
@@ -84,7 +92,15 @@ export function initLibrary() {
         modalExternalLinks: document.getElementById("modalExternalLinks"),
         modalReadChaptersBtn: document.getElementById("modalReadChaptersBtn"),
         modalReadChaptersList: document.getElementById("modalReadChaptersList"),
-        closeModal: document.getElementById("closeMangaDetails")
+        closeModal: document.getElementById("closeMangaDetails"),
+        // Personal data elements
+        modalPersonalRating: document.getElementById("modalPersonalRating"),
+        modalPersonalTags: document.getElementById("modalPersonalTags"),
+        modalPersonalNotes: document.getElementById("modalPersonalNotes"),
+        // Tag filter & presets
+        tagFilter: document.getElementById("savedTagFilter"),
+        filterPresetsContainer: document.getElementById("filterPresetsContainer"),
+        btnSaveFilterPreset: document.getElementById("btnSaveFilterPreset")
     };
 
     // Genre filter
@@ -107,19 +123,39 @@ export function initLibrary() {
         "userBookmarks", 
         "cardViewSize", 
         "FamilyFriendlyfeatureEnabled",
-        "LibraryCardBordersEnabled", // New
-        "LibraryCardBorderThickness", // New
-        "LibraryHideNoHistory", // New
-        "SmartInactivityFadefeatureEnabled" // New
+        "LibraryCardBordersEnabled",
+        "LibraryCardBorderThickness",
+        "LibraryHideNoHistory",
+        "SmartInactivityFadefeatureEnabled",
+        // Phase 1 Visual Enhancements
+        "LibraryGlowEffect",
+        "LibraryAnimatedBorders",
+        "LibraryStatusIcons",
+        "LibraryProgressBars"
     ], (data) => {
+        console.log('[Library] 🔄 Loading data from storage...');
+        console.log('[Library] Raw savedEntriesMerged from storage:', data.savedEntriesMerged);
+        
         customMarkers = Array.isArray(data.customBookmarks) ? data.customBookmarks : [];
         savedEntriesMerged = Array.isArray(data.savedEntriesMerged) ? data.savedEntriesMerged : [];
+        
+        console.log(`[Library] Loaded ${savedEntriesMerged.length} entries`);
+        
+        // Log entries with MangaDex data
+        const mangadexEntries = savedEntriesMerged.filter(e => e.anilistData?.source === 'MANGADEX');
+        console.log(`[Library] Entries with MangaDex data: ${mangadexEntries.length}`);
         
         // Load independent library settings
         librarySettings.bordersEnabled = data.LibraryCardBordersEnabled !== false; // Default true
         librarySettings.borderThickness = data.LibraryCardBorderThickness || 2;
         librarySettings.hideNoHistory = data.LibraryHideNoHistory === true;
         librarySettings.smartInactivity = data.SmartInactivityFadefeatureEnabled === true;
+        
+        // Phase 1 Visual Enhancements
+        librarySettings.useGlowEffect = data.LibraryGlowEffect === true;
+        librarySettings.animatedBorders = data.LibraryAnimatedBorders === true;
+        librarySettings.showStatusIcon = data.LibraryStatusIcons === true;
+        librarySettings.showProgressBar = data.LibraryProgressBars === true;
         
         // Init UI controls
         const borderToggle = document.getElementById("LibraryCardBordersEnabled");
@@ -131,6 +167,17 @@ export function initLibrary() {
         if (borderRange) borderRange.value = librarySettings.borderThickness;
         if (borderDisplay) borderDisplay.textContent = `${librarySettings.borderThickness}px`;
         if (historyToggle) historyToggle.checked = librarySettings.hideNoHistory;
+        
+        // Phase 1: Visual Effects UI Init
+        const glowToggle = document.getElementById("LibraryGlowEffect");
+        const animatedToggle = document.getElementById("LibraryAnimatedBorders");
+        const statusIconToggle = document.getElementById("LibraryStatusIcons");
+        const progressBarToggle = document.getElementById("LibraryProgressBars");
+        
+        if (glowToggle) glowToggle.checked = librarySettings.useGlowEffect;
+        if (animatedToggle) animatedToggle.checked = librarySettings.animatedBorders;
+        if (statusIconToggle) statusIconToggle.checked = librarySettings.showStatusIcon;
+        if (progressBarToggle) progressBarToggle.checked = librarySettings.showProgressBar;
         // Rebuild if merged data is missing but base bookmarks exist
         if (savedEntriesMerged.length === 0 && Array.isArray(data.userBookmarks) && data.userBookmarks.length > 0) {
             console.log("Rebuilding library display from stored bookmarks...");
@@ -211,6 +258,9 @@ export function initLibrary() {
             }
             
             filterEntries();
+
+            // Initialize button animations
+            initButtonMicroInteractions();
         });
         
         if (!fetchInProgress) {
@@ -259,6 +309,31 @@ function attachListeners() {
         filterEntries();
     });
 
+    // Phase 1: Visual Effects Listeners
+    document.getElementById("LibraryGlowEffect")?.addEventListener("change", (e) => {
+        librarySettings.useGlowEffect = e.target.checked;
+        chrome.storage.local.set({ LibraryGlowEffect: e.target.checked });
+        renderEntries(currentFilteredEntries);
+    });
+
+    document.getElementById("LibraryAnimatedBorders")?.addEventListener("change", (e) => {
+        librarySettings.animatedBorders = e.target.checked;
+        chrome.storage.local.set({ LibraryAnimatedBorders: e.target.checked });
+        renderEntries(currentFilteredEntries);
+    });
+
+    document.getElementById("LibraryStatusIcons")?.addEventListener("change", (e) => {
+        librarySettings.showStatusIcon = e.target.checked;
+        chrome.storage.local.set({ LibraryStatusIcons: e.target.checked });
+        renderEntries(currentFilteredEntries);
+    });
+
+    document.getElementById("LibraryProgressBars")?.addEventListener("change", (e) => {
+        librarySettings.showProgressBar = e.target.checked;
+        chrome.storage.local.set({ LibraryProgressBars: e.target.checked });
+        renderEntries(currentFilteredEntries);
+    });
+
     elements.viewCompactBtn?.addEventListener("click", () => {
         setViewSize("compact");
         chrome.storage.local.set({ cardViewSize: "compact" });
@@ -274,8 +349,15 @@ function attachListeners() {
         cleanLibraryDuplicates();
         const newCount = savedEntriesMerged.length;
         if (originalCount > newCount) {
-             alert(`Cleaned up ${originalCount - newCount} duplicate entries!`);
-             filterEntries();
+             // Play success animation
+             const btn = document.getElementById("BtnCleanLibrary");
+             if (btn) playSuccessAnimation(btn);
+             
+             // Slight delay for alert to let animation start
+             setTimeout(() => {
+                 alert(`Cleaned up ${originalCount - newCount} duplicate entries!`);
+                 filterEntries();
+             }, 300);
         } else {
              alert("Your library is already clean!");
         }
@@ -319,8 +401,11 @@ function attachListeners() {
 
     if (elements.freshSyncBtn) {
         elements.freshSyncBtn.addEventListener("click", async () => {
-            if (confirm("Reset library cache and fresh sync from AniList?")) {
-                await chrome.storage.local.remove(["savedEntriesMerged"]);
+            if (confirm("Reset library cache and fresh sync? This will clear AniList and MangaDex cached data.")) {
+                console.log('[Library] 🗑️ Clearing savedEntriesMerged and mangadexCache...');
+                // Animate checkmark
+                if (elements.freshSyncBtn) await playSuccessAnimation(elements.freshSyncBtn);
+                await chrome.storage.local.remove(["savedEntriesMerged", "mangadexCache"]);
                 location.reload();
             }
         });
@@ -349,6 +434,9 @@ function attachListeners() {
         isBulkMode = false;
         elements.bulkBar.style.display = "none";
     });
+    
+    // Phase 1: Enhanced features listeners
+    // attachEnhancedListeners removed - handled by options.js and CrystalSelect.autoInit()
 }
 
 let isBulkMode = false;
@@ -431,11 +519,15 @@ function populateGenreFilter() {
  * After filtering, it calls `renderEntries` to update the displayed grid.
  * @returns {void}
  */
-export function filterEntries() {
+export async function filterEntries() {
     const statusVal = elements.statusFilter?.value || "All";
     const formatVal = elements.formatFilter?.value || "All";
     const genreVal = elements.genreFilter?.value || "All";
+    const tagVal = elements.tagFilter?.value || "All";
     const searchVal = elements.searchInput?.value.toLowerCase() || "";
+
+    // Load personal data for tag filtering
+    const personalData = tagVal !== "All" ? await LibFeatures.loadPersonalData() : {};
 
     chrome.storage.local.get(["FamilyFriendlyfeatureEnabled"], (data) => {
         const familyFriendly = data.FamilyFriendlyfeatureEnabled || false;
@@ -451,10 +543,8 @@ export function filterEntries() {
             if (statusVal !== "All") {
                 if (statusVal.startsWith("marker:")) {
                     const markerName = statusVal.substring(7);
-                    // Check explicit customMarker field OR if the status string itself matches (legacy/auto-mapped)
                     matchesStatus = (entry.customMarker === markerName) || (entry.status === markerName);
                 } else if (statusVal === "HasHistory") {
-                    // Check if there is any history (lastRead, lastChapterRead, or progress)
                     matchesStatus = !!(entry.lastRead || entry.lastChapterRead || (entry.readChapters > 0));
                 } else {
                     matchesStatus = entry.status === statusVal;
@@ -473,7 +563,6 @@ export function filterEntries() {
                     const entryFormat = getFormatName(ani.format, ani.countryOfOrigin);
                     matchesFormat = entryFormat === formatVal;
                 } else {
-                    // Hidden if no AniList data and a specific format is selected
                     matchesFormat = false;
                 }
             }
@@ -483,31 +572,44 @@ export function filterEntries() {
                 matchesGenre = ani?.genres?.includes(genreVal) || false;
             }
 
-            const matchesSearch = searchVal === "" || 
-                entry.title.toLowerCase().includes(searchVal) ||
-                ani?.title?.english?.toLowerCase().includes(searchVal) ||
-                ani?.title?.romaji?.toLowerCase().includes(searchVal);
+            // Tag filtering (Phase 1)
+            let matchesTag = true;
+            if (tagVal !== "All") {
+                const id = LibFeatures.getMangaId(entry);
+                const entryData = personalData[id];
+                matchesTag = entryData?.tags?.includes(tagVal) || false;
+            }
 
+            // Enhanced search with fuzzy matching (Phase 1)
+            let matchesSearch = true;
+            if (searchVal !== "") {
+                const titleMatch = LibFeatures.fuzzyMatch(searchVal, entry.title) ||
+                    LibFeatures.fuzzyMatch(searchVal, ani?.title?.english || '') ||
+                    LibFeatures.fuzzyMatch(searchVal, ani?.title?.romaji || '');
+                // Also search in author if available
+                const authorMatch = ani?.staff?.edges?.some(e => 
+                    LibFeatures.fuzzyMatch(searchVal, e.node?.name?.full || '')
+                ) || false;
+                matchesSearch = titleMatch || authorMatch;
+            }
 
             let matchesDemographic = true;
             if (elements.demographicFilter && elements.demographicFilter.value !== "All") {
-                // We need to check tags for the demographic
-                // Note: We use the helper logic on the fly or pre-calculated
-                // Ideally, getDemographic logic should be reused. 
-                // Since this module doesn't import getDemographic from factory (factory exports createMangaCard),
-                // we'll rely on simple tag checking here for efficiency.
                 const targetDemo = elements.demographicFilter.value.toLowerCase();
                 const tags = ani?.tags || [];
-                // Simple check
                 matchesDemographic = tags.some(t => t.name.toLowerCase() === targetDemo);
             }
 
-            return matchesStatus && matchesFormat && matchesGenre && matchesSearch && matchesDemographic;
+            return matchesStatus && matchesFormat && matchesGenre && matchesSearch && matchesDemographic && matchesTag;
         });
 
         // Sorting Logic
         if (elements.sortFilter) {
             const sortMode = elements.sortFilter.value;
+            
+            // For rating sort, we need personal data
+            const needsPersonalData = sortMode === 'rating-desc' || sortMode === 'rating-asc';
+            
             filtered.sort((a, b) => {
                 const titleA = (a.anilistData?.title?.english || a.title).toLowerCase();
                 const titleB = (b.anilistData?.title?.english || b.title).toLowerCase();
@@ -525,6 +627,20 @@ export function filterEntries() {
                         return (b.lastUpdated || 0) - (a.lastUpdated || 0);
                     case 'last-read-desc': 
                         return (b.lastRead || 0) - (a.lastRead || 0);
+                    case 'rating-desc': {
+                        const idA = LibFeatures.getMangaId(a);
+                        const idB = LibFeatures.getMangaId(b);
+                        const ratingA = personalData[idA]?.rating || 0;
+                        const ratingB = personalData[idB]?.rating || 0;
+                        return ratingB - ratingA;
+                    }
+                    case 'rating-asc': {
+                        const idA = LibFeatures.getMangaId(a);
+                        const idB = LibFeatures.getMangaId(b);
+                        const ratingA = personalData[idA]?.rating || 0;
+                        const ratingB = personalData[idB]?.rating || 0;
+                        return ratingA - ratingB;
+                    }
                     default: return 0;
                 }
             });
@@ -561,17 +677,8 @@ function renderEntries(entries) {
 
     updateSubtitle(entries.length);
 
-    // Animate cards only if not currently syncing to prevent "buggy" resets
-    if (!fetchInProgress && typeof anime !== 'undefined') {
-        anime({
-            targets: '.manga-card',
-            opacity: [0, 1],
-            translateY: [20, 0],
-            delay: anime.stagger(50),
-            duration: 600,
-            easing: 'easeOutQuad'
-        });
-    }
+    // Animate grid entrance
+    animateGridEntrance(".manga-card");
 }
 
 function renderStatistics() {
@@ -581,88 +688,149 @@ function renderStatistics() {
     }
 
     if (!elements.statsGrid || !savedEntriesMerged) return;
-    
-    // Safety check for statsGrid display
-    const currentTab = document.querySelector('.tab-pane.active')?.id;
-    if (currentTab !== 'tab-saved-entries') {
-        // Only animate if we are on the library tab (or avoid wasting cycles)
-        // But we want it to render so it's ready when we switch
-    }
 
-    const newStats = {
-        total: savedEntriesMerged.length,
-        reading: savedEntriesMerged.filter(e => e.status === 'Reading').length,
-        completed: savedEntriesMerged.filter(e => e.status === 'Completed').length,
-        planning: savedEntriesMerged.filter(e => e.status === 'Plan to Read').length,
-        onhold: savedEntriesMerged.filter(e => e.status === 'On Hold').length,
-        dropped: savedEntriesMerged.filter(e => e.status === 'Dropped').length,
-        chapters: savedEntriesMerged.reduce((sum, e) => sum + (parseInt(e.readChapters) || 0), 0)
-    };
+    // Calculate comprehensive stats
+    const now = Date.now();
+    const oneDay = 24 * 60 * 60 * 1000;
+    const oneWeek = 7 * oneDay;
+    const oneMonth = 30 * oneDay;
     
-    const items = [
-        { key: 'total', label: 'Total', count: newStats.total, color: 'var(--primary)' },
-        { key: 'chapters', label: 'Chapters', count: newStats.chapters, color: '#00BCD4' },
-        { key: 'reading', label: 'Reading', count: newStats.reading, color: '#4CAF50' },
-        { key: 'completed', label: 'Completed', count: newStats.completed, color: '#2196F3' },
-        { key: 'planning', label: 'Plan to Read', count: newStats.planning, color: '#9C27B0' },
-        { key: 'onhold', label: 'On Hold', count: newStats.onhold, color: '#FFC107' },
-        { key: 'dropped', label: 'Dropped', count: newStats.dropped, color: '#F44336' }
-    ];
+    // Basic counts
+    const total = savedEntriesMerged.length;
+    const reading = savedEntriesMerged.filter(e => e.status === 'Reading').length;
+    const completed = savedEntriesMerged.filter(e => e.status === 'Completed').length;
+    const planning = savedEntriesMerged.filter(e => e.status === 'Plan to Read').length;
+    const onhold = savedEntriesMerged.filter(e => e.status === 'On Hold').length;
+    const dropped = savedEntriesMerged.filter(e => e.status === 'Dropped').length;
+    const chapters = savedEntriesMerged.reduce((sum, e) => sum + (parseInt(e.readChapters) || 0), 0);
+    
+    // Data source stats
+    const anilistEntries = savedEntriesMerged.filter(e => e.anilistData && !e.anilistData.source).length;
+    const mangadexEntries = savedEntriesMerged.filter(e => e.anilistData?.source === 'MANGADEX').length;
+    const noDataEntries = savedEntriesMerged.filter(e => !e.anilistData || e.anilistData.status === 'NOT_FOUND').length;
+    
+    // Time-based reading activity
+    const readThisWeek = savedEntriesMerged.filter(e => e.lastRead && (now - e.lastRead) < oneWeek).length;
+    const readThisMonth = savedEntriesMerged.filter(e => e.lastRead && (now - e.lastRead) < oneMonth).length;
+    const addedThisWeek = savedEntriesMerged.filter(e => e.lastUpdated && (now - e.lastUpdated) < oneWeek).length;
+    
+    // Has reading history
+    const withHistory = savedEntriesMerged.filter(e => e.readChapters && e.readChapters > 0).length;
+    
+    // Format breakdown
+    const manga = savedEntriesMerged.filter(e => e.anilistData?.format === 'MANGA' || !e.anilistData?.format).length;
+    const manhwa = savedEntriesMerged.filter(e => e.anilistData?.format === 'Manhwa' || e.anilistData?.countryOfOrigin === 'KR').length;
+    const manhua = savedEntriesMerged.filter(e => e.anilistData?.format === 'Manhua' || e.anilistData?.countryOfOrigin === 'CN').length;
+    
+    // Genre stats (top 5)
+    const genreCounts = {};
+    savedEntriesMerged.forEach(e => {
+        (e.anilistData?.genres || []).forEach(g => {
+            genreCounts[g] = (genreCounts[g] || 0) + 1;
+        });
+    });
+    const topGenres = Object.entries(genreCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+    
+    // Average score
+    const scoredEntries = savedEntriesMerged.filter(e => e.anilistData?.averageScore);
+    const avgScore = scoredEntries.length > 0 
+        ? Math.round(scoredEntries.reduce((sum, e) => sum + e.anilistData.averageScore, 0) / scoredEntries.length)
+        : 0;
 
-    // Build static structure if empty
-    if (elements.statsGrid.innerHTML === "" || elements.statsGrid.children.length !== items.length) {
-        elements.statsGrid.innerHTML = items.map(item => `
-            <div class="stat-item-compact" style="opacity: 0; transform: translateY(10px)">
-                <span id="stat-val-${item.key}" class="stat-value-large" style="color: ${item.color}">0</span>
-                <span class="stat-label-small">${item.label}</span>
+    const newStats = { total, reading, completed, planning, onhold, dropped, chapters };
+    
+    // Build enhanced HTML
+    elements.statsGrid.innerHTML = `
+        <!-- Row 1: Main Status Stats -->
+        <div class="stats-row stats-row-main">
+            <div class="stat-item-compact" style="--stat-color: var(--primary)">
+                <span id="stat-val-total" class="stat-value-large">${total}</span>
+                <span class="stat-label-small">Total</span>
             </div>
-        `).join('');
+            <div class="stat-item-compact" style="--stat-color: #00BCD4">
+                <span id="stat-val-chapters" class="stat-value-large">${chapters}</span>
+                <span class="stat-label-small">Chapters Read</span>
+            </div>
+            <div class="stat-item-compact" style="--stat-color: #4CAF50">
+                <span id="stat-val-reading" class="stat-value-large">${reading}</span>
+                <span class="stat-label-small">Reading</span>
+            </div>
+            <div class="stat-item-compact" style="--stat-color: #2196F3">
+                <span id="stat-val-completed" class="stat-value-large">${completed}</span>
+                <span class="stat-label-small">Completed</span>
+            </div>
+            <div class="stat-item-compact" style="--stat-color: #9C27B0">
+                <span class="stat-value-large">${planning}</span>
+                <span class="stat-label-small">Plan to Read</span>
+            </div>
+            <div class="stat-item-compact" style="--stat-color: #FFC107">
+                <span class="stat-value-large">${onhold}</span>
+                <span class="stat-label-small">On Hold</span>
+            </div>
+            <div class="stat-item-compact" style="--stat-color: #F44336">
+                <span class="stat-value-large">${dropped}</span>
+                <span class="stat-label-small">Dropped</span>
+            </div>
+        </div>
 
-        // Staggered Entrance
-        if (typeof anime !== 'undefined') {
-            anime({
-                targets: elements.statsGrid.children,
-                opacity: [0, 1],
-                translateY: [10, 0],
-                delay: anime.stagger(60),
-                duration: 800,
-                easing: 'easeOutElastic(1, .8)'
-            });
-        }
-    }
+        <!-- Row 2: Activity & Sources -->
+        <div class="stats-row stats-row-secondary">
+            <div class="stat-group">
+                <h4 class="stat-group-title">📅 Activity</h4>
+                <div class="stat-mini-grid">
+                    <div class="stat-mini"><span class="stat-mini-value">${readThisWeek}</span><span class="stat-mini-label">Read This Week</span></div>
+                    <div class="stat-mini"><span class="stat-mini-value">${readThisMonth}</span><span class="stat-mini-label">Read This Month</span></div>
+                    <div class="stat-mini"><span class="stat-mini-value">${addedThisWeek}</span><span class="stat-mini-label">Added This Week</span></div>
+                    <div class="stat-mini"><span class="stat-mini-value">${withHistory}</span><span class="stat-mini-label">With History</span></div>
+                </div>
+            </div>
+            <div class="stat-group">
+                <h4 class="stat-group-title">🌐 Data Sources</h4>
+                <div class="stat-mini-grid">
+                    <div class="stat-mini"><span class="stat-mini-value" style="color: #02A9FF">${anilistEntries}</span><span class="stat-mini-label">AniList</span></div>
+                    <div class="stat-mini"><span class="stat-mini-value" style="color: #FF6740">${mangadexEntries}</span><span class="stat-mini-label">MangaDex</span></div>
+                    <div class="stat-mini"><span class="stat-mini-value" style="color: #888">${noDataEntries}</span><span class="stat-mini-label">No Data</span></div>
+                </div>
+            </div>
+            <div class="stat-group">
+                <h4 class="stat-group-title">📚 Format</h4>
+                <div class="stat-mini-grid">
+                    <div class="stat-mini"><span class="stat-mini-value">${manga}</span><span class="stat-mini-label">Manga</span></div>
+                    <div class="stat-mini"><span class="stat-mini-value">${manhwa}</span><span class="stat-mini-label">Manhwa</span></div>
+                    <div class="stat-mini"><span class="stat-mini-value">${manhua}</span><span class="stat-mini-label">Manhua</span></div>
+                </div>
+            </div>
+            <div class="stat-group">
+                <h4 class="stat-group-title">🏷️ Top Genres</h4>
+                <div class="stat-tags">
+                    ${topGenres.map(([genre, count]) => `<span class="stat-tag">${genre} <small>(${count})</small></span>`).join('')}
+                    ${topGenres.length === 0 ? '<span class="stat-tag dim">No genres yet</span>' : ''}
+                </div>
+            </div>
+        </div>
 
-    // Animate the numbers
+        <!-- Row 3: Quick Stats Bar -->
+        <div class="stats-row stats-row-bar">
+            <div class="stat-bar-item">⭐ Avg Score: <strong>${avgScore > 0 ? avgScore + '%' : 'N/A'}</strong></div>
+            <div class="stat-bar-item">📖 ${Math.round(chapters / Math.max(completed, 1))} ch/completed manga</div>
+            <div class="stat-bar-item">📈 ${total > 0 ? Math.round((completed / total) * 100) : 0}% completion rate</div>
+        </div>
+    `;
+
+    // Animate entrance
     if (typeof anime !== 'undefined') {
-        items.forEach(item => {
-            const el = document.getElementById(`stat-val-${item.key}`);
-            if (!el) return;
-
-            const startVal = statsData[item.key] || 0;
-            const endVal = item.count;
-
-            if (startVal === endVal && el.textContent != "0") return;
-
-            const obj = { val: startVal };
-            anime({
-                targets: obj,
-                val: endVal,
-                round: 1,
-                duration: 1000,
-                easing: 'easeOutExpo',
-                update: () => {
-                    el.textContent = obj.val;
-                }
-            });
-        });
-    } else {
-        // Fallback
-        items.forEach(item => {
-            const el = document.getElementById(`stat-val-${item.key}`);
-            if (el) el.textContent = item.count;
+        anime({
+            targets: '.stat-item-compact, .stat-group, .stat-bar-item',
+            opacity: [0, 1],
+            translateY: [15, 0],
+            delay: anime.stagger(40),
+            duration: 600,
+            easing: 'easeOutQuart'
         });
     }
 
-    // Update global state
     statsData = newStats;
 }
 
@@ -723,7 +891,11 @@ function showMangaDetails(entry) {
         }
     }
 
-    if (elements.modalCover) elements.modalCover.src = ani.coverImage.large;
+    // Cover Image - with fallback
+    if (elements.modalCover) {
+        const coverUrl = ani.coverImage?.large || ani.coverImage?.medium || 'https://mangadex.org/img/avatar.png';
+        elements.modalCover.src = coverUrl;
+    }
     
     // Banner
     if (elements.modalBanner) {
@@ -905,18 +1077,25 @@ function showMangaDetails(entry) {
         });
     }
 
+    // Populate Personal Data Section (Rating, Tags, Notes)
+    populatePersonalData(entry);
+
     if (elements.modal) {
         elements.modal.style.display = "flex";
         // Reset scroll position
         const body = elements.modal.querySelector('.modal-body');
         if (body) body.scrollTop = 0;
+
+        // Animate modal entry
+        const content = elements.modal.querySelector('.modal-content');
+        if (content) animateModalEntry(content);
     }
 }
 
 // Global storage listener to keep library in sync with background/content script updates
 chrome.storage.onChanged.addListener((changes, area) => {
     if (area === 'local') {
-        if (changes.savedEntriesMerged) {
+        if (changes.savedEntriesMerged && !fetchInProgress) {
             savedEntriesMerged = changes.savedEntriesMerged.newValue || [];
             filterEntries();
         }
@@ -954,10 +1133,19 @@ async function fetchMissingData() {
     const NEGATIVE_CACHE_DAYS = 7;
     const now = Date.now();
 
-    // Fetch if no AniList data OR if description is missing (user requested richer data for existing entries)
-    // BUT skip if marked as NOT_FOUND within the cooldown period
+    // Fetch if no anilistData OR if it truly has no useful data
+    // Skip if: has description, OR has valid ID, OR is from MangaDex, OR is NOT_FOUND within cooldown
     const missing = savedEntriesMerged.filter(e => {
         if (!e.anilistData) return true;
+        
+        // Skip MangaDex entries - they're complete
+        if (e.anilistData.source === 'MANGADEX') return false;
+        
+        // Skip entries with a valid AniList ID AND chapter count - they're complete
+        if (e.anilistData.id && typeof e.anilistData.id === 'number' && e.anilistData.chapters) return false;
+        
+        // If it has AniList ID but NO chapters, check if we already tried MangaDex fallback
+        if (e.anilistData.id && !e.anilistData.chapters && e.anilistData.mangadexChecked) return false;
         
         // Check for Negative Cache
         if (e.anilistData.status === 'NOT_FOUND' && e.anilistData.lastChecked) {
@@ -967,42 +1155,110 @@ async function fetchMissingData() {
             }
         }
         
-        return !e.anilistData.description;
+        // Only truly missing entries get here (no ID, not MangaDex, not cached as NOT_FOUND)
+        return true;
     });
 
     if (missing.length === 0) return;
 
     fetchInProgress = true;
-    updateProgress(0, missing.length);
+    try {
+        updateProgress(0, missing.length);
+        console.log(`[Library] 🚀 Starting fetch for ${missing.length} entries...`);
+        
+        // Debug: Show why each entry is "missing"
+        missing.forEach((e, i) => {
+            const reason = !e.anilistData ? 'No anilistData' :
+                           !e.anilistData.chapters ? 'Missing chapters' : 
+                           !e.anilistData.description ? 'No description' : 'Unknown';
+            console.log(`[Library] Missing #${i+1}: "${e.title}" - Reason: ${reason}, Source: ${e.anilistData?.source || 'none'}`);
+        });
 
-    for (let i = 0; i < missing.length; i++) {
-        const entry = missing[i];
-        if (typeof fetchMangaFromAnilist === 'function') {
-            const data = await fetchMangaFromAnilist(entry.title);
-            if (data) {
-                entry.anilistData = data;
+        for (let i = 0; i < missing.length; i++) {
+            const entry = missing[i];
+        console.log(`[Library] 📚 Fetching metadata for: "${entry.title}" (${i + 1}/${missing.length})`);
+        
+        try {
+            if (typeof fetchMangaFromAnilist === 'function') {
+                let data = await fetchMangaFromAnilist(entry.title);
                 
-                // Refresh filters if new genres are found
-                if (data.genres) populateGenreFilter();
-            } else {
-                // Negative Cache: Mark as NOT_FOUND to prevent immediate re-fetch
-                console.warn(`Marking "${entry.title}" as NOT_FOUND in AniList cache.`);
-                entry.anilistData = {
-                    status: 'NOT_FOUND',
-                    lastChecked: Date.now(),
-                    // Preserve minimal structure to avoid breaking other checks
-                    title: { english: entry.title }, 
-                    format: 'Unknown'
-                };
+                // Fallback to MangaDex if AniList returns nothing
+                if (!data && typeof fetchMangaFromMangadex === 'function') {
+                    console.log(`[Library] ⚠️ AniList miss for "${entry.title}", trying MangaDex...`);
+                    data = await fetchMangaFromMangadex(entry.title);
+                }
+                
+                if (data) {
+                    const source = data.source === 'MANGADEX' ? 'MangaDex' : 'AniList';
+                    console.log(`[Library] ✅ Got data from ${source} for: "${entry.title}"`);
+                    
+                    // Enhancement: If AniList matched but has no chapter count, check MangaDex
+                    if (data.source !== 'MANGADEX' && !data.chapters && typeof fetchMangaFromMangadex === 'function') {
+                        console.log(`[Library] 🔍 AniList has no chapter count for "${entry.title}", checking MangaDex...`);
+                        const mdData = await fetchMangaFromMangadex(entry.title);
+                        if (mdData && mdData.chapters) {
+                            data.chapters = mdData.chapters;
+                            console.log(`[Library] 📈 Found chapter count on MangaDex: ${mdData.chapters}`);
+                        }
+                        data.mangadexChecked = true; // Don't check again next time
+                    }
+                    
+                    entry.anilistData = data;
+                    
+                    // Refresh filters if new genres are found
+                    if (data.genres) populateGenreFilter();
+                } else {
+                    // Negative Cache: Mark as NOT_FOUND to prevent immediate re-fetch
+                    console.warn(`[Library] ❌ Marking "${entry.title}" as NOT_FOUND in both AniList and MangaDex.`);
+                    entry.anilistData = {
+                        status: 'NOT_FOUND',
+                        lastChecked: Date.now(),
+                        title: { english: entry.title }, 
+                        format: 'Unknown'
+                    };
+                }
             }
-            
-            // Save progress (both success and failure)
-            chrome.storage.local.set({ savedEntriesMerged });
-            filterEntries(); // Live update
+        } catch (err) {
+            console.error(`[Library] ❌ Error fetching "${entry.title}":`, err);
         }
+        
         updateProgress(i + 1, missing.length);
+        filterEntries(); // Live update
+        
+        // Batch save every 10 entries to prevent data loss
+        if ((i + 1) % 10 === 0) {
+            console.log(`[Library] 💾 Batch saving at entry ${i + 1}/${missing.length}...`);
+            await new Promise(resolve => {
+                chrome.storage.local.set({ savedEntriesMerged }, () => {
+                    if (chrome.runtime.lastError) {
+                        console.error(`[Library] ❌ Batch save error:`, chrome.runtime.lastError);
+                    } else {
+                        console.log(`[Library] ✅ Batch saved ${i + 1} entries.`);
+                    }
+                    resolve();
+                });
+            });
+        }
     }
-    fetchInProgress = false;
+    
+        // Final save - ensure all changes are persisted
+        console.log(`[Library] 💾 Saving all ${missing.length} entries to storage...`);
+        await new Promise(resolve => {
+            chrome.storage.local.set({ savedEntriesMerged }, () => {
+                if (chrome.runtime.lastError) {
+                    console.error(`[Library] ❌ Save error:`, chrome.runtime.lastError);
+                } else {
+                    console.log(`[Library] ✅ Successfully saved ${savedEntriesMerged.length} entries to storage!`);
+                }
+                resolve();
+            });
+        });
+        
+        console.log(`[Library] ✅ Fetch complete! Processed ${missing.length} entries.`);
+    } finally {
+        fetchInProgress = false;
+        updateProgress(1, 1); // Hide progress
+    }
 }
 
 function updateProgress(curr, total) {
@@ -1043,3 +1299,135 @@ function cleanLibraryDuplicates() {
         chrome.storage.local.set({ savedEntriesMerged });
     }
 }
+
+// ============ PHASE 1: ENHANCED LIBRARY FEATURES ============
+
+/** Current entry being viewed in modal, for updates */
+let currentModalEntry = null;
+
+/**
+ * Populates the personal data section in the modal (Rating, Tags, Notes).
+ * @param {Object} entry - The manga entry being displayed.
+ */
+async function populatePersonalData(entry) {
+    currentModalEntry = entry;
+    
+    // Get personal data
+    const personalData = await LibFeatures.getPersonalData(entry);
+    const allTags = await LibFeatures.loadUserTags();
+    
+    // Rating Section
+    if (elements.modalPersonalRating) {
+        elements.modalPersonalRating.innerHTML = '';
+        const ratingEl = LibFeatures.createStarRating(
+            personalData.rating || 0,
+            async (newRating) => {
+                await LibFeatures.saveRating(entry, newRating);
+                // Update display
+                const valueEl = elements.modalPersonalRating.querySelector('.star-rating-value');
+                if (valueEl) valueEl.textContent = newRating > 0 ? `${newRating}/10` : '';
+            }
+        );
+        elements.modalPersonalRating.appendChild(ratingEl);
+    }
+    
+    // Tags Section
+    if (elements.modalPersonalTags) {
+        elements.modalPersonalTags.innerHTML = '';
+        const tagInput = LibFeatures.createTagInput(
+            [...personalData.tags],
+            allTags,
+            async (tag) => {
+                await LibFeatures.addTagToManga(entry, tag);
+                populateTagFilter(); // Refresh tag dropdown
+            },
+            async (tag) => {
+                await LibFeatures.removeTagFromManga(entry, tag);
+            }
+        );
+        elements.modalPersonalTags.appendChild(tagInput);
+    }
+    
+    // Notes Section
+    if (elements.modalPersonalNotes) {
+        elements.modalPersonalNotes.innerHTML = '';
+        const notesEditor = LibFeatures.createNotesEditor(
+            personalData.notes || '',
+            async (notes) => {
+                await LibFeatures.saveNotes(entry, notes);
+            }
+        );
+        elements.modalPersonalNotes.appendChild(notesEditor);
+    }
+}
+
+/**
+ * Populates the tag filter dropdown with user-defined tags.
+ */
+async function populateTagFilter() {
+    if (!elements.tagFilter) return;
+    
+    const tags = await LibFeatures.loadUserTags();
+    
+    // Keep "All Tags" option
+    elements.tagFilter.innerHTML = '<option value="All">All Tags</option>';
+    
+    // Add user tags
+    tags.sort().forEach(tag => {
+        const opt = document.createElement('option');
+        opt.value = tag;
+        opt.textContent = `🏷️ ${tag}`;
+        elements.tagFilter.appendChild(opt);
+    });
+}
+
+/**
+ * Populates the filter presets container with saved presets.
+ */
+async function populateFilterPresets() {
+    if (!elements.filterPresetsContainer) return;
+    
+    const presets = await LibFeatures.loadFilterPresets();
+    
+    // Clear existing presets (keep save button)
+    const saveBtn = elements.btnSaveFilterPreset;
+    elements.filterPresetsContainer.innerHTML = '';
+    if (saveBtn) elements.filterPresetsContainer.appendChild(saveBtn);
+    
+    // Add preset buttons
+    presets.forEach(preset => {
+        const btn = document.createElement('button');
+        btn.className = 'filter-preset-btn';
+        btn.innerHTML = `${preset.name} <span class="preset-delete" title="Delete preset">&times;</span>`;
+        
+        btn.addEventListener('click', (e) => {
+            if (e.target.classList.contains('preset-delete')) {
+                // Delete preset
+                if (confirm(`Delete preset "${preset.name}"?`)) {
+                    LibFeatures.deleteFilterPreset(preset.name).then(() => {
+                        populateFilterPresets();
+                    });
+                }
+                return;
+            }
+            // Apply preset
+            applyFilterPreset(preset.filters);
+            // Mark as active
+            elements.filterPresetsContainer.querySelectorAll('.filter-preset-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        });
+        
+        elements.filterPresetsContainer.appendChild(btn);
+    });
+}
+
+/**
+ * Applies a filter preset to the current filters.
+ * @param {Object} filters - Filter values to apply.
+ */
+
+
+/**
+ * Attaches listeners for Phase 1 enhanced features.
+ */
+

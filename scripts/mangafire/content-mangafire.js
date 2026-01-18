@@ -1,3 +1,13 @@
+/**
+ * @fileoverview MangaFire Content Script
+ * Handles border highlighting for saved manga and chapter reading history tracking on MangaFire pages.
+ * Part of the Bookmarks Marker/Highlighter Chrome Extension.
+ */
+
+/**
+ * Main entry point for applying styles to manga cards on MangaFire pages.
+ * Routes to appropriate handler based on current page path.
+ */
 function applyContainerStyles() {
   if (!chrome.runtime?.id) return;
   //doesnt run on pages that are loaded multiple times because of scrapers
@@ -85,6 +95,12 @@ function getReadChapters() {
     }
   });
 }
+
+/**
+ * Parses manga title and chapter info from MangaFire reader URLs.
+ * @param {string} href - The full URL of the reader page.
+ * @returns {{title: string, chapter: string, slugWithId: string}} Parsed URL components.
+ */
 function cleanHrefToTitle(href) {
   if (!href) return { title: "", chapter: "", slugWithId: "" };
 
@@ -109,6 +125,10 @@ function cleanHrefToTitle(href) {
   return { title, chapter, slugWithId };
 }
 
+/**
+ * Handles highlighting for MangaFire homepage sections loaded on initial page load.
+ * Processes top trending, most viewed (day/week/month), and new releases sections.
+ */
 function applyContainerStylesHomePageOnLoad(){
 //second part
 Log("Homepage script executing");
@@ -192,8 +212,9 @@ Log("Homepage script executing");
       applyAndColorBorders(matched, ".swiper.completed a span", "a");
     });
 }
+
 /**
- *
+ * Handles highlighting for the "Recently Updated" section on MangaFire homepage.
  */
 function applyContainerStylesHomePage() {
   Log("applyContainerStylesHomePage() called");
@@ -224,10 +245,9 @@ function applyContainerStylesHomePage() {
 }
 
 /**
- * gets local data userBookmarks and checks if foundMangas has any titles similar.
- * outputs objects with title and status if they are saved && on page
- * @returns An array of titles that are saved(Bookmarked) && on screen through callback
- * @param {Array} foundMangaTitles all found bookmarks on the page
+ * Cross-references page manga titles with saved bookmarks to find matches.
+ * @param {Array<string>} foundMangaTitles - All manga titles found on the current page.
+ * @param {Function} callback - Callback receiving array of matched bookmark objects.
  */
 function crossRefrencBookmarks(foundMangaTitles, callback) {
   if (!chrome.runtime?.id) return;
@@ -265,9 +285,10 @@ function crossRefrencBookmarks(foundMangaTitles, callback) {
 }
 
 /**
- *@param {String} elementClosestSelector - String to find the correct div to color from where title is; ".inner"
- * @param {Array} mangasToColor - Array of objects; [title: One piece, status: Reading]
- * @param {String} querySelectToTitle - string to find title on page; ".inner .info a"
+ * Applies colored borders to manga elements based on their bookmark status.
+ * @param {Array<Object>} mangasToColor - Array of bookmark objects with title and status.
+ * @param {string} querySelectToTitle - CSS selector to find title elements on page.
+ * @param {string} elementClosestSelector - CSS selector for the element to apply border to.
  */
 function applyAndColorBorders(
   mangasToColor,
@@ -341,9 +362,11 @@ function applyAndColorBorders(
     }
   );
 }
+
 /**
- * 
- * @param {Array} mangasToColor 
+ * Applies colored borders specifically for the Top Trending section on homepage.
+ * Uses left-border styling with !important to override Swiper styles.
+ * @param {Array<Object>} mangasToColor - Array of bookmark objects with title and status.
  */
 function applyAndColorBordersForTopTrendingMangas(mangasToColor) {
     if (!chrome.runtime?.id) return;
@@ -409,6 +432,7 @@ function applyAndColorBordersForTopTrendingMangas(mangasToColor) {
   );
 }
 
+// Main initialization on page load
 window.addEventListener("load", () => {
   if (!chrome.runtime?.id) return;
 
@@ -464,7 +488,10 @@ window.addEventListener("load", () => {
   }
 });
 
-// Helper to Log
+/**
+ * Sends log messages to the background script for debugging.
+ * @param {string|Object} txt - The message to log.
+ */
 function Log(txt) {
   if (!chrome.runtime?.id) return; // Prevent "Extension context invalidated" error
   
@@ -489,6 +516,11 @@ const urlObserver = new MutationObserver(() => {
 });
 urlObserver.observe(document, { subtree: true, childList: true });
 
+/**
+ * Creates a promise that resolves when a matching message is received.
+ * @param {Function} filterFn - Function to filter messages.
+ * @returns {Promise<Object>} Resolves with the matching message.
+ */
 function waitForMessage(filterFn) {
   return new Promise((resolve) => {
     function handler(msg, sender, sendResponse) {
@@ -501,6 +533,9 @@ function waitForMessage(filterFn) {
   });
 }
 
+/**
+ * Checks if automatic sync is due and triggers bookmark scraping if needed.
+ */
 function autoSync() {
   if (!chrome.runtime?.id) return;
   chrome.storage.local.get(

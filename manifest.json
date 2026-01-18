@@ -24,7 +24,9 @@
   ],
   "host_permissions": [
     "https://mangafire.to/user/bookmark",
-    "https://graphql.anilist.co/*"
+    "https://graphql.anilist.co/*",
+    "https://api.mangadex.org/*",
+    "https://mangadex.org/*"
   ],
   "background": {
     "service_worker": "background.js",
@@ -36,7 +38,15 @@
         "*://mangafire.to/*"
       ],
       "js": [
-        "content.js"
+        "scripts/mangafire/content-mangafire.js"
+      ]
+    },
+    {
+      "matches": [
+        "*://mangadex.org/*"
+      ],
+      "js": [
+        "scripts/mangadex/content-mangadex.js"
       ]
     }
   ]

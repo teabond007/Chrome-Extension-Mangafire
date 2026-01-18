@@ -1,4 +1,5 @@
 import { Log, decodeHTMLEntities } from '../core/utils.js';
+import { fetchMDList } from '../core/mangadex-api.js';
 
 /**
  * @fileoverview Manages Data Portability (Import and Export) for the extension.
@@ -56,12 +57,29 @@ export function initImportExport() {
             "AutoSyncfeatureEnabled",
             "CustomBorderSizefeatureEnabled",
             "FamilyFriendlyfeatureEnabled",
+            "SmartAutoCompletefeatureEnabled",
+            "MangaDexHighlightEnabled",     // MangaDex highlighting toggle
+            "MangaDexShowProgress",         // MangaDex progress display toggle
             "anilistCache",
+            "mangadexCache",           // MangaDex search cache
             "savedEntriesMerged",
+            "savedReadChapters",       // Reading history per manga
             "cardViewSize",
             "theme",
-            "LastBackupDate"
+            "LibraryCardBordersEnabled",
+            "LibraryCardBorderThickness",
+            "LastBackupDate",
+            // Phase 1: Enhanced library features
+            "libraryPersonalData",     // Tags, notes, ratings per manga
+            "libraryUserTags",          // User-defined tags
+            "libraryFilterPresets",     // Saved filter presets
+            // Phase 1: Visual Enhancements
+            "LibraryGlowEffect",
+            "LibraryAnimatedBorders",
+            "LibraryStatusIcons",
+            "LibraryProgressBars"
         ];
+
 
         chrome.storage.local.get(keysToExport, (data) => {
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -253,5 +271,84 @@ export function initImportExport() {
             }
         });
     }
+    
+    // MDList Import
+    const mdlistImportBtn = document.getElementById('mdlistImportBtn');
+    const mdlistInput = document.getElementById('mdlistInput');
+    
+    if (mdlistImportBtn && mdlistInput) {
+        mdlistImportBtn.addEventListener('click', async () => {
+            const inputValue = mdlistInput.value.trim();
+            
+            if (!inputValue) {
+                alert('Please enter a MangaDex list URL or ID.');
+                return;
+            }
+            
+            mdlistImportBtn.disabled = true;
+            mdlistImportBtn.textContent = 'Importing...';
+            
+            try {
+                const result = await fetchMDList(inputValue);
+                
+                if (!result.success) {
+                    alert(`Import failed: ${result.error}`);
+                    return;
+                }
+                
+                if (result.manga.length === 0) {
+                    alert('No manga found in this list.');
+                    return;
+                }
+                
+                // Add manga to library
+                chrome.storage.local.get(['savedEntriesMerged'], (data) => {
+                    let savedEntries = Array.isArray(data.savedEntriesMerged) ? data.savedEntriesMerged : [];
+                    
+                    // Create a set of existing titles/IDs for deduplication
+                    const existingTitles = new Set(savedEntries.map(e => e.title.toLowerCase()));
+                    const existingMdIds = new Set(savedEntries.filter(e => e.anilistData?.mangadexId).map(e => e.anilistData.mangadexId));
+                    
+                    let added = 0;
+                    let skipped = 0;
+                    
+                    result.manga.forEach(manga => {
+                        const title = manga.title?.english || manga.title?.romaji || 'Unknown';
+                        const mdId = manga.mangadexId;
+                        
+                        // Skip if already exists
+                        if (existingTitles.has(title.toLowerCase()) || existingMdIds.has(mdId)) {
+                            skipped++;
+                            return;
+                        }
+                        
+                        // Add new entry
+                        savedEntries.push({
+                            title: title,
+                            status: 'Plan to Read',
+                            readChapters: 0,
+                            anilistData: manga,
+                            customMarker: null,
+                            lastUpdated: Date.now(),
+                            importedFrom: 'MDList'
+                        });
+                        added++;
+                    });
+                    
+                    chrome.storage.local.set({ savedEntriesMerged: savedEntries }, () => {
+                        alert(`Imported ${added} manga from "${result.listName}". ${skipped} duplicates skipped.`);
+                        mdlistInput.value = '';
+                        location.reload();
+                    });
+                });
+                
+            } catch (error) {
+                console.error('MDList import error:', error);
+                alert(`Import error: ${error.message}`);
+            } finally {
+                mdlistImportBtn.disabled = false;
+                mdlistImportBtn.textContent = 'Import';
+            }
+        });
+    }
 }
-

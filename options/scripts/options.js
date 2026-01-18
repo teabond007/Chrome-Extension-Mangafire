@@ -114,15 +114,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 10. Premium Custom Selects
-    // Delay slightly to allow dynamic content (like genres/markers) to start loading
-    setTimeout(() => {
-        document.querySelectorAll('select').forEach(sel => {
-            if (!sel.closest('.custom-select-container')) {
-                new CrystalSelect(sel);
-                Log(`CrystalSelect initialized for: ${sel.id || 'anonymous select'}`);
-            }
-        });
-    }, 200);
+    // Auto-init handles everything, including dynamic elements
+    try {
+        CrystalSelect.autoInit();
+        Log("CrystalSelect auto-initialization enabled.");
+    } catch (e) {
+        console.error("CrystalSelect Error:", e);
+    }
 });
 
 /**
