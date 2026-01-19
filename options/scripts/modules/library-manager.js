@@ -1039,7 +1039,7 @@ function showMangaDetails(entry) {
         chrome.storage.local.get(["savedReadChapters"], (data) => {
             const history = data.savedReadChapters || {};
             
-            // Robust matching: Try original title, slugified title, and entry-level mangaSlug
+            // Robust matching: Try original title, slugified title, entry-level mangaSlug, and webtoon namespace
             const titleLower = entry.title.toLowerCase();
             const mangaSlugBase = entry.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
             const explicitSlug = entry.mangaSlug ? entry.mangaSlug.split('.')[0] : null;
@@ -1048,6 +1048,17 @@ function showMangaDetails(entry) {
             const historyKey = Object.keys(history).find(key => {
                 const kLower = key.toLowerCase();
                 const kSlug = kLower.replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+                
+                // Check for webtoon namespace match (webtoon:slug)
+                if (key.startsWith('webtoon:')) {
+                    const webtoonSlug = key.replace('webtoon:', '').replace(/-/g, ' ').toLowerCase();
+                    const webtoonSlugNorm = key.replace('webtoon:', '').toLowerCase();
+                    if (titleLower.includes(webtoonSlug) || 
+                        mangaSlugBase === webtoonSlugNorm ||
+                        webtoonSlug.includes(titleLower)) {
+                        return true;
+                    }
+                }
                 
                 return kLower === titleLower || 
                        kSlug === mangaSlugBase || 

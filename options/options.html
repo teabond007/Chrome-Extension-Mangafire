@@ -243,6 +243,62 @@
                         </div>
                     </div>
 
+                    <!-- Card: Webtoons Highlighting -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: rgba(0, 220, 100, 0.1); color: #00DC64;">📺
+                            </div>
+                            <h3>Webtoons Highlighting</h3>
+                            <button class="info-redirect-btn" data-target="guide-general"
+                                title="Webtoons highlighting settings">
+                                <svg class="icon-svg icon-info" style="width: 16px; height: 16px;"></svg>
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="feature-toggle-wrapper">
+                                <div class="toggle-label-group">
+                                    <label for="WebtoonsHighlightEnabled" class="toggle-main-label">Enable Webtoons
+                                        Highlighting</label>
+                                    <span class="toggle-sub-label">Show colored borders on webtoons.com</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="WebtoonsHighlightEnabled" checked>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+
+                            <div class="feature-toggle-wrapper" style="margin-top: 10px;">
+                                <div class="toggle-label-group">
+                                    <label for="WebtoonsShowProgress" class="toggle-main-label">Show Reading
+                                        Progress</label>
+                                    <span class="toggle-sub-label">Display "Ep. X/Y" on saved webtoon cards</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="WebtoonsShowProgress" checked>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+
+                            <div class="feature-toggle-wrapper" style="margin-top: 10px;">
+                                <div class="toggle-label-group">
+                                    <label for="WebtoonsBorderSize" class="toggle-main-label">Border 
+                                        Thickness</label>
+                                    <span class="toggle-sub-label">Customize highlight border size</span>
+                                </div>
+                                <label class="switch small-switch" title="Enable Custom Border Size">
+                                    <input type="checkbox" id="WebtoonsBorderSizeEnabled">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <div class="input-wrapper" style="margin-top: 10px;">
+                                <div class="range-slider-container">
+                                    <input type="range" id="WebtoonsBorderSizeSlider" min="1" max="10" value="4" class="range-slider">
+                                    <span id="WebtoonsBorderSizeValue" class="range-value">4px</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
 
                     <!-- Card 1: Custom Markers -->
                     <div class="card">

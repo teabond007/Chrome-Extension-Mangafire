@@ -2,6 +2,7 @@
  * @fileoverview Manages feature toggle switches in the extension options.
  * Handles primary persistence in chrome.storage.local and synchronizes state between 
  * the options page and other extension contexts (like the popup).
+ * toggle class is toggle-main-label
  */
 
 /**
@@ -32,7 +33,10 @@ export function initFeatureToggles() {
         { id: "SmartInactivityFade", storageKey: "SmartInactivityFadefeatureEnabled" },
         { id: "SmartResumeLink", storageKey: "SmartResumeLinkfeatureEnabled" },
         { id: "MangaDexHighlightEnabled", storageKey: "MangaDexHighlightEnabled", defaultValue: true },
-        { id: "MangaDexShowProgress", storageKey: "MangaDexShowProgress", defaultValue: true }
+        { id: "MangaDexShowProgress", storageKey: "MangaDexShowProgress", defaultValue: true },
+        { id: "WebtoonsHighlightEnabled", storageKey: "WebtoonsHighlightfeatureEnabled", defaultValue: true },
+        { id: "WebtoonsShowProgress", storageKey: "WebtoonsShowProgress", defaultValue: true },
+        { id: "WebtoonsBorderSizeEnabled", storageKey: "WebtoonsBorderSizefeatureEnabled", defaultValue: false }
     ];
 
 

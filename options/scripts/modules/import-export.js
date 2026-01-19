@@ -60,6 +60,10 @@ export function initImportExport() {
             "SmartAutoCompletefeatureEnabled",
             "MangaDexHighlightEnabled",     // MangaDex highlighting toggle
             "MangaDexShowProgress",         // MangaDex progress display toggle
+            "WebtoonsHighlightfeatureEnabled",  // Webtoons highlighting toggle
+            "WebtoonsShowProgress",             // Webtoons progress display toggle
+            "WebtoonsBorderSizefeatureEnabled", // Webtoons custom border toggle
+            "WebtoonsBorderSize",               // Webtoons border thickness
             "anilistCache",
             "mangadexCache",           // MangaDex search cache
             "savedEntriesMerged",

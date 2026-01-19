@@ -28,16 +28,18 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: "CustomBorderSize", storageKey: "CustomBorderSizefeatureEnabled" },
         { id: "MarkHomePage", storageKey: "MarkHomePagefeatureEnabled" },
         { id: "SyncandMarkRead", storageKey: "SyncandMarkReadfeatureEnabled" },
-        { id: "NewTabDashboard", storageKey: "NewTabDashboardfeatureEnabled" }
+        { id: "NewTabDashboard", storageKey: "NewTabDashboardfeatureEnabled" },
+        { id: "WebtoonsHighlight", storageKey: "WebtoonsHighlightfeatureEnabled", defaultValue: true }
     ];
 
     features.forEach(feature => {
         const toggle = document.getElementById(feature.id);
         if(!toggle) return;
 
-        // Load initial state
+        // Load initial state with defaultValue support
         chrome.storage.local.get(feature.storageKey, (data) => {
-             toggle.checked = data[feature.storageKey] || false; 
+            const defaultVal = feature.defaultValue !== undefined ? feature.defaultValue : false;
+            toggle.checked = data[feature.storageKey] !== undefined ? data[feature.storageKey] : defaultVal;
         });
 
         // Listen for changes

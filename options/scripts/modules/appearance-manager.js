@@ -159,10 +159,20 @@ function initGlobalBorders() {
     styleSelect?.addEventListener("change", (e) => {
         chrome.storage.local.set({ GlobalBorderStyle: e.target.value });
     });
+
+    // Webtoons border size slider
+    const webtoonsSlider = document.getElementById("WebtoonsBorderSizeSlider");
+    const webtoonsDisplay = document.getElementById("WebtoonsBorderSizeValue");
+
+    webtoonsSlider?.addEventListener("input", (e) => {
+        const val = e.target.value;
+        if (webtoonsDisplay) webtoonsDisplay.textContent = `${val}px`;
+        chrome.storage.local.set({ WebtoonsBorderSize: parseInt(val, 10) });
+    });
 }
 
 function loadAppearanceSettings() {
-    chrome.storage.local.get(["theme", "isCustomTheme", "customThemeData", "CustomBorderSize", "GlobalBorderStyle"], (data) => {
+    chrome.storage.local.get(["theme", "isCustomTheme", "customThemeData", "CustomBorderSize", "GlobalBorderStyle", "WebtoonsBorderSize"], (data) => {
         // 1. Theme
         if (data.isCustomTheme && data.customThemeData) {
             applyCustomTheme(data.customThemeData);
@@ -183,7 +193,7 @@ function loadAppearanceSettings() {
             });
         }
 
-        // 2. Borders
+        // 2. Global Borders
         const borderSize = data.CustomBorderSize || 4;
         const borderStyle = data.GlobalBorderStyle || 'solid';
         
@@ -194,6 +204,14 @@ function loadAppearanceSettings() {
         if (slider) slider.value = borderSize;
         if (display) display.textContent = `${borderSize}px`;
         if (styleSelect) styleSelect.value = borderStyle;
+
+        // 3. Webtoons Borders
+        const webtoonsBorderSize = data.WebtoonsBorderSize || 4;
+        const webtoonsSlider = document.getElementById("WebtoonsBorderSizeSlider");
+        const webtoonsDisplay = document.getElementById("WebtoonsBorderSizeValue");
+
+        if (webtoonsSlider) webtoonsSlider.value = webtoonsBorderSize;
+        if (webtoonsDisplay) webtoonsDisplay.textContent = `${webtoonsBorderSize}px`;
     });
 }
 
