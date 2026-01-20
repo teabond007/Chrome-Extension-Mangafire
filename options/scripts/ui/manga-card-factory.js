@@ -255,11 +255,15 @@ function createCardBody(entry, aniData, statusInfo) {
 
         // Display progress (Read Chapters / Total Chapters)
         const readChapters = entry.readChapters || 0;
-        const totalChapters = aniData.chapters || "?";
+        const totalChapters = aniData.chapters || null;
         
         const chaptersItem = document.createElement("div");
         chaptersItem.className = "info-item";
-        chaptersItem.innerHTML = `<span class="info-label">Read:</span>${readChapters} / <span class="info-label">Total:</span>${totalChapters}`;
+        if (totalChapters) {
+            chaptersItem.innerHTML = `<span class="info-label">Read:</span>${readChapters} / <span class="info-label">Total:</span>${totalChapters}`;
+        } else {
+            chaptersItem.innerHTML = `<span class="info-label">Read:</span>${readChapters} <span class="info-label ongoing-tag">Ongoing</span>`;
+        }
         info.appendChild(chaptersItem);
         
         meta.appendChild(info);

@@ -202,10 +202,71 @@
                                     <span class="slider round"></span>
                                 </label>
                             </div>
+
+                            <div class="feature-toggle-wrapper" style="margin-top: 10px;">
+                                <div class="toggle-label-group">
+                                    <label for="NotificationsEnabled" class="toggle-main-label">New Chapter
+                                        Alerts</label>
+                                    <span class="toggle-sub-label">Browser notifications for new releases</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="NotificationsEnabled">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Card: MangaDex Highlighting -->
+                    <!-- Card: Reader Enhancements -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">📚
+                            </div>
+                            <h3>Reader Enhancements</h3>
+                            <button class="info-redirect-btn" data-target="guide-reader"
+                                title="Reader enhancement settings">
+                                <svg class="icon-svg icon-info" style="width: 16px; height: 16px;"></svg>
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="feature-toggle-wrapper">
+                                <div class="toggle-label-group">
+                                    <label for="AutoScrollEnabled" class="toggle-main-label">Auto-Scroll Panel</label>
+                                    <span class="toggle-sub-label">Show floating auto-scroll controls on reader
+                                        pages</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="AutoScrollEnabled" checked>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+
+                            <div class="feature-toggle-wrapper" style="margin-top: 10px;">
+                                <div class="toggle-label-group">
+                                    <label for="KeybindsEnabled" class="toggle-main-label">Keyboard Shortcuts</label>
+                                    <span class="toggle-sub-label">Arrow keys, Space (auto-scroll), F
+                                        (fullscreen)</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="KeybindsEnabled" checked>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+
+                            <div class="feature-toggle-wrapper" style="margin-top: 10px;">
+                                <div class="toggle-label-group">
+                                    <label for="ProgressTrackingEnabled" class="toggle-main-label">Auto-Save
+                                        Progress</label>
+                                    <span class="toggle-sub-label">Automatically save chapter progress while
+                                        reading</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="ProgressTrackingEnabled" checked>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
                     <div class="card">
                         <div class="card-header">
                             <div class="card-icon" style="background: rgba(255, 103, 64, 0.1); color: #FF6740;">📖
@@ -1187,32 +1248,54 @@
                                         </svg>
                                     </button>
                                 </div>
-                                <p class="description compact">Generate a backup of your entire
-                                    library
-                                    and
-                                    history.
-                                </p>
+                                <p class="description compact">Generate a backup of your library and settings.</p>
+                            </div>
+                        </div>
+
+                        <!-- Export Options -->
+                        <div class="export-options">
+                            <p class="section-label">Include in export:</p>
+                            <div class="export-checkboxes">
+                                <label class="export-option">
+                                    <input type="checkbox" id="exportLibrary" checked>
+                                    <span>📚 Library Entries</span>
+                                    <span class="export-count" id="exportLibraryCount">(0)</span>
+                                </label>
+                                <label class="export-option">
+                                    <input type="checkbox" id="exportHistory" checked>
+                                    <span>📖 Reading History</span>
+                                    <span class="export-count" id="exportHistoryCount">(0)</span>
+                                </label>
+                                <label class="export-option">
+                                    <input type="checkbox" id="exportSettings" checked>
+                                    <span>⚙️ Settings</span>
+                                </label>
+                                <label class="export-option">
+                                    <input type="checkbox" id="exportPersonalData" checked>
+                                    <span>🏷️ Tags, Notes & Ratings</span>
+                                    <span class="export-count" id="exportPersonalCount">(0)</span>
+                                </label>
+                                <label class="export-option">
+                                    <input type="checkbox" id="exportCache">
+                                    <span>💾 AniList Cache</span>
+                                    <span class="export-count" id="exportCacheCount">(0 KB)</span>
+                                </label>
                             </div>
                         </div>
 
                         <div class="inner-info-card">
                             <div class="format-info">
-                                <span class="label-info">Target Format: <span class="highlight-text">JSON</span></span>
-                                <p class="sub-description">Includes: Bookmarks, Reading Status,
-                                    Tags,
-                                    and Custom
-                                    Notes.
-                                </p>
+                                <span class="label-info">Format: <span class="highlight-text">JSON</span></span>
                             </div>
                             <button id="exportDataBtn" class="btn btn-primary btn-with-icon">
-                                <svg class="icon-svg icon-import" style="width: 16px; height: 16px;"></svg>
-                                Export Data
+                                <svg class="icon-svg icon-export" style="width: 16px; height: 16px;"></svg>
+                                Export Selected
                             </button>
                         </div>
 
                         <div class="card-footer-info">
                             <span class="status-icon">ℹ️</span>
-                            <span class="status-text-muted">Last backup performed: <span
+                            <span class="status-text-muted">Last backup: <span
                                     id="lastBackupDisplay">Never</span></span>
                         </div>
                     </div>

@@ -10,6 +10,7 @@
 import { CardEnhancer } from '../core/card-enhancer.js';
 import { OverlayFactory } from '../core/overlay-factory.js';
 import { Config, STATUS_COLORS } from '../core/config.js';
+import ReaderEnhancements from '../core/reader-enhancements.js';
 
 // ============================================================================
 // MANGADEX ADAPTER
@@ -102,6 +103,41 @@ const MangaDexAdapter = {
      */
     buildChapterUrl(entry, chapter) {
         return null;
+    },
+
+    // Reader detection and navigation methods
+    isReaderPage() {
+        return window.location.href.includes('/chapter/');
+    },
+
+    parseUrl(url) {
+        // MangaDex uses UUIDs, so simple parsing of chapter number from URL is hard
+        // We rely on page content parsing by ProgressTracker fallback
+        return null; 
+    },
+
+    goToNextChapter() {
+        // MangaDex has a specific UI for this, often right/left areas or menu
+        // Try finding a link that looks like next chapter
+        // This is tricky on SPA, might need specific selector research
+        // For now, try finding "Next" button/link
+        const nextBtn = Array.from(document.querySelectorAll('a')).find(a => a.textContent.includes('Next') || a.textContent.includes('next'));
+        if (nextBtn) nextBtn.click();
+    },
+
+    goToPrevChapter() {
+        const prevBtn = Array.from(document.querySelectorAll('a')).find(a => a.textContent.includes('Previous') || a.textContent.includes('Prev'));
+        if (prevBtn) prevBtn.click();
+    },
+
+    exitReader() {
+        // Go back to title page (usually /title/uuid)
+        const titleLink = document.querySelector('a[href*="/title/"]');
+        if (titleLink) {
+            titleLink.click();
+        } else {
+            window.history.back();
+        }
     }
 };
 
@@ -265,9 +301,14 @@ async function initMangaDexEnhancer() {
     const count = await enhancer.enhanceAll();
     Log(`Enhanced ${count} cards (Quick Actions: ${settings.MangaDexQuickActionsEnabled !== false ? 'ON' : 'OFF'})`);
 
-    // Track reading on chapter pages
+    // Track reading on chapter pages & initialize reader enhancements
     if (window.location.href.includes('/chapter/')) {
         saveReadChapter();
+        
+        // Initialize reader enhancements
+        const reader = new ReaderEnhancements(MangaDexAdapter);
+        reader.init();
+        Log('Reader enhancements initialized');
     }
 
     // Mutation observer for dynamic content
@@ -296,7 +337,12 @@ async function initMangaDexEnhancer() {
             setTimeout(() => enhancer.enhanceAll(), 500);
 
             if (location.href.includes('/chapter/')) {
-                setTimeout(saveReadChapter, 1000);
+                setTimeout(() => {
+                    saveReadChapter();
+                    // Re-init reader enhancements on SPA nav
+                    const reader = new ReaderEnhancements(MangaDexAdapter);
+                    reader.init();
+                }, 1000);
             }
         }
     });

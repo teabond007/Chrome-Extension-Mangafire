@@ -10,6 +10,7 @@
 import { CardEnhancer } from '../core/card-enhancer.js';
 import { OverlayFactory } from '../core/overlay-factory.js';
 import { Config, STATUS_COLORS } from '../core/config.js';
+import ReaderEnhancements from '../core/reader-enhancements.js';
 
 // ============================================================================
 // MANGAFIRE ADAPTER
@@ -97,6 +98,42 @@ const MangaFireAdapter = {
     buildChapterUrl(entry, chapter) {
         // Potential TODO: precise URL construction if format is reliable
         return null;
+    },
+
+    // Reader navigation methods for keybinds
+    isReaderPage() {
+        return window.location.href.includes('/read/');
+    },
+
+    parseUrl(url) {
+        const match = url.match(/\/read\/([^/]+)\.?(\d*)\/(?:[^/]+\/)?chapter-([^/?#]+)/);
+        if (!match) return null;
+        return {
+            slug: match[1],
+            id: match[2] || null,
+            chapterNo: parseFloat(match[3])
+        };
+    },
+
+    goToNextChapter() {
+        // MangaFire has navigation buttons
+        const nextBtn = document.querySelector('a.btn-next, .chapter-nav .next, [data-direction="next"]');
+        if (nextBtn) nextBtn.click();
+    },
+
+    goToPrevChapter() {
+        const prevBtn = document.querySelector('a.btn-prev, .chapter-nav .prev, [data-direction="prev"]');
+        if (prevBtn) prevBtn.click();
+    },
+
+    exitReader() {
+        // Navigate to manga detail page
+        const detailLink = document.querySelector('a.manga-link, a[href*="/manga/"]');
+        if (detailLink) {
+            window.location.href = detailLink.href;
+        } else {
+            window.history.back();
+        }
     }
 };
 
@@ -242,9 +279,14 @@ async function initMangaFireEnhancer() {
     const count = await enhancer.enhanceAll();
     Log(`Enhanced ${count} cards (Quick Actions: ${settings.MangaFireQuickActionsEnabled !== false ? 'ON' : 'OFF'})`);
 
-    // Track reading on chapter pages
+    // Track reading on chapter pages & initialize reader enhancements
     if (window.location.href.includes('/read/')) {
         saveReadChapter();
+        
+        // Initialize reader enhancements (auto-scroll, keybinds, progress)
+        const reader = new ReaderEnhancements(MangaFireAdapter);
+        reader.init();
+        Log('Reader enhancements initialized');
     }
 
     // Mutation observer for dynamic content

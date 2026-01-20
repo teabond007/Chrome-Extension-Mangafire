@@ -10,6 +10,7 @@
 import { CardEnhancer } from '../core/card-enhancer.js';
 import { OverlayFactory } from '../core/overlay-factory.js';
 import { Config, STATUS_COLORS } from '../core/config.js';
+import ReaderEnhancements from '../core/reader-enhancements.js';
 
 // ============================================================================
 // MANGANATO ADAPTER
@@ -68,6 +69,43 @@ const ManganatoAdapter = {
 
     buildChapterUrl(entry, chapter) {
         return null; // Navigation fallback to manga page
+    },
+
+    // Reader detection and navigation methods
+    isReaderPage() {
+        return window.location.pathname.includes('chapter-');
+    },
+
+    parseUrl(url) {
+        // Manganato URLs: /manga-id/chapter-123
+        const match = url.match(/\/([^/]+)\/chapter-([\d.-]+)/);
+        if (!match) return null;
+        return {
+            slug: match[1],
+            chapterNo: parseFloat(match[2])
+        };
+    },
+
+    goToNextChapter() {
+        const nextBtn = document.querySelector('.navi-change-chapter-btn-next');
+        if (nextBtn) nextBtn.click();
+    },
+
+    goToPrevChapter() {
+        const prevBtn = document.querySelector('.navi-change-chapter-btn-prev');
+        if (prevBtn) prevBtn.click();
+    },
+
+    exitReader() {
+        // Go back to manga title page
+        // Usually breadcrumbs or title link
+        const titleLink = document.querySelector('.panel-breadcrumb a:last-child') || 
+                         document.querySelector('a[href*="/manga-"]');
+        if (titleLink) {
+            titleLink.click();
+        } else {
+            window.history.back();
+        }
     }
 };
 
@@ -220,9 +258,14 @@ async function initManganatoEnhancer() {
     const count = await enhancer.enhanceAll();
     Log(`Enhanced ${count} cards`);
 
-    // Track reading on chapter pages
+    // Track reading on chapter pages & initialize reader enhancements
     if (window.location.pathname.includes('chapter-')) {
         saveReadChapter();
+        
+        // Initialize reader enhancements
+        const reader = new ReaderEnhancements(ManganatoAdapter);
+        reader.init();
+        Log('Reader enhancements initialized');
     }
 
     // Mutation observer for dynamic content

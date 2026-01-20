@@ -3,6 +3,7 @@ import { fetchMangaFromAnilist } from '../core/anilist-api.js';
 import { fetchMangaFromMangadex } from '../core/mangadex-api.js';
 import * as LibFeatures from './library-features.js';
 import { playSuccessAnimation, animateGridEntrance, animateModalEntry, initButtonMicroInteractions } from '../ui/anime-utils.js';
+import { renderStatistics as renderStatsModule, animateStatsClose } from './library-statistics.js';
 
 /**
  * Simple debounce utility for input event handlers.
@@ -392,24 +393,7 @@ function attachListeners() {
         }
     });
 
-    document.getElementById("BtnShowStats")?.addEventListener("click", () => {
-        const statsContainer = document.getElementById("library-stats-container");
-        if (statsContainer) {
-            statsContainer.classList.toggle("visible");
-            const isVisible = statsContainer.classList.contains("visible");
-            
-            if (isVisible) {
-                try {
-                    renderStatistics();
-                } catch (e) {
-                    console.error("Error rendering statistics:", e);
-                }
-            }
-        } else {
-            console.error("Stats container element not found in DOM");
-        }
-    });
-
+    // Note: Stats toggle with animations is handled below
     // Modal listeners
     elements.closeModal?.addEventListener("click", () => {
         if (elements.modal) elements.modal.style.display = "none";
@@ -440,12 +424,21 @@ function attachListeners() {
         });
     }
 
-    // Stats Toggle
+    // Stats Toggle with animations
     const showStatsBtn = document.getElementById("BtnShowStats");
     showStatsBtn?.addEventListener("click", () => {
-        const isVisible = elements.statsContainer.style.display === "block";
-        elements.statsContainer.style.display = isVisible ? "none" : "block";
-        if (!isVisible) renderStatistics();
+        const isVisible = elements.statsContainer.classList.contains("visible");
+        
+        if (isVisible) {
+            // Animate close then hide
+            animateStatsClose(elements.statsContainer, () => {
+                elements.statsContainer.classList.remove("visible");
+            });
+        } else {
+            // Show and animate open
+            elements.statsContainer.classList.add("visible");
+            renderStatistics();
+        }
     });
 
     // Bulk Toggle
@@ -790,149 +783,11 @@ function renderStatistics() {
 
     if (!elements.statsGrid || !savedEntriesMerged) return;
 
-    // Calculate comprehensive stats
-    const now = Date.now();
-    const oneDay = 24 * 60 * 60 * 1000;
-    const oneWeek = 7 * oneDay;
-    const oneMonth = 30 * oneDay;
-    
-    // Basic counts
-    const total = savedEntriesMerged.length;
-    const reading = savedEntriesMerged.filter(e => e.status === 'Reading').length;
-    const completed = savedEntriesMerged.filter(e => e.status === 'Completed').length;
-    const planning = savedEntriesMerged.filter(e => e.status === 'Plan to Read').length;
-    const onhold = savedEntriesMerged.filter(e => e.status === 'On Hold').length;
-    const dropped = savedEntriesMerged.filter(e => e.status === 'Dropped').length;
-    const chapters = savedEntriesMerged.reduce((sum, e) => sum + (parseInt(e.readChapters) || 0), 0);
-    
-    // Data source stats
-    const anilistEntries = savedEntriesMerged.filter(e => e.anilistData && !e.anilistData.source).length;
-    const mangadexEntries = savedEntriesMerged.filter(e => e.anilistData?.source === 'MANGADEX').length;
-    const noDataEntries = savedEntriesMerged.filter(e => !e.anilistData || e.anilistData.status === 'NOT_FOUND').length;
-    
-    // Time-based reading activity
-    const readThisWeek = savedEntriesMerged.filter(e => e.lastRead && (now - e.lastRead) < oneWeek).length;
-    const readThisMonth = savedEntriesMerged.filter(e => e.lastRead && (now - e.lastRead) < oneMonth).length;
-    const addedThisWeek = savedEntriesMerged.filter(e => e.lastUpdated && (now - e.lastUpdated) < oneWeek).length;
-    
-    // Has reading history
-    const withHistory = savedEntriesMerged.filter(e => e.readChapters && e.readChapters > 0).length;
-    
-    // Format breakdown
-    const manga = savedEntriesMerged.filter(e => e.anilistData?.format === 'MANGA' || !e.anilistData?.format).length;
-    const manhwa = savedEntriesMerged.filter(e => e.anilistData?.format === 'Manhwa' || e.anilistData?.countryOfOrigin === 'KR').length;
-    const manhua = savedEntriesMerged.filter(e => e.anilistData?.format === 'Manhua' || e.anilistData?.countryOfOrigin === 'CN').length;
-    
-    // Genre stats (top 5)
-    const genreCounts = {};
-    savedEntriesMerged.forEach(e => {
-        (e.anilistData?.genres || []).forEach(g => {
-            genreCounts[g] = (genreCounts[g] || 0) + 1;
-        });
-    });
-    const topGenres = Object.entries(genreCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5);
-    
-    // Average score
-    const scoredEntries = savedEntriesMerged.filter(e => e.anilistData?.averageScore);
-    const avgScore = scoredEntries.length > 0 
-        ? Math.round(scoredEntries.reduce((sum, e) => sum + e.anilistData.averageScore, 0) / scoredEntries.length)
-        : 0;
-
-    const newStats = { total, reading, completed, planning, onhold, dropped, chapters };
-    
-    // Build enhanced HTML
-    elements.statsGrid.innerHTML = `
-        <!-- Row 1: Main Status Stats -->
-        <div class="stats-row stats-row-main">
-            <div class="stat-item-compact" style="--stat-color: var(--primary)">
-                <span id="stat-val-total" class="stat-value-large">${total}</span>
-                <span class="stat-label-small">Total</span>
-            </div>
-            <div class="stat-item-compact" style="--stat-color: #00BCD4">
-                <span id="stat-val-chapters" class="stat-value-large">${chapters}</span>
-                <span class="stat-label-small">Chapters Read</span>
-            </div>
-            <div class="stat-item-compact" style="--stat-color: #4CAF50">
-                <span id="stat-val-reading" class="stat-value-large">${reading}</span>
-                <span class="stat-label-small">Reading</span>
-            </div>
-            <div class="stat-item-compact" style="--stat-color: #2196F3">
-                <span id="stat-val-completed" class="stat-value-large">${completed}</span>
-                <span class="stat-label-small">Completed</span>
-            </div>
-            <div class="stat-item-compact" style="--stat-color: #9C27B0">
-                <span class="stat-value-large">${planning}</span>
-                <span class="stat-label-small">Plan to Read</span>
-            </div>
-            <div class="stat-item-compact" style="--stat-color: #FFC107">
-                <span class="stat-value-large">${onhold}</span>
-                <span class="stat-label-small">On Hold</span>
-            </div>
-            <div class="stat-item-compact" style="--stat-color: #F44336">
-                <span class="stat-value-large">${dropped}</span>
-                <span class="stat-label-small">Dropped</span>
-            </div>
-        </div>
-
-        <!-- Row 2: Activity & Sources -->
-        <div class="stats-row stats-row-secondary">
-            <div class="stat-group">
-                <h4 class="stat-group-title">📅 Activity</h4>
-                <div class="stat-mini-grid">
-                    <div class="stat-mini"><span class="stat-mini-value">${readThisWeek}</span><span class="stat-mini-label">Read This Week</span></div>
-                    <div class="stat-mini"><span class="stat-mini-value">${readThisMonth}</span><span class="stat-mini-label">Read This Month</span></div>
-                    <div class="stat-mini"><span class="stat-mini-value">${addedThisWeek}</span><span class="stat-mini-label">Added This Week</span></div>
-                    <div class="stat-mini"><span class="stat-mini-value">${withHistory}</span><span class="stat-mini-label">With History</span></div>
-                </div>
-            </div>
-            <div class="stat-group">
-                <h4 class="stat-group-title">🌐 Data Sources</h4>
-                <div class="stat-mini-grid">
-                    <div class="stat-mini"><span class="stat-mini-value" style="color: #02A9FF">${anilistEntries}</span><span class="stat-mini-label">AniList</span></div>
-                    <div class="stat-mini"><span class="stat-mini-value" style="color: #FF6740">${mangadexEntries}</span><span class="stat-mini-label">MangaDex</span></div>
-                    <div class="stat-mini"><span class="stat-mini-value" style="color: #888">${noDataEntries}</span><span class="stat-mini-label">No Data</span></div>
-                </div>
-            </div>
-            <div class="stat-group">
-                <h4 class="stat-group-title">📚 Format</h4>
-                <div class="stat-mini-grid">
-                    <div class="stat-mini"><span class="stat-mini-value">${manga}</span><span class="stat-mini-label">Manga</span></div>
-                    <div class="stat-mini"><span class="stat-mini-value">${manhwa}</span><span class="stat-mini-label">Manhwa</span></div>
-                    <div class="stat-mini"><span class="stat-mini-value">${manhua}</span><span class="stat-mini-label">Manhua</span></div>
-                </div>
-            </div>
-            <div class="stat-group">
-                <h4 class="stat-group-title">🏷️ Top Genres</h4>
-                <div class="stat-tags">
-                    ${topGenres.map(([genre, count]) => `<span class="stat-tag">${genre} <small>(${count})</small></span>`).join('')}
-                    ${topGenres.length === 0 ? '<span class="stat-tag dim">No genres yet</span>' : ''}
-                </div>
-            </div>
-        </div>
-
-        <!-- Row 3: Quick Stats Bar -->
-        <div class="stats-row stats-row-bar">
-            <div class="stat-bar-item">⭐ Avg Score: <strong>${avgScore > 0 ? avgScore + '%' : 'N/A'}</strong></div>
-            <div class="stat-bar-item">📖 ${Math.round(chapters / Math.max(completed, 1))} ch/completed manga</div>
-            <div class="stat-bar-item">📈 ${total > 0 ? Math.round((completed / total) * 100) : 0}% completion rate</div>
-        </div>
-    `;
-
-    // Animate entrance
-    if (typeof anime !== 'undefined') {
-        anime({
-            targets: '.stat-item-compact, .stat-group, .stat-bar-item',
-            opacity: [0, 1],
-            translateY: [15, 0],
-            delay: anime.stagger(40),
-            duration: 600,
-            easing: 'easeOutQuart'
-        });
+    // Delegate to the statistics module
+    const newStats = renderStatsModule(elements.statsGrid, savedEntriesMerged);
+    if (newStats) {
+        statsData = newStats;
     }
-
-    statsData = newStats;
 }
 
 async function applyBulkUpdate() {

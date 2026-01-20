@@ -124,6 +124,15 @@ export class CardEnhancer {
         if (slug) {
             const namespacedKey = `${this.adapter.PREFIX || ''}${slug}`;
             if (readChapters[namespacedKey]) return namespacedKey;
+            
+            // Try direct slug match
+            if (readChapters[slug]) return slug;
+
+            // Try stripping ID from slug (common pattern like 'slug.id')
+            if (slug.includes('.')) {
+                const baseSlug = slug.substring(0, slug.lastIndexOf('.'));
+                if (readChapters[baseSlug]) return baseSlug;
+            }
         }
 
         // Try direct title match
@@ -233,9 +242,10 @@ export class CardEnhancer {
         const unitName = this.adapter.unitName === 'episode' ? 'Ep.' : 'Ch.';
         const totalChapters = entry.chapters || entry.anilistData?.chapters;
         
+        // Show "Ch. X/Y" if total known, otherwise "Ch. X+" to indicate ongoing
         const text = totalChapters
             ? `${unitName} ${entry.lastReadChapter}/${totalChapters}`
-            : `${unitName} ${entry.lastReadChapter}`;
+            : `${unitName} ${entry.lastReadChapter}+`;
 
         const badge = this.createBadge(text, 'progress');
         
@@ -494,10 +504,8 @@ export class CardEnhancer {
      */
     normalizeTitle(title) {
         if (!title) return '';
-        return title.toLowerCase()
-            .replace(/[^\w\s]/g, '')
-            .replace(/\s+/g, ' ')
-            .trim();
+        // Strict alphanumeric normalization to avoid mismatch on special chars
+        return title.toLowerCase().replace(/[^a-z0-9]/g, '');
     }
 
     /**

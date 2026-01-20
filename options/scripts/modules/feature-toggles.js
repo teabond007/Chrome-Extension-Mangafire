@@ -36,7 +36,12 @@ export function initFeatureToggles() {
         { id: "MangaDexShowProgress", storageKey: "MangaDexShowProgress", defaultValue: true },
         { id: "WebtoonsHighlightEnabled", storageKey: "WebtoonsHighlightfeatureEnabled", defaultValue: true },
         { id: "WebtoonsShowProgress", storageKey: "WebtoonsShowProgress", defaultValue: true },
-        { id: "WebtoonsBorderSizeEnabled", storageKey: "WebtoonsBorderSizefeatureEnabled", defaultValue: false }
+        { id: "WebtoonsBorderSizeEnabled", storageKey: "WebtoonsBorderSizefeatureEnabled", defaultValue: false },
+        { id: "NotificationsEnabled", storageKey: "NotificationsfeatureEnabled", defaultValue: false },
+        // Reader Enhancements
+        { id: "AutoScrollEnabled", storageKey: "autoScrollEnabled", defaultValue: true },
+        { id: "KeybindsEnabled", storageKey: "keybindsEnabled", defaultValue: true },
+        { id: "ProgressTrackingEnabled", storageKey: "progressTrackingEnabled", defaultValue: true }
     ];
 
 

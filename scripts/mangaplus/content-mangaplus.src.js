@@ -10,6 +10,7 @@
 import { CardEnhancer } from '../core/card-enhancer.js';
 import { OverlayFactory } from '../core/overlay-factory.js';
 import { Config, STATUS_COLORS } from '../core/config.js';
+import ReaderEnhancements from '../core/reader-enhancements.js';
 
 // ============================================================================
 // MANGAPLUS ADAPTER
@@ -66,6 +67,42 @@ const MangaPlusAdapter = {
 
     buildChapterUrl(entry, chapter) {
         return null; // Requires internal ID lookup
+    },
+
+    // Reader detection and navigation methods
+    isReaderPage() {
+        return window.location.href.includes('/viewer/');
+    },
+
+    parseUrl(url) {
+        // MangaPlus reader URL: /viewer/100123
+        const id = this.extractIdFromUrl(url);
+        if (!id) return null;
+        return {
+            slug: null, // MangaPlus relies on IDs
+            id: id,
+            chapterNo: null // Can't reliably get chapter number from URL alone
+        };
+    },
+
+    goToNextChapter() {
+        // MangaPlus usually has seamless reading or end-of-chapter cards
+        // Manual navigation is tricky to script without interfering with React state
+        return; 
+    },
+
+    goToPrevChapter() {
+        return;
+    },
+
+    exitReader() {
+        // Find X or back button
+        const closeBtn = document.querySelector('a[href*="/titles/"]');
+        if (closeBtn) {
+            closeBtn.click();
+        } else {
+            window.history.back();
+        }
     }
 };
 
@@ -219,9 +256,15 @@ async function initMangaPlusEnhancer() {
     const count = await enhancer.enhanceAll();
     Log(`Enhanced ${count} cards`);
 
-    // Track reading on viewer pages
+    // Track reading on viewer pages & initialize reader enhancements
     if (window.location.href.includes('/viewer/')) {
         setTimeout(saveReadChapter, 1500);
+        
+        // Initialize reader enhancements
+        // Note: MangaPlus might override key events, so capture phase in KeybindManager is crucial
+        const reader = new ReaderEnhancements(MangaPlusAdapter);
+        reader.init();
+        Log('Reader enhancements initialized');
     }
 
     // Mutation observer for SPA
@@ -257,7 +300,12 @@ const urlObserver = new MutationObserver(() => {
         setTimeout(initMangaPlusEnhancer, 1000);
 
         if (location.href.includes('/viewer/')) {
-            setTimeout(saveReadChapter, 1500);
+            setTimeout(() => {
+                saveReadChapter();
+                // Re-init reader enhancements on SPA nav
+                const reader = new ReaderEnhancements(MangaPlusAdapter);
+                reader.init();
+            }, 1500);
         }
     }
 });

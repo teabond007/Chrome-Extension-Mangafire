@@ -3,15 +3,71 @@ import { fetchMDList } from '../core/mangadex-api.js';
 
 /**
  * @fileoverview Manages Data Portability (Import and Export) for the extension.
- * Supports exporting data to JSON and importing from both JSON and external XML bookmarks.
+ * Supports selective exporting, import preview, and multiple import formats.
  */
 
 /**
- * --- Import & Export Logic ---
+ * Export data category definitions.
+ * Each category has a list of storage keys and a description.
+ */
+const EXPORT_CATEGORIES = {
+    library: {
+        keys: ['savedEntriesMerged', 'userBookmarks'],
+        label: 'Library Entries'
+    },
+    history: {
+        keys: ['savedReadChapters'],
+        label: 'Reading History'
+    },
+    settings: {
+        keys: [
+            'CustomBorderSize',
+            'MarkHomePagefeatureEnabled',
+            'SyncandMarkReadfeatureEnabled',
+            'CustomBookmarksfeatureEnabled',
+            'AutoSyncfeatureEnabled',
+            'CustomBorderSizefeatureEnabled',
+            'FamilyFriendlyfeatureEnabled',
+            'SmartAutoCompletefeatureEnabled',
+            'MangaDexHighlightEnabled',
+            'MangaDexShowProgress',
+            'WebtoonsHighlightfeatureEnabled',
+            'WebtoonsShowProgress',
+            'WebtoonsBorderSizefeatureEnabled',
+            'WebtoonsBorderSize',
+            'MangaFireHighlightEnabled',
+            'MangaFireShowProgress',
+            'MangaFireQuickActionsEnabled',
+            'autoScrollEnabled',
+            'keybindsEnabled',
+            'progressTrackingEnabled',
+            'cardViewSize',
+            'theme',
+            'LibraryCardBordersEnabled',
+            'LibraryCardBorderThickness',
+            'LibraryGlowEffect',
+            'LibraryAnimatedBorders',
+            'LibraryStatusIcons',
+            'LibraryProgressBars',
+            'SyncLastDate',
+            'SyncEverySetDate',
+            'customBookmarks'
+        ],
+        label: 'Settings'
+    },
+    personalData: {
+        keys: ['libraryPersonalData', 'libraryUserTags', 'libraryFilterPresets'],
+        label: 'Tags, Notes & Ratings'
+    },
+    cache: {
+        keys: ['anilistCache', 'mangadexCache'],
+        label: 'API Cache'
+    }
+};
+
+/**
  * Initializes the Import/Export module.
  * Attaches listeners to file drop zones, hidden file inputs, and export buttons.
- * 
- * @returns {void}
  */
 export function initImportExport() {
     const exportBtn = document.getElementById('exportDataBtn');
@@ -21,9 +77,73 @@ export function initImportExport() {
     const mergeToggle = document.getElementById('mergeImportToggle');
     const lastBackupDisplay = document.getElementById('lastBackupDisplay');
 
+    // Export checkboxes
+    const exportLibrary = document.getElementById('exportLibrary');
+    const exportHistory = document.getElementById('exportHistory');
+    const exportSettings = document.getElementById('exportSettings');
+    const exportPersonalData = document.getElementById('exportPersonalData');
+    const exportCache = document.getElementById('exportCache');
+
+    // Count displays
+    const libraryCountEl = document.getElementById('exportLibraryCount');
+    const historyCountEl = document.getElementById('exportHistoryCount');
+    const personalCountEl = document.getElementById('exportPersonalCount');
+    const cacheCountEl = document.getElementById('exportCacheCount');
+
     /**
-     * Updates the UI to show the timestamp of the most recent data backup.
-     * @returns {void}
+     * Updates the export counts to show how much data is available.
+     */
+    const updateExportCounts = () => {
+        chrome.storage.local.get(null, (data) => {
+            // Library count
+            const libraryCount = Array.isArray(data.savedEntriesMerged)
+                ? data.savedEntriesMerged.length
+                : (Array.isArray(data.userBookmarks) ? data.userBookmarks.length : 0);
+            if (libraryCountEl) libraryCountEl.textContent = `(${libraryCount})`;
+
+            // History count
+            const historyCount = data.savedReadChapters
+                ? Object.keys(data.savedReadChapters).length
+                : 0;
+            if (historyCountEl) historyCountEl.textContent = `(${historyCount} titles)`;
+
+            // Personal data count
+            const personalCount = data.libraryPersonalData
+                ? Object.keys(data.libraryPersonalData).length
+                : 0;
+            if (personalCountEl) personalCountEl.textContent = `(${personalCount})`;
+
+            // Cache size
+            const cacheSize = estimateCacheSize(data);
+            if (cacheCountEl) cacheCountEl.textContent = `(${formatBytes(cacheSize)})`;
+        });
+    };
+
+    /**
+     * Estimates the size of the cache data.
+     */
+    const estimateCacheSize = (data) => {
+        let size = 0;
+        if (data.anilistCache) {
+            size += JSON.stringify(data.anilistCache).length;
+        }
+        if (data.mangadexCache) {
+            size += JSON.stringify(data.mangadexCache).length;
+        }
+        return size;
+    };
+
+    /**
+     * Formats bytes to human readable string.
+     */
+    const formatBytes = (bytes) => {
+        if (bytes < 1024) return `${bytes} B`;
+        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+        return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    };
+
+    /**
+     * Updates the last backup display.
      */
     const updateLastBackupDisplay = () => {
         chrome.storage.local.get("LastBackupDate", (data) => {
@@ -37,55 +157,53 @@ export function initImportExport() {
             }
         });
     };
+
+    // Initialize displays
     updateLastBackupDisplay();
+    updateExportCounts();
 
     /**
-     * Exports all relevant extension data into a single JSON file.
-     * Triggers a browser download of the generated file and updates the backup timestamp.
-     * @returns {void}
+     * Performs selective export based on checked options.
      */
     const exportData = () => {
-        const keysToExport = [
-            "userBookmarks",
-            "customBookmarks",
-            "SyncLastDate",
-            "SyncEverySetDate",
-            "CustomBorderSize",
-            "MarkHomePagefeatureEnabled",
-            "SyncandMarkReadfeatureEnabled",
-            "CustomBookmarksfeatureEnabled",
-            "AutoSyncfeatureEnabled",
-            "CustomBorderSizefeatureEnabled",
-            "FamilyFriendlyfeatureEnabled",
-            "SmartAutoCompletefeatureEnabled",
-            "MangaDexHighlightEnabled",     // MangaDex highlighting toggle
-            "MangaDexShowProgress",         // MangaDex progress display toggle
-            "WebtoonsHighlightfeatureEnabled",  // Webtoons highlighting toggle
-            "WebtoonsShowProgress",             // Webtoons progress display toggle
-            "WebtoonsBorderSizefeatureEnabled", // Webtoons custom border toggle
-            "WebtoonsBorderSize",               // Webtoons border thickness
-            "anilistCache",
-            "mangadexCache",           // MangaDex search cache
-            "savedEntriesMerged",
-            "savedReadChapters",       // Reading history per manga
-            "cardViewSize",
-            "theme",
-            "LibraryCardBordersEnabled",
-            "LibraryCardBorderThickness",
-            "LastBackupDate",
-            // Phase 1: Enhanced library features
-            "libraryPersonalData",     // Tags, notes, ratings per manga
-            "libraryUserTags",          // User-defined tags
-            "libraryFilterPresets",     // Saved filter presets
-            // Phase 1: Visual Enhancements
-            "LibraryGlowEffect",
-            "LibraryAnimatedBorders",
-            "LibraryStatusIcons",
-            "LibraryProgressBars"
-        ];
+        const keysToExport = ['LastBackupDate']; // Always include
 
+        // Build list of keys based on selections
+        if (exportLibrary?.checked) {
+            keysToExport.push(...EXPORT_CATEGORIES.library.keys);
+        }
+        if (exportHistory?.checked) {
+            keysToExport.push(...EXPORT_CATEGORIES.history.keys);
+        }
+        if (exportSettings?.checked) {
+            keysToExport.push(...EXPORT_CATEGORIES.settings.keys);
+        }
+        if (exportPersonalData?.checked) {
+            keysToExport.push(...EXPORT_CATEGORIES.personalData.keys);
+        }
+        if (exportCache?.checked) {
+            keysToExport.push(...EXPORT_CATEGORIES.cache.keys);
+        }
+
+        if (keysToExport.length === 1) {
+            alert('Please select at least one data category to export.');
+            return;
+        }
 
         chrome.storage.local.get(keysToExport, (data) => {
+            // Add export metadata
+            data._exportMeta = {
+                version: '3.9.0',
+                exportDate: new Date().toISOString(),
+                categories: {
+                    library: exportLibrary?.checked || false,
+                    history: exportHistory?.checked || false,
+                    settings: exportSettings?.checked || false,
+                    personalData: exportPersonalData?.checked || false,
+                    cache: exportCache?.checked || false
+                }
+            };
+
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -99,21 +217,19 @@ export function initImportExport() {
             const now = Date.now();
             chrome.storage.local.set({ LastBackupDate: now }, () => {
                 updateLastBackupDisplay();
-                if (typeof Log === 'function') Log("Data exported successfully.");
+                Log("Data exported successfully.");
             });
         });
     };
 
-    // Export Logic
+    // Export button listener
     if (exportBtn) {
         exportBtn.addEventListener('click', exportData);
     }
 
     /**
      * Handles the selected file for import.
-     * Determines the file type (JSON or XML) and routes to the appropriate parser.
-     * @param {File} file - The file object to handle.
-     * @returns {void}
+     * Determines the file type and provides preview before importing.
      */
     const handleFile = (file) => {
         if (!file) return;
@@ -140,12 +256,9 @@ export function initImportExport() {
                     throw new Error("Failed to parse data");
                 }
 
-                const isMerge = mergeToggle?.checked;
-                if (isMerge) {
-                    processMergeImport(importedData);
-                } else {
-                    processOverwriteImport(importedData);
-                }
+                // Show import preview
+                showImportPreview(importedData, mergeToggle?.checked);
+
             } catch (err) {
                 console.error("Import error:", err);
                 alert("Failed to parse file. Please ensure it is a valid backup or MyAnimeList XML export.");
@@ -155,9 +268,44 @@ export function initImportExport() {
     };
 
     /**
-     * Parses manga bookmarks from an XML string, typically from MyAnimeList export.
-     * @param {string} xmlString - The raw XML content.
-     * @returns {object} An object containing userBookmarks in the expected format.
+     * Shows an import preview before confirming.
+     */
+    const showImportPreview = (data, isMerge) => {
+        // Count items in imported data
+        const stats = {
+            libraryEntries: Array.isArray(data.savedEntriesMerged)
+                ? data.savedEntriesMerged.length
+                : (Array.isArray(data.userBookmarks) ? data.userBookmarks.length : 0),
+            historyTitles: data.savedReadChapters ? Object.keys(data.savedReadChapters).length : 0,
+            personalData: data.libraryPersonalData ? Object.keys(data.libraryPersonalData).length : 0,
+            hasSettings: Object.keys(data).some(k => EXPORT_CATEGORIES.settings.keys.includes(k)),
+            hasCache: !!data.anilistCache || !!data.mangadexCache
+        };
+
+        // Build summary message
+        let summary = `📁 Import Preview\n\n`;
+        summary += `📚 Library: ${stats.libraryEntries} entries\n`;
+        summary += `📖 History: ${stats.historyTitles} titles\n`;
+        summary += `🏷️ Personal Data: ${stats.personalData} entries\n`;
+        summary += `⚙️ Settings: ${stats.hasSettings ? 'Included' : 'Not included'}\n`;
+        summary += `💾 Cache: ${stats.hasCache ? 'Included' : 'Not included'}\n\n`;
+        summary += `Mode: ${isMerge ? 'MERGE (keeps existing data)' : 'OVERWRITE (replaces all data)'}`;
+
+        if (!isMerge) {
+            summary += '\n\n⚠️ WARNING: This will delete all your current data!';
+        }
+
+        if (confirm(summary + '\n\nProceed with import?')) {
+            if (isMerge) {
+                processMergeImport(data);
+            } else {
+                processOverwriteImport(data);
+            }
+        }
+    };
+
+    /**
+     * Parses manga bookmarks from an XML string (MyAnimeList format).
      */
     const parseXMLBookmarks = (xmlString) => {
         const parser = new DOMParser();
@@ -177,44 +325,41 @@ export function initImportExport() {
             let status = statusNode ? statusNode.textContent.trim() : "Reading";
             let readChapters = readChaptersNode ? parseInt(readChaptersNode.textContent.trim()) || 0 : 0;
 
-            // Normalize status if needed (MangaFire common statuses)
             if (status === "On-Hold") status = "On Hold";
             
             return { title, status, readChapters };
         });
 
-        // Wrap in the format expected by the import logic
         return { userBookmarks };
     };
 
     /**
-     * Processes an import by overwriting all existing data with the new data.
-     * @param {object} data - The data object to import.
-     * @returns {void}
+     * Processes an import by overwriting all existing data.
      */
     const processOverwriteImport = (data) => {
-        if (confirm("This will overwrite all your current data. Are you sure?")) {
-            chrome.storage.local.clear(() => {
-                chrome.storage.local.set(data, () => {
-                    if (typeof Log === 'function') Log("Data imported (Overwrite) successfully.");
-                    alert("Import successful! The page will now reload.");
-                    location.reload();
-                });
+        // Remove metadata before storing
+        delete data._exportMeta;
+        
+        chrome.storage.local.clear(() => {
+            chrome.storage.local.set(data, () => {
+                Log("Data imported (Overwrite) successfully.");
+                alert("✅ Import successful! The page will now reload.");
+                location.reload();
             });
-        }
+        });
     };
 
     /**
-     * Processes an import by merging the incoming data with the current storage content.
-     * Prevents duplicates by checking titles and marker names.
-     * @param {object} data - The data object to merge.
-     * @returns {void}
+     * Processes an import by merging with existing data.
      */
     const processMergeImport = (data) => {
+        // Remove metadata before storing
+        delete data._exportMeta;
+
         chrome.storage.local.get(null, (currentData) => {
             const mergedData = { ...currentData, ...data };
 
-            // Special handling for bookmarks and custom markers to avoid duplicates
+            // Special handling for bookmarks to avoid duplicates
             if (data.userBookmarks && currentData.userBookmarks) {
                 const bookmarkMap = new Map();
                 currentData.userBookmarks.forEach(b => bookmarkMap.set(b.title.toLowerCase(), b));
@@ -222,6 +367,15 @@ export function initImportExport() {
                 mergedData.userBookmarks = Array.from(bookmarkMap.values());
             }
 
+            // Merge savedEntriesMerged
+            if (data.savedEntriesMerged && currentData.savedEntriesMerged) {
+                const entryMap = new Map();
+                currentData.savedEntriesMerged.forEach(e => entryMap.set(e.title.toLowerCase(), e));
+                data.savedEntriesMerged.forEach(e => entryMap.set(e.title.toLowerCase(), e));
+                mergedData.savedEntriesMerged = Array.from(entryMap.values());
+            }
+
+            // Merge custom markers
             if (data.customBookmarks && currentData.customBookmarks) {
                 const markerMap = new Map();
                 currentData.customBookmarks.forEach(m => markerMap.set(m.name.toLowerCase(), m));
@@ -229,14 +383,33 @@ export function initImportExport() {
                 mergedData.customBookmarks = Array.from(markerMap.values());
             }
 
-            // Merge anilistCache if present
+            // Merge reading history
+            if (data.savedReadChapters && currentData.savedReadChapters) {
+                const mergedHistory = { ...currentData.savedReadChapters };
+                Object.entries(data.savedReadChapters).forEach(([key, chapters]) => {
+                    if (mergedHistory[key]) {
+                        // Combine unique chapters
+                        mergedHistory[key] = [...new Set([...mergedHistory[key], ...chapters])];
+                    } else {
+                        mergedHistory[key] = chapters;
+                    }
+                });
+                mergedData.savedReadChapters = mergedHistory;
+            }
+
+            // Merge caches
             if (data.anilistCache && currentData.anilistCache) {
                mergedData.anilistCache = { ...currentData.anilistCache, ...data.anilistCache };
             }
 
+            // Merge personal data
+            if (data.libraryPersonalData && currentData.libraryPersonalData) {
+                mergedData.libraryPersonalData = { ...currentData.libraryPersonalData, ...data.libraryPersonalData };
+            }
+
             chrome.storage.local.set(mergedData, () => {
-                if (typeof Log === 'function') Log("Data imported (Merge) successfully.");
-                alert("Import successful! New data has been merged.");
+                Log("Data imported (Merge) successfully.");
+                alert("✅ Import successful! New data has been merged.");
                 location.reload();
             });
         });
@@ -309,7 +482,6 @@ export function initImportExport() {
                 chrome.storage.local.get(['savedEntriesMerged'], (data) => {
                     let savedEntries = Array.isArray(data.savedEntriesMerged) ? data.savedEntriesMerged : [];
                     
-                    // Create a set of existing titles/IDs for deduplication
                     const existingTitles = new Set(savedEntries.map(e => e.title.toLowerCase()));
                     const existingMdIds = new Set(savedEntries.filter(e => e.anilistData?.mangadexId).map(e => e.anilistData.mangadexId));
                     
@@ -320,13 +492,11 @@ export function initImportExport() {
                         const title = manga.title?.english || manga.title?.romaji || 'Unknown';
                         const mdId = manga.mangadexId;
                         
-                        // Skip if already exists
                         if (existingTitles.has(title.toLowerCase()) || existingMdIds.has(mdId)) {
                             skipped++;
                             return;
                         }
                         
-                        // Add new entry
                         savedEntries.push({
                             title: title,
                             status: 'Plan to Read',
@@ -340,7 +510,7 @@ export function initImportExport() {
                     });
                     
                     chrome.storage.local.set({ savedEntriesMerged: savedEntries }, () => {
-                        alert(`Imported ${added} manga from "${result.listName}". ${skipped} duplicates skipped.`);
+                        alert(`✅ Imported ${added} manga from "${result.listName}". ${skipped} duplicates skipped.`);
                         mdlistInput.value = '';
                         location.reload();
                     });

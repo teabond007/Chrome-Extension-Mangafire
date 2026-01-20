@@ -27,12 +27,16 @@ export class OverlayFactory {
         tooltip.dataset.entryId = entry.slug || entry.id || '';
 
         const unitName = adapter.unitName === 'episode' ? 'Ep.' : 'Ch.';
+        const lastRead = parseFloat(entry.lastReadChapter) || 0;
         const nextChapter = OverlayFactory.calculateNextChapter(entry);
         const statusColor = OverlayFactory.getStatusColor(entry.status);
         const currentRating = entry.personalData?.rating || 0;
+        const hasHistory = lastRead > 0;
 
         tooltip.innerHTML = `
-            <button class="bmh-tt-btn bmh-tt-continue" data-action="continue" title="Continue ${unitName} ${nextChapter}">
+            <button class="bmh-tt-btn bmh-tt-continue ${!hasHistory ? 'bmh-btn-disabled' : ''}" 
+                    data-action="continue" 
+                    title="${hasHistory ? `Continue ${unitName} ${nextChapter}` : `Start Reading ${unitName} 1`}">
                 ▶
             </button>
             <button class="bmh-tt-btn bmh-tt-status" data-action="status" title="${entry.status || 'Set Status'}" style="--status-color: ${statusColor}">
@@ -324,7 +328,14 @@ export class OverlayFactory {
                 background: linear-gradient(135deg, #4CAF50, #388e3c);
             }
 
-            .bmh-tt-continue:hover {
+            .bmh-tt-continue.bmh-btn-disabled {
+                background: rgba(80, 80, 80, 0.8);
+                opacity: 0.7;
+                filter: grayscale(1);
+                box-shadow: none;
+            }
+
+            .bmh-tt-continue:not(.bmh-btn-disabled):hover {
                 background: linear-gradient(135deg, #66BB6A, #43A047);
             }
 

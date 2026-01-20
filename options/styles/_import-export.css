@@ -206,3 +206,103 @@
 .import-export-footer a:hover {
     text-decoration: underline;
 }
+
+/* Selective Export Options */
+.export-options {
+    margin-bottom: 20px;
+}
+
+.export-options .section-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.export-checkboxes {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.export-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.dark-mode .export-option {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.export-option:hover {
+    background: rgba(67, 24, 255, 0.05);
+    border-color: rgba(67, 24, 255, 0.2);
+}
+
+.export-option input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent-primary);
+    cursor: pointer;
+}
+
+.export-option span:first-of-type {
+    flex: 1;
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+.export-count {
+    font-size: 11px;
+    color: var(--text-secondary);
+    background: rgba(0, 0, 0, 0.05);
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.dark-mode .export-count {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Import Preview Modal */
+.import-preview-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.import-summary {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.import-stat {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    text-align: center;
+}
+
+.import-stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--accent-primary);
+}
+
+.import-stat-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}

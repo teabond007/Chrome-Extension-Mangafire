@@ -10,6 +10,7 @@
 import { CardEnhancer } from '../core/card-enhancer.js';
 import { OverlayFactory } from '../core/overlay-factory.js';
 import { Config } from '../core/config.js';
+import ReaderEnhancements from '../core/reader-enhancements.js';
 
 // ============================================================================
 // ASURA ADAPTER
@@ -118,6 +119,40 @@ const AsuraAdapter = {
             return `https://asuracomic.net/series/${entry.slug}/chapter-${chapter}`;
         }
         return null;
+    },
+
+    // Reader detection and navigation methods
+    isReaderPage() {
+        return window.location.href.includes('/chapter');
+    },
+
+    parseUrl(url) {
+        const match = url.match(/\/series\/([^/]+)\/chapter[/-]?([\d.-]+)/i);
+        if (!match) return null;
+        return {
+            slug: match[1],
+            chapterNo: parseFloat(match[2])
+        };
+    },
+
+    goToNextChapter() {
+        // Asura has navigation buttons
+        const nextBtn = document.querySelector('a[href*="/chapter"]:has(svg[class*="right"]), button:has(svg[stroke*="next"]), .next-chapter');
+        if (nextBtn) nextBtn.click();
+    },
+
+    goToPrevChapter() {
+        const prevBtn = document.querySelector('a[href*="/chapter"]:has(svg[class*="left"]), button:has(svg[stroke*="prev"]), .prev-chapter');
+        if (prevBtn) prevBtn.click();
+    },
+
+    exitReader() {
+        const seriesLink = document.querySelector('a[href*="/series/"]:not([href*="/chapter"])');
+        if (seriesLink) {
+            window.location.href = seriesLink.href;
+        } else {
+            window.history.back();
+        }
     }
 };
 
@@ -272,9 +307,14 @@ async function initAsuraEnhancer() {
     const count = await enhancer.enhanceAll();
     Log(`Enhanced ${count} cards (Quick Actions: ${settings.AsuraScansQuickActionsEnabled !== false ? 'ON' : 'OFF'})`);
 
-    // Track reading on chapter pages
+    // Track reading on chapter pages & initialize reader enhancements
     if (window.location.href.includes('/chapter')) {
         saveReadChapter();
+        
+        // Initialize reader enhancements (auto-scroll, keybinds, progress)
+        const reader = new ReaderEnhancements(AsuraAdapter);
+        reader.init();
+        Log('Reader enhancements initialized');
     }
 
     // Mutation observer for dynamic content (Asura uses React/Next.js)

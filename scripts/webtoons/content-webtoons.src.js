@@ -10,6 +10,7 @@
 import { CardEnhancer } from '../core/card-enhancer.js';
 import { OverlayFactory } from '../core/overlay-factory.js';
 import { Config, STATUS_COLORS } from '../core/config.js';
+import ReaderEnhancements from '../core/reader-enhancements.js';
 
 // ============================================================================
 // WEBTOONS ADAPTER
@@ -113,6 +114,46 @@ const WebtoonsAdapter = {
             return null;
         }
         return null;
+    },
+
+    // Reader detection and navigation methods
+    isReaderPage() {
+        return window.location.href.includes('episode_no') || window.location.href.includes('/viewer');
+    },
+
+    parseUrl(url) {
+        // Can use existing extractInfoFromUrl
+        const info = this.extractInfoFromUrl(url);
+        return {
+            slug: info.slug,
+            id: info.titleNo,
+            chapterNo: parseFloat(info.episodeNo)
+        };
+    },
+
+    goToNextChapter() {
+        const nextBtn = document.querySelector('.pg_next') || document.querySelector('a.next');
+        if (nextBtn) nextBtn.click();
+    },
+
+    goToPrevChapter() {
+        const prevBtn = document.querySelector('.pg_prev') || document.querySelector('a.prev');
+        if (prevBtn) prevBtn.click();
+    },
+
+    exitReader() {
+        // Go back to the list page (found in top breadcrumbs usually)
+        const listBtn = document.querySelector('#detail_list_btn') || 
+                       document.querySelector('a[href*="/list"]');
+        if (listBtn) {
+            listBtn.click();
+        } else {
+            // Try modifying URL: /viewer -> /list
+            const url = new URL(window.location.href);
+            url.pathname = url.pathname.replace('/viewer', '/list');
+            url.searchParams.delete('episode_no');
+            window.location.href = url.toString();
+        }
     }
 };
 
@@ -246,9 +287,14 @@ async function initWebtoonsEnhancer() {
     const count = await enhancer.enhanceAll();
     Log(`Enhanced ${count} cards (Quick Actions: ${settings.WebtoonsQuickActionsEnabled !== false ? 'ON' : 'OFF'})`);
 
-    // Track reading on viewer pages
+    // Track reading on viewer pages & initialize reader enhancements
     if (location.href.includes('episode_no')) {
         saveReadEpisode();
+        
+        // Initialize reader enhancements
+        const reader = new ReaderEnhancements(WebtoonsAdapter);
+        reader.init();
+        Log('Reader enhancements initialized');
     }
 
     // Mutation observer
