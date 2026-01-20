@@ -4,6 +4,23 @@ import { fetchMangaFromMangadex } from '../core/mangadex-api.js';
 import * as LibFeatures from './library-features.js';
 import { playSuccessAnimation, animateGridEntrance, animateModalEntry, initButtonMicroInteractions } from '../ui/anime-utils.js';
 
+/**
+ * Simple debounce utility for input event handlers.
+ * @param {Function} fn - The function to debounce.
+ * @param {number} delay - Delay in milliseconds.
+ * @returns {Function} Debounced function.
+ */
+function debounce(fn, delay) {
+    let timeoutId;
+    return (...args) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => fn.apply(this, args), delay);
+    };
+}
+
+/** Currently displayed modal entry - used for Mark All as Read */
+let modalCurrentEntry = null;
+
 let savedEntriesMerged = [];
 let customMarkers = [];
 let fetchInProgress = false;
@@ -113,6 +130,15 @@ export function initLibrary() {
     elements.bulkStatusSelect = document.getElementById("bulkStatusSelect");
     elements.btnApplyBulk = document.getElementById("btnApplyBulkUpdate");
     elements.freshSyncBtn = document.getElementById("BtnTrashAndSyncEntries");
+
+    // Phase 1: Advanced Filters
+    elements.chapterMinFilter = document.getElementById("chapterMinFilter");
+    elements.chapterMaxFilter = document.getElementById("chapterMaxFilter");
+    elements.lastUpdatedFilter = document.getElementById("lastUpdatedFilter");
+    elements.filterBingeworthy = document.getElementById("filterBingeworthy");
+    elements.filterNewChapters = document.getElementById("filterNewChapters");
+    elements.filterClearAdvanced = document.getElementById("filterClearAdvanced");
+    elements.modalMarkAllReadBtn = document.getElementById("modalMarkAllReadBtn");
 
     if (!elements.grid) return;
 
@@ -258,6 +284,9 @@ export function initLibrary() {
             }
             
             filterEntries();
+
+            // Check URL hash for showDetails parameter (from content script)
+            checkUrlForShowDetails();
 
             // Initialize button animations
             initButtonMicroInteractions();
@@ -435,8 +464,45 @@ function attachListeners() {
         elements.bulkBar.style.display = "none";
     });
     
-    // Phase 1: Enhanced features listeners
-    // attachEnhancedListeners removed - handled by options.js and CrystalSelect.autoInit()
+    // Phase 1: Advanced Filter Listeners
+    elements.chapterMinFilter?.addEventListener("input", debounce(filterEntries, 300));
+    elements.chapterMaxFilter?.addEventListener("input", debounce(filterEntries, 300));
+    elements.lastUpdatedFilter?.addEventListener("change", filterEntries);
+
+    // Quick filter presets
+    elements.filterBingeworthy?.addEventListener("click", () => {
+        // Toggle binge-worthy filter (100+ chapters)
+        const isActive = elements.filterBingeworthy.classList.toggle("active");
+        if (isActive) {
+            elements.chapterMinFilter.value = 100;
+            elements.chapterMaxFilter.value = "";
+        } else {
+            elements.chapterMinFilter.value = "";
+        }
+        filterEntries();
+    });
+
+    elements.filterNewChapters?.addEventListener("click", () => {
+        // Toggle new chapters filter
+        const isActive = elements.filterNewChapters.classList.toggle("active");
+        // Store filter state for filterEntries to use
+        elements.filterNewChapters.dataset.active = isActive ? "true" : "false";
+        filterEntries();
+    });
+
+    elements.filterClearAdvanced?.addEventListener("click", () => {
+        // Clear all advanced filters
+        if (elements.chapterMinFilter) elements.chapterMinFilter.value = "";
+        if (elements.chapterMaxFilter) elements.chapterMaxFilter.value = "";
+        if (elements.lastUpdatedFilter) elements.lastUpdatedFilter.value = "all";
+        elements.filterBingeworthy?.classList.remove("active");
+        elements.filterNewChapters?.classList.remove("active");
+        if (elements.filterNewChapters) elements.filterNewChapters.dataset.active = "false";
+        filterEntries();
+    });
+
+    // Phase 1: Mark All as Read button in modal
+    elements.modalMarkAllReadBtn?.addEventListener("click", handleMarkAllAsRead);
 }
 
 let isBulkMode = false;
@@ -600,7 +666,42 @@ export async function filterEntries() {
                 matchesDemographic = tags.some(t => t.name.toLowerCase() === targetDemo);
             }
 
-            return matchesStatus && matchesFormat && matchesGenre && matchesSearch && matchesDemographic && matchesTag;
+            // Phase 1: Chapter count range filter
+            let matchesChapterRange = true;
+            const chapterMin = parseInt(elements.chapterMinFilter?.value) || 0;
+            const chapterMax = parseInt(elements.chapterMaxFilter?.value) || Infinity;
+            if (chapterMin > 0 || chapterMax < Infinity) {
+                const totalChapters = ani?.chapters || entry.readChapters || 0;
+                matchesChapterRange = totalChapters >= chapterMin && totalChapters <= chapterMax;
+            }
+
+            // Phase 1: Last updated filter
+            let matchesLastUpdated = true;
+            const lastUpdatedVal = elements.lastUpdatedFilter?.value || "all";
+            if (lastUpdatedVal !== "all") {
+                const now = Date.now();
+                const lastRead = entry.lastRead || entry.lastUpdated || 0;
+                let cutoff = 0;
+                switch (lastUpdatedVal) {
+                    case "7d": cutoff = now - (7 * 24 * 60 * 60 * 1000); break;
+                    case "30d": cutoff = now - (30 * 24 * 60 * 60 * 1000); break;
+                    case "90d": cutoff = now - (90 * 24 * 60 * 60 * 1000); break;
+                    case "year": cutoff = now - (365 * 24 * 60 * 60 * 1000); break;
+                }
+                matchesLastUpdated = lastRead >= cutoff;
+            }
+
+            // Phase 1: New chapters available filter
+            let matchesNewChapters = true;
+            const newChaptersActive = elements.filterNewChapters?.dataset?.active === "true";
+            if (newChaptersActive) {
+                // Has new chapters if total chapters > read chapters
+                const totalChapters = ani?.chapters || 0;
+                const readChapters = entry.readChapters || 0;
+                matchesNewChapters = totalChapters > 0 && readChapters < totalChapters;
+            }
+
+            return matchesStatus && matchesFormat && matchesGenre && matchesSearch && matchesDemographic && matchesTag && matchesChapterRange && matchesLastUpdated && matchesNewChapters;
         });
 
         // Sorting Logic
@@ -866,6 +967,58 @@ async function applyBulkUpdate() {
 }
 
 /**
+ * Check URL hash for showDetails parameter and auto-open the modal.
+ * Called after library loads when page is opened from content script.
+ * URL format: #library?showDetails=EncodedTitle
+ */
+function checkUrlForShowDetails() {
+    const hash = window.location.hash;
+    if (!hash.includes('showDetails=')) return;
+    
+    // Parse the title from URL
+    const match = hash.match(/showDetails=([^&]+)/);
+    if (!match) return;
+    
+    const encodedTitle = match[1];
+    const searchTitle = decodeURIComponent(encodedTitle).toLowerCase();
+    
+    console.log('[Library] Looking for manga to show details:', searchTitle);
+    
+    // Find matching entry in library
+    const entry = savedEntriesMerged.find(e => {
+        const entryTitle = e.title?.toLowerCase() || '';
+        const aniTitle = e.anilistData?.title?.english?.toLowerCase() || '';
+        const aniRomaji = e.anilistData?.title?.romaji?.toLowerCase() || '';
+        
+        return entryTitle === searchTitle || 
+               aniTitle === searchTitle || 
+               aniRomaji === searchTitle ||
+               entryTitle.includes(searchTitle) ||
+               searchTitle.includes(entryTitle);
+    });
+    
+    if (entry) {
+        console.log('[Library] Found entry, showing details:', entry.title);
+        
+        // Switch to Library tab if not already there
+        const libraryTab = document.querySelector('[data-tab="saved-entries"]');
+        if (libraryTab) {
+            libraryTab.click();
+        }
+        
+        // Small delay to ensure tab switch completes
+        setTimeout(() => {
+            showMangaDetails(entry);
+        }, 300);
+        
+        // Clean up URL (remove the showDetails param)
+        history.replaceState(null, '', window.location.pathname + '#library');
+    } else {
+        console.log('[Library] Entry not found for:', searchTitle);
+    }
+}
+
+/**
  * Displays a modal with detailed information about a specific manga entry.
  * Populates the modal elements with data from the entry's `anilistData`.
  * @param {Object} entry - The manga entry object for which to show details.
@@ -874,6 +1027,9 @@ async function applyBulkUpdate() {
 function showMangaDetails(entry) {
     const ani = entry.anilistData;
     if (!ani) return;
+
+    // Phase 1: Store current entry for Mark All as Read
+    modalCurrentEntry = entry;
 
     if (elements.modalTitle) elements.modalTitle.textContent = ani.title.english || ani.title.romaji || entry.title;
     
@@ -1439,6 +1595,78 @@ async function populateFilterPresets() {
 
 
 /**
- * Attaches listeners for Phase 1 enhanced features.
+ * Phase 1: Handles the "Mark All as Read" button click.
+ * Marks all chapters up to the total as read for the current modal entry.
  */
+async function handleMarkAllAsRead() {
+    if (!modalCurrentEntry) {
+        console.warn('[Library] No modal entry to mark as read');
+        return;
+    }
 
+    const ani = modalCurrentEntry.anilistData;
+    const totalChapters = ani?.chapters;
+    
+    if (!totalChapters || totalChapters <= 0) {
+        alert('Unable to mark all as read: Total chapter count is unknown for this manga.');
+        return;
+    }
+
+    const title = ani?.title?.english || ani?.title?.romaji || modalCurrentEntry.title;
+    
+    if (!confirm(`Mark all ${totalChapters} chapters as read for "${title}"?`)) {
+        return;
+    }
+
+    // Generate chapter array (1 to totalChapters)
+    const allChapters = Array.from({ length: totalChapters }, (_, i) => String(i + 1));
+    
+    // Get the slug key for savedReadChapters
+    const slugify = (str) => str.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    const mangaSlug = modalCurrentEntry.mangaSlug?.split('.')[0] || slugify(modalCurrentEntry.title);
+
+    // Update savedReadChapters
+    chrome.storage.local.get(['savedReadChapters'], (data) => {
+        const history = data.savedReadChapters || {};
+        history[mangaSlug] = allChapters;
+        
+        chrome.storage.local.set({ savedReadChapters: history }, () => {
+            console.log(`[Library] Marked all ${totalChapters} chapters as read for ${mangaSlug}`);
+            
+            // Update the entry in savedEntriesMerged
+            modalCurrentEntry.readChapters = totalChapters;
+            modalCurrentEntry.lastChapterRead = String(totalChapters);
+            modalCurrentEntry.lastRead = Date.now();
+            
+            // Save updated entry
+            const entryIndex = savedEntriesMerged.findIndex(e => 
+                (e.anilistData?.id === ani?.id) || 
+                (e.mangaSlug === modalCurrentEntry.mangaSlug)
+            );
+            
+            if (entryIndex !== -1) {
+                savedEntriesMerged[entryIndex] = modalCurrentEntry;
+                chrome.storage.local.set({ savedEntriesMerged });
+            }
+            
+            // Refresh the modal's chapter list display
+            if (elements.modalReadChaptersList) {
+                elements.modalReadChaptersList.innerHTML = '';
+                allChapters.slice().reverse().forEach(ch => {
+                    const span = document.createElement('span');
+                    span.className = 'chapter-pill';
+                    span.textContent = ch;
+                    elements.modalReadChaptersList.appendChild(span);
+                });
+            }
+            
+            // Show success feedback
+            if (elements.modalMarkAllReadBtn) {
+                playSuccessAnimation(elements.modalMarkAllReadBtn);
+            }
+            
+            // Refresh the grid to show updated progress
+            filterEntries();
+        });
+    });
+}

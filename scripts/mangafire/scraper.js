@@ -257,7 +257,7 @@ export async function handleAutoSyncEntry(title, chapter, slugWithId, readChapte
     
     // Helper: Convert string to URL-friendly slug
     const slugify = (str) => str.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-    
+
     // 1. Deduplication Pass - favor entries with anilistData and higher lastRead
     const seenIds = new Set();
     const seenSlugs = new Set();

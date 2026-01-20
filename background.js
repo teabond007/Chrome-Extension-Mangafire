@@ -52,6 +52,13 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     }
   } else if (msg.type === "autoSyncEntry") {
     handleAutoSyncEntry(msg.title, msg.chapter, msg.slugWithId, msg.readChapters);
+  } else if (msg.type === "showMangaDetails") {
+    // Open options page with library tab and manga details modal
+    // Encode the entry title to find it in storage
+    const encodedTitle = encodeURIComponent(msg.title || '');
+    chrome.tabs.create({ 
+      url: chrome.runtime.getURL(`options/options.html#library?showDetails=${encodedTitle}`)
+    });
   } else if (msg.type === "bookmarksExtracted") {
     chrome.tabs.remove(sender.tab.id);
     Log("Tab closed after scraping");

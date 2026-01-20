@@ -1,7 +1,7 @@
 {
   "name": "Bookmarks Marker/Higlighter",
   "description": "for MangFire v2. It colors the border of saved Mangas. Doesn't work on MangaFire homepage yet",
-  "version": "3.5.1",
+  "version": "3.8.0",
   "manifest_version": 3,
   "options_ui": {
     "page": "./options/options.html",
@@ -39,7 +39,8 @@
       ],
       "js": [
         "scripts/mangafire/content-mangafire.js"
-      ]
+      ],
+      "run_at": "document_idle"
     },
     {
       "matches": [
@@ -47,7 +48,8 @@
       ],
       "js": [
         "scripts/mangadex/content-mangadex.js"
-      ]
+      ],
+      "run_at": "document_idle"
     },
     {
       "matches": [
@@ -55,7 +57,41 @@
       ],
       "js": [
         "scripts/webtoons/content-webtoons.js"
-      ]
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://asuracomic.net/*",
+        "*://asuratoon.com/*",
+        "*://asurascans.com/*"
+      ],
+      "js": [
+        "scripts/asurascans/content-asurascans.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://mangaplus.shueisha.co.jp/*"
+      ],
+      "js": [
+        "scripts/mangaplus/content-mangaplus.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://manganato.com/*",
+        "*://mangakakalot.com/*",
+        "*://manganelo.com/*",
+        "*://chapmanganato.to/*",
+        "*://chapmanganato.com/*"
+      ],
+      "js": [
+        "scripts/manganato/content-manganato.js"
+      ],
+      "run_at": "document_idle"
     }
   ]
 }

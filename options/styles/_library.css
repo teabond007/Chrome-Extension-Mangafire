@@ -923,3 +923,141 @@
         transform: translateY(0);
     }
 }
+
+/* ===== PHASE 1: ADVANCED FILTERS ===== */
+
+/* Advanced Filters Row */
+.library-controls-advanced {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+    flex-wrap: wrap;
+}
+
+.advanced-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.chapter-range-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.range-separator {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+/* Small input and select variants */
+.input-sm {
+    height: 32px !important;
+    padding: 4px 8px !important;
+    font-size: 12px !important;
+}
+
+.select-sm {
+    height: 32px !important;
+    padding: 4px 8px !important;
+    font-size: 12px !important;
+    min-width: 100px !important;
+}
+
+/* Quick Filters Group */
+.quick-filters {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.filter-preset-btn {
+    font-size: 11px !important;
+    padding: 6px 12px !important;
+    border-radius: 20px !important;
+    transition: all 0.2s ease;
+}
+
+.filter-preset-btn:hover {
+    transform: scale(1.02);
+}
+
+.filter-preset-btn.active {
+    background: var(--accent-primary) !important;
+    color: white !important;
+    border-color: var(--accent-primary) !important;
+}
+
+/* New chapters badge indicator */
+.new-chapters-indicator {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 3px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 6px rgba(255, 107, 107, 0.4);
+    z-index: 5;
+    animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* Modal history actions row */
+.modal-history-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    .library-controls-advanced {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .quick-filters {
+        margin-left: 0;
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 768px) {
+    .advanced-filter-group {
+        flex-wrap: wrap;
+    }
+
+    .chapter-range-wrapper {
+        flex-wrap: wrap;
+    }
+
+    .filter-preset-btn {
+        flex: 1;
+        text-align: center;
+    }
+}
