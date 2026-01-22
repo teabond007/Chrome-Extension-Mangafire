@@ -78,5 +78,5 @@ onMounted(() => {
 </script>
 
 <style>
-@import './options.css';
+@import './options.scss';
 </style>

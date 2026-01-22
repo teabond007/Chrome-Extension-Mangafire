@@ -1,0 +1,563 @@
+/**
+ * Phase 1: Enhanced Library Features Styles
+ * Tags, Notes, Ratings, and Filter Presets UI Components
+ */
+
+/* ============ STAR RATING ============ */
+.star-rating {
+    &-container {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+
+        &.readonly {
+            pointer-events: none;
+            opacity: 0.9;
+        }
+    }
+
+    &-star {
+        font-size: 18px;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.15s ease;
+        user-select: none;
+
+        &:hover {
+            transform: scale(1.2);
+        }
+
+        &.full {
+            color: #FFD700;
+            text-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+        }
+
+        &.half {
+            background: linear-gradient(90deg, #FFD700 50%, var(--text-secondary) 50%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    }
+
+    &-value {
+        margin-left: 8px;
+        font-size: 12px;
+        color: var(--text-secondary);
+        font-weight: 600;
+        min-width: 35px;
+    }
+
+    /* Compact star rating for cards */
+    &-compact {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+
+        .star-rating-star {
+            font-size: 12px;
+        }
+    }
+}
+
+/* ============ TAG SYSTEM ============ */
+.tag {
+    &-input-container {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    &-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    &-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: linear-gradient(135deg, var(--primary), var(--accent-secondary));
+        color: white;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+
+        &:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(117, 81, 255, 0.3);
+
+            .tag-pill-remove {
+                display: inline;
+            }
+        }
+
+        &-text {
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        &-remove {
+            display: none;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+            transition: color 0.2s;
+
+            &:hover {
+                color: white;
+            }
+        }
+    }
+
+    /* Tag input */
+    &-input-wrapper {
+        position: relative;
+    }
+
+    &-input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        background: var(--bg-card);
+        color: var(--text-primary);
+        font-size: 13px;
+        transition: border-color 0.2s;
+
+        &:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        &::placeholder {
+            color: var(--text-secondary);
+        }
+    }
+
+    &-suggestions {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-top: none;
+        border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+        max-height: 150px;
+        overflow-y: auto;
+        z-index: 100;
+        box-shadow: 0 4px 12px var(--shadow-md);
+    }
+
+    &-suggestion-item {
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 13px;
+        transition: background 0.15s;
+
+        &:hover {
+            background: var(--bg-hover);
+        }
+    }
+}
+
+/* Tag on library cards */
+.manga-card {
+    &-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-top: 6px;
+    }
+
+    &-tag {
+        background: rgba(117, 81, 255, 0.15);
+        color: var(--primary);
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 10px;
+        font-weight: 500;
+    }
+}
+
+
+/* ============ NOTES EDITOR ============ */
+.notes-editor-container {
+    position: relative;
+}
+
+.notes-textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 13px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 60px;
+    max-height: 150px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    &:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(117, 81, 255, 0.1);
+    }
+
+    &::placeholder {
+        color: var(--text-secondary);
+    }
+}
+
+.notes-char-count {
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+    font-size: 10px;
+    color: var(--text-secondary);
+}
+
+/* Notes preview on cards */
+.manga-card-notes-preview {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin-top: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+
+    &::before {
+        content: '📝 ';
+    }
+}
+
+/* ============ FILTER PRESETS ============ */
+.filter-presets-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-preset {
+    &-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 6px 12px;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        font-size: 12px;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(117, 81, 255, 0.05);
+
+            .preset-delete {
+                display: inline;
+            }
+        }
+
+        &.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .preset-delete {
+            display: none;
+            margin-left: 4px;
+            font-size: 14px;
+            opacity: 0.7;
+
+            &:hover {
+                display: inline;
+            }
+        }
+    }
+
+    &-save-btn {
+        background: linear-gradient(135deg, var(--primary), var(--accent-secondary));
+        color: white;
+        border: none;
+
+        &:hover {
+            transform: scale(1.05);
+        }
+    }
+}
+
+
+/* ============ MODAL ENHANCEMENTS ============ */
+.modal-personal {
+    &-section {
+        background: var(--bg-secondary);
+        border-radius: var(--radius-md);
+        padding: 16px;
+        margin-top: 16px;
+        border: 1px solid var(--border-color);
+
+        h4 {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin: 0 0 12px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+    }
+
+    &-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 12px;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    &-label {
+        min-width: 70px;
+        font-size: 12px;
+        color: var(--text-secondary);
+        padding-top: 8px;
+    }
+
+    &-content {
+        flex: 1;
+    }
+}
+
+/* ============ VISUAL ENHANCEMENTS ============ */
+
+/* Glow effect alternative to borders */
+.manga-card.glow-effect {
+    border: none !important;
+    box-shadow: 0 0 15px var(--glow-color, rgba(76, 175, 80, 0.5)),
+        inset 0 0 15px rgba(255, 255, 255, 0.05);
+}
+
+/* Corner ribbon status */
+.manga-card-ribbon {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: var(--status-color, var(--primary));
+    color: white;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 4px 20px 4px 10px;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 10px 100%);
+    z-index: 5;
+}
+
+/* Status icon overlay */
+.manga-card-status-icon {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 24px;
+    height: 24px;
+    background: rgba(0, 0, 0, 0.75);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    z-index: 5;
+    backdrop-filter: blur(4px);
+}
+
+/* Progress bar overlay */
+.manga-card-progress {
+    &-bar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 5;
+    }
+
+    &-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary), #00BCD4);
+        transition: width 0.3s ease;
+    }
+}
+
+/* Animated border for "Reading" status */
+@keyframes borderPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 0 0 4px rgba(76, 175, 80, 0);
+    }
+}
+
+.manga-card.reading-pulse {
+    animation: borderPulse 2s ease-in-out infinite;
+}
+
+/* Shimmer effect for special cards */
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.manga-card.shimmer-border::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.3) 50%,
+            transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
+    border-radius: inherit;
+    z-index: -1;
+}
+
+/* ============ SEARCH HIGHLIGHTING ============ */
+.search-highlight {
+    background: rgba(255, 235, 59, 0.3);
+    border-radius: 2px;
+    padding: 0 2px;
+}
+
+/* ============ PERSONAL RATING ON CARDS ============ */
+.manga-card-personal-rating {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.85);
+    color: #FFD700;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 6px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    z-index: 5;
+
+    &::before {
+        content: '★';
+    }
+}
+
+/* ============ HOVER PREVIEW CARD ============ */
+.manga-hover-preview {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 280px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: 0 8px 32px var(--shadow-lg);
+    padding: 16px;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+    pointer-events: none;
+
+    // Trigger on card hover
+    .manga-card:hover & {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
+}
+
+.hover-preview {
+    &-header {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    &-cover {
+        width: 60px;
+        height: 90px;
+        object-fit: cover;
+        border-radius: var(--radius-sm);
+    }
+
+    &-info h5 {
+        margin: 0 0 4px 0;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    &-meta {
+        font-size: 11px;
+        color: var(--text-secondary);
+    }
+
+    &-description {
+        font-size: 12px;
+        color: var(--text-secondary);
+        line-height: 1.4;
+        max-height: 60px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &-stats {
+        display: flex;
+        gap: 12px;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid var(--border-color);
+        font-size: 11px;
+    }
+
+    &-stat {
+        display: flex;
+        flex-direction: column;
+
+        &-value {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        &-label {
+            color: var(--text-secondary);
+        }
+    }
+}
