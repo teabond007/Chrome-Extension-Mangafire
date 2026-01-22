@@ -1,0 +1,57 @@
+/**
+ * Global Base Styles
+ * 
+ * Applied globally to extension pages (popup, options, newtab).
+ */
+
+body {
+    background: var(--color-bg-base);
+    color: var(--color-text-primary);
+}
+
+// Scrollbar styling
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--color-bg-surface);
+    border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-text-muted);
+    border-radius: var(--radius-full);
+
+    &:hover {
+        background: var(--color-text-secondary);
+    }
+}
+
+// Selection styling
+::selection {
+    background: var(--color-primary);
+    color: white;
+}
+
+// Utility classes
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+// Glass effect mixin usage
+.glass {
+    background: var(--color-glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--color-border);
+}

@@ -1,0 +1,21 @@
+/**
+ * Webtoons Content Styles
+ * Styles specific to Webtoons adjustment
+ */
+
+/* Webtoons Card Overrides */
+/* Ensure the overlay is visible on top of card images */
+.card_item,
+.daily_card_item,
+.ranking_item {
+    overflow: visible !important;
+    /* Allow overlay to pop out if needed, though usually inside */
+}
+
+/* Position adjustment */
+bmh-quick-actions {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    z-index: 100;
+}

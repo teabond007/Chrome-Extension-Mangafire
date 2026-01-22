@@ -1,0 +1,39 @@
+/**
+ * Color Design Tokens
+ * 
+ * Reverted to LEGACY color palette (Horizon UI based).
+ */
+
+:root {
+    /* Legacy Base Variables (Dark Mode Default) */
+    --bg-body: #0B1437;
+    --bg-sidebar: #111C44;
+    --bg-card: #111C44;
+
+    /* Mapping to New System Names - REQUIRED for build compatibility */
+    --color-primary: #4318FF;
+    --color-primary-rgb: 67, 24, 255;
+    --color-accent: #6AD2FF;
+
+    --color-bg-base: #0B1437;
+    --color-bg-surface: #111C44;
+    --color-bg-elevated: #111C44;
+
+    --color-text-primary: #FFFFFF;
+    --color-text-secondary: #A3AED0;
+    --color-text-muted: #707EAE;
+
+    --color-border: #2B3674;
+    --color-glass-bg: #111C44;
+
+    /* Semantics */
+    --color-success: #01B574;
+    --color-warning: #FFB547;
+    --color-error: #EE5D50;
+    --color-info: #33L1CC;
+
+    /* Scss Variables for Mixins/Imports */
+    $primary-500: #4318FF;
+    $neutral-900: #111C44;
+    $neutral-100: #FFFFFF;
+}

@@ -1,0 +1,113 @@
+{
+    "manifest_version": 3,
+    "name": "Manga Bookmark Manager",
+    "description": "Manage and highlight your manga bookmarks across multiple platforms with premium UI",
+    "version": "4.0.0",
+    "icons": {
+        "16": "icons/logo/logo16.png",
+        "48": "icons/logo/logo48.png",
+        "128": "icons/logo/logo128.png"
+    },
+    "permissions": [
+        "storage",
+        "bookmarks",
+        "tabs",
+        "alarms",
+        "scripting"
+    ],
+    "host_permissions": [
+        "https://api.mangadex.org/*",
+        "https://graphql.anilist.co/*",
+        "https://mangafire.to/*"
+    ],
+    "action": {
+        "default_popup": "popup/index.html",
+        "default_icon": {
+            "16": "icons/logo/logo16.png",
+            "48": "icons/logo/logo48.png",
+            "128": "icons/logo/logo128.png"
+        }
+    },
+    "options_ui": {
+        "page": "options/index.html",
+        "open_in_tab": true
+    },
+    "chrome_url_overrides": {
+        "newtab": "newtab/index.html"
+    },
+    "background": {
+        "service_worker": "background/service-worker.js",
+        "type": "module"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "https://mangafire.to/*"
+            ],
+            "js": [
+                "content/mangafire/index.js"
+            ],
+            "run_at": "document_idle"
+        },
+        {
+            "matches": [
+                "https://mangadex.org/*"
+            ],
+            "js": [
+                "content/mangadex/index.js"
+            ],
+            "run_at": "document_idle"
+        },
+        {
+            "matches": [
+                "https://www.webtoons.com/*"
+            ],
+            "js": [
+                "content/webtoons/index.js"
+            ],
+            "run_at": "document_idle"
+        },
+        {
+            "matches": [
+                "https://asuracomic.net/*",
+                "https://asurascans.com/*",
+                "https://asuratoon.com/*"
+            ],
+            "js": [
+                "content/asurascans/index.js"
+            ],
+            "run_at": "document_idle"
+        },
+        {
+            "matches": [
+                "https://chapmanganato.to/*",
+                "https://manganato.com/*",
+                "https://manganato.gg/*"
+            ],
+            "js": [
+                "content/manganato/index.js"
+            ],
+            "run_at": "document_idle"
+        },
+        {
+            "matches": [
+                "https://mangaplus.shueisha.co.jp/*"
+            ],
+            "js": [
+                "content/mangaplus/index.js"
+            ],
+            "run_at": "document_idle"
+        }
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "icons/*",
+                "images/*"
+            ],
+            "matches": [
+                "<all_urls>"
+            ]
+        }
+    ]
+}

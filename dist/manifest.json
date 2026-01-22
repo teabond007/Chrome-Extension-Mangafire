@@ -1,0 +1,220 @@
+{
+  "manifest_version": 3,
+  "name": "Manga Bookmark Manager",
+  "description": "Manage and highlight your manga bookmarks across multiple platforms with premium UI",
+  "version": "4.0.0",
+  "icons": {
+    "16": "icons/logo/logo16.png",
+    "48": "icons/logo/logo48.png",
+    "128": "icons/logo/logo128.png"
+  },
+  "permissions": [
+    "storage",
+    "bookmarks",
+    "tabs",
+    "alarms",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://api.mangadex.org/*",
+    "https://graphql.anilist.co/*",
+    "https://mangafire.to/*"
+  ],
+  "action": {
+    "default_popup": "popup/index.html",
+    "default_icon": {
+      "16": "icons/logo/logo16.png",
+      "48": "icons/logo/logo48.png",
+      "128": "icons/logo/logo128.png"
+    }
+  },
+  "options_ui": {
+    "page": "options/index.html",
+    "open_in_tab": true
+  },
+  "chrome_url_overrides": {
+    "newtab": "newtab/index.html"
+  },
+  "background": {
+    "service_worker": "service-worker-loader.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "js": [
+        "assets/index.js-loader-2ixLH9xl.js"
+      ],
+      "matches": [
+        "https://mangafire.to/*"
+      ],
+      "run_at": "document_idle",
+      "css": [
+        "assets/index-tn0RQdqM.css"
+      ]
+    },
+    {
+      "js": [
+        "assets/index.js-loader-PsmicxWc.js"
+      ],
+      "matches": [
+        "https://mangadex.org/*"
+      ],
+      "run_at": "document_idle",
+      "css": [
+        "assets/index-CPdo4N7Q.css"
+      ]
+    },
+    {
+      "js": [
+        "assets/index.js-loader-BErLh9Lb.js"
+      ],
+      "matches": [
+        "https://www.webtoons.com/*"
+      ],
+      "run_at": "document_idle",
+      "css": [
+        "assets/index-jc86xeVQ.css"
+      ]
+    },
+    {
+      "js": [
+        "assets/index.js-loader-6TRnB7HH.js"
+      ],
+      "matches": [
+        "https://asuracomic.net/*",
+        "https://asurascans.com/*",
+        "https://asuratoon.com/*"
+      ],
+      "run_at": "document_idle",
+      "css": [
+        "assets/index-DnjBE2VY.css"
+      ]
+    },
+    {
+      "js": [
+        "assets/index.js-loader-ZiWBlmv1.js"
+      ],
+      "matches": [
+        "https://chapmanganato.to/*",
+        "https://manganato.com/*",
+        "https://manganato.gg/*"
+      ],
+      "run_at": "document_idle",
+      "css": [
+        "assets/index-tn0RQdqM.css"
+      ]
+    },
+    {
+      "js": [
+        "assets/index.js-loader-CGtDLvYq.js"
+      ],
+      "matches": [
+        "https://mangaplus.shueisha.co.jp/*"
+      ],
+      "run_at": "document_idle",
+      "css": [
+        "assets/index-tn0RQdqM.css"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "resources": [
+        "icons/*",
+        "images/*"
+      ],
+      "use_dynamic_url": false
+    },
+    {
+      "matches": [
+        "https://mangafire.to/*"
+      ],
+      "resources": [
+        "assets/ReaderEnhancer-DH3mGLSQ.js",
+        "assets/runtime-dom.esm-bundler-Drjs8M-n.js",
+        "assets/_plugin-vue_export-helper-DlAUqK2U.js",
+        "assets/config-sTLp4FTN.js",
+        "assets/storage-schema-ZmkWod5v.js",
+        "assets/index.js-C3pm7d8r.js"
+      ],
+      "use_dynamic_url": false
+    },
+    {
+      "matches": [
+        "https://mangadex.org/*"
+      ],
+      "resources": [
+        "assets/ReaderEnhancer-DH3mGLSQ.js",
+        "assets/runtime-dom.esm-bundler-Drjs8M-n.js",
+        "assets/_plugin-vue_export-helper-DlAUqK2U.js",
+        "assets/config-sTLp4FTN.js",
+        "assets/storage-schema-ZmkWod5v.js",
+        "assets/index.js-Dwh52ngp.js"
+      ],
+      "use_dynamic_url": false
+    },
+    {
+      "matches": [
+        "https://www.webtoons.com/*"
+      ],
+      "resources": [
+        "assets/ReaderEnhancer-DH3mGLSQ.js",
+        "assets/runtime-dom.esm-bundler-Drjs8M-n.js",
+        "assets/_plugin-vue_export-helper-DlAUqK2U.js",
+        "assets/config-sTLp4FTN.js",
+        "assets/storage-schema-ZmkWod5v.js",
+        "assets/index.js-e0FYW6os.js"
+      ],
+      "use_dynamic_url": false
+    },
+    {
+      "matches": [
+        "https://asuracomic.net/*",
+        "https://asurascans.com/*",
+        "https://asuratoon.com/*"
+      ],
+      "resources": [
+        "assets/ReaderEnhancer-DH3mGLSQ.js",
+        "assets/runtime-dom.esm-bundler-Drjs8M-n.js",
+        "assets/_plugin-vue_export-helper-DlAUqK2U.js",
+        "assets/config-sTLp4FTN.js",
+        "assets/storage-schema-ZmkWod5v.js",
+        "assets/index.js-Bau-9CYY.js"
+      ],
+      "use_dynamic_url": false
+    },
+    {
+      "matches": [
+        "https://chapmanganato.to/*",
+        "https://manganato.com/*",
+        "https://manganato.gg/*"
+      ],
+      "resources": [
+        "assets/ReaderEnhancer-DH3mGLSQ.js",
+        "assets/runtime-dom.esm-bundler-Drjs8M-n.js",
+        "assets/_plugin-vue_export-helper-DlAUqK2U.js",
+        "assets/config-sTLp4FTN.js",
+        "assets/storage-schema-ZmkWod5v.js",
+        "assets/index.js-Cpl7GHuM.js"
+      ],
+      "use_dynamic_url": false
+    },
+    {
+      "matches": [
+        "https://mangaplus.shueisha.co.jp/*"
+      ],
+      "resources": [
+        "assets/ReaderEnhancer-DH3mGLSQ.js",
+        "assets/runtime-dom.esm-bundler-Drjs8M-n.js",
+        "assets/_plugin-vue_export-helper-DlAUqK2U.js",
+        "assets/config-sTLp4FTN.js",
+        "assets/storage-schema-ZmkWod5v.js",
+        "assets/index.js-BqkB03lo.js"
+      ],
+      "use_dynamic_url": false
+    }
+  ]
+}

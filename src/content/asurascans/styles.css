@@ -1,0 +1,9 @@
+/**
+ * AsuraScans Content Styles
+ * Styles specific to AsuraScans adjustment
+ */
+
+/* Add z-index to overlay to ensure it's above Asura's potential overlays */
+bmh-quick-actions {
+    z-index: 50;
+}

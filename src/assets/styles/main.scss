@@ -1,0 +1,21 @@
+/**
+ * Main SCSS Entry Point
+ * 
+ * This file imports all global styles and design tokens
+ * for the Vue-based Chrome Extension UI.
+ */
+
+// Design Tokens
+@import './tokens/colors';
+@import './tokens/typography';
+@import './tokens/spacing';
+@import './tokens/shadows';
+
+// Base Styles
+@import './base/reset';
+@import './base/globals';
+
+// Component Styles (shared)
+@import './components/buttons';
+@import './components/inputs';
+@import './components/cards';

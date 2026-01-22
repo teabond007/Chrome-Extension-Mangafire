@@ -1,0 +1,207 @@
+{
+  "../../../@crx/manifest": {
+    "file": "assets/crx-manifest.js-C-5gk55y.js",
+    "name": "crx-manifest.js",
+    "src": "../../../@crx/manifest",
+    "isEntry": true
+  },
+  "_ReaderEnhancer-DH3mGLSQ.js": {
+    "file": "assets/ReaderEnhancer-DH3mGLSQ.js",
+    "name": "ReaderEnhancer",
+    "imports": [
+      "_runtime-dom.esm-bundler-Drjs8M-n.js",
+      "__plugin-vue_export-helper-DlAUqK2U.js",
+      "_config-sTLp4FTN.js",
+      "_storage-schema-ZmkWod5v.js"
+    ]
+  },
+  "__plugin-vue_export-helper-DlAUqK2U.js": {
+    "file": "assets/_plugin-vue_export-helper-DlAUqK2U.js",
+    "name": "_plugin-vue_export-helper"
+  },
+  "_config-sTLp4FTN.js": {
+    "file": "assets/config-sTLp4FTN.js",
+    "name": "config"
+  },
+  "_main-!~{008}~.js": {
+    "file": "assets/main-CQHSn8nZ.css",
+    "src": "_main-!~{008}~.js"
+  },
+  "_pinia-B2MPvubg.js": {
+    "file": "assets/pinia-B2MPvubg.js",
+    "name": "pinia",
+    "imports": [
+      "_runtime-dom.esm-bundler-Drjs8M-n.js"
+    ]
+  },
+  "_runtime-dom.esm-bundler-Drjs8M-n.js": {
+    "file": "assets/runtime-dom.esm-bundler-Drjs8M-n.js",
+    "name": "runtime-dom.esm-bundler"
+  },
+  "_storage-schema-ZmkWod5v.js": {
+    "file": "assets/storage-schema-ZmkWod5v.js",
+    "name": "storage-schema"
+  },
+  "_useLibrary-9nf_fl4j.js": {
+    "file": "assets/useLibrary-9nf_fl4j.js",
+    "name": "useLibrary",
+    "imports": [
+      "_runtime-dom.esm-bundler-Drjs8M-n.js",
+      "_storage-schema-ZmkWod5v.js"
+    ]
+  },
+  "background/service-worker.js": {
+    "file": "assets/service-worker.js-CVC9_T-i.js",
+    "name": "service-worker.js",
+    "src": "background/service-worker.js",
+    "isEntry": true
+  },
+  "content/asurascans/index.js": {
+    "file": "assets/index.js-Bau-9CYY.js",
+    "name": "index.js",
+    "src": "content/asurascans/index.js",
+    "isEntry": true,
+    "imports": [
+      "_ReaderEnhancer-DH3mGLSQ.js",
+      "_runtime-dom.esm-bundler-Drjs8M-n.js",
+      "__plugin-vue_export-helper-DlAUqK2U.js",
+      "_config-sTLp4FTN.js",
+      "_storage-schema-ZmkWod5v.js"
+    ],
+    "css": [
+      "assets/index-DnjBE2VY.css"
+    ]
+  },
+  "content/mangadex/index.js": {
+    "file": "assets/index.js-Dwh52ngp.js",
+    "name": "index.js",
+    "src": "content/mangadex/index.js",
+    "isEntry": true,
+    "imports": [
+      "_ReaderEnhancer-DH3mGLSQ.js",
+      "_runtime-dom.esm-bundler-Drjs8M-n.js",
+      "__plugin-vue_export-helper-DlAUqK2U.js",
+      "_config-sTLp4FTN.js",
+      "_storage-schema-ZmkWod5v.js"
+    ],
+    "css": [
+      "assets/index-CPdo4N7Q.css"
+    ]
+  },
+  "content/mangafire/index.js": {
+    "file": "assets/index.js-C3pm7d8r.js",
+    "name": "index.js",
+    "src": "content/mangafire/index.js",
+    "isEntry": true,
+    "imports": [
+      "_ReaderEnhancer-DH3mGLSQ.js",
+      "_runtime-dom.esm-bundler-Drjs8M-n.js",
+      "__plugin-vue_export-helper-DlAUqK2U.js",
+      "_config-sTLp4FTN.js",
+      "_storage-schema-ZmkWod5v.js"
+    ],
+    "css": [
+      "assets/index-tn0RQdqM.css"
+    ]
+  },
+  "content/manganato/index.js": {
+    "file": "assets/index.js-Cpl7GHuM.js",
+    "name": "index.js",
+    "src": "content/manganato/index.js",
+    "isEntry": true,
+    "imports": [
+      "_ReaderEnhancer-DH3mGLSQ.js",
+      "_runtime-dom.esm-bundler-Drjs8M-n.js",
+      "__plugin-vue_export-helper-DlAUqK2U.js",
+      "_config-sTLp4FTN.js",
+      "_storage-schema-ZmkWod5v.js"
+    ],
+    "css": [
+      "assets/index-tn0RQdqM.css"
+    ]
+  },
+  "content/mangaplus/index.js": {
+    "file": "assets/index.js-BqkB03lo.js",
+    "name": "index.js",
+    "src": "content/mangaplus/index.js",
+    "isEntry": true,
+    "imports": [
+      "_ReaderEnhancer-DH3mGLSQ.js",
+      "_runtime-dom.esm-bundler-Drjs8M-n.js",
+      "__plugin-vue_export-helper-DlAUqK2U.js",
+      "_config-sTLp4FTN.js",
+      "_storage-schema-ZmkWod5v.js"
+    ],
+    "css": [
+      "assets/index-tn0RQdqM.css"
+    ]
+  },
+  "content/webtoons/index.js": {
+    "file": "assets/index.js-e0FYW6os.js",
+    "name": "index.js",
+    "src": "content/webtoons/index.js",
+    "isEntry": true,
+    "imports": [
+      "_ReaderEnhancer-DH3mGLSQ.js",
+      "_runtime-dom.esm-bundler-Drjs8M-n.js",
+      "__plugin-vue_export-helper-DlAUqK2U.js",
+      "_config-sTLp4FTN.js",
+      "_storage-schema-ZmkWod5v.js"
+    ],
+    "css": [
+      "assets/index-jc86xeVQ.css"
+    ]
+  },
+  "index.js-loader.js": {
+    "file": "assets/index.js-loader-2ixLH9xl.js",
+    "src": "index.js-loader.js"
+  },
+  "newtab/index.html": {
+    "file": "assets/newtab-BnU1SIb-.js",
+    "name": "newtab",
+    "src": "newtab/index.html",
+    "isEntry": true,
+    "imports": [
+      "_pinia-B2MPvubg.js",
+      "_runtime-dom.esm-bundler-Drjs8M-n.js",
+      "_useLibrary-9nf_fl4j.js",
+      "__plugin-vue_export-helper-DlAUqK2U.js",
+      "_storage-schema-ZmkWod5v.js"
+    ],
+    "css": [
+      "assets/newtab-B2P0IdNy.css",
+      "assets/main-CQHSn8nZ.css"
+    ]
+  },
+  "options/index.html": {
+    "file": "assets/options-JN8625nb.js",
+    "name": "options",
+    "src": "options/index.html",
+    "isEntry": true,
+    "imports": [
+      "_pinia-B2MPvubg.js",
+      "_runtime-dom.esm-bundler-Drjs8M-n.js",
+      "_config-sTLp4FTN.js",
+      "_storage-schema-ZmkWod5v.js",
+      "_useLibrary-9nf_fl4j.js"
+    ],
+    "css": [
+      "assets/options-BFBg4cKa.css"
+    ]
+  },
+  "popup/index.html": {
+    "file": "assets/popup-tVT0tdFv.js",
+    "name": "popup",
+    "src": "popup/index.html",
+    "isEntry": true,
+    "imports": [
+      "_pinia-B2MPvubg.js",
+      "_runtime-dom.esm-bundler-Drjs8M-n.js",
+      "__plugin-vue_export-helper-DlAUqK2U.js"
+    ],
+    "css": [
+      "assets/popup-Cwv6EC8E.css",
+      "assets/main-CQHSn8nZ.css"
+    ]
+  }
+}

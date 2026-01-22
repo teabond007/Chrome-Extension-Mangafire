@@ -1,0 +1,88 @@
+/**
+ * Card Component Styles
+ */
+
+.card {
+    background: var(--color-glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+}
+
+.card-header {
+    padding: var(--space-4) var(--space-6);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.card-title {
+    font-size: var(--text-lg);
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.card-subtitle {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    margin-top: var(--space-1);
+}
+
+.card-body {
+    padding: var(--space-4) var(--space-6);
+}
+
+.card-footer {
+    padding: var(--space-4) var(--space-6);
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    gap: var(--space-3);
+    justify-content: flex-end;
+}
+
+// Interactive card variant
+.card-interactive {
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--color-text-muted);
+    }
+}
+
+// Manga card specific
+.manga-card {
+    position: relative;
+    aspect-ratio: 2/3;
+
+    .manga-card-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .manga-card-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, transparent 50%);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: var(--space-3);
+    }
+
+    .manga-card-title {
+        font-size: var(--text-sm);
+        font-weight: 600;
+        color: white;
+        line-height: 1.3;
+    }
+
+    .manga-card-progress {
+        font-size: var(--text-xs);
+        color: var(--color-text-secondary);
+        margin-top: var(--space-1);
+    }
+}
