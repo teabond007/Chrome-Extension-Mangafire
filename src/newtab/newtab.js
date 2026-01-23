@@ -232,10 +232,11 @@ function initSearch() {
     const doSearch = () => {
         const query = input.value.trim();
         if (query) {
-            // Using /search might be more compatible or redirect to a page that generates the required 'vrf'
-            window.location.href = `https://mangafire.to/search?keyword=${encodeURIComponent(query)}`;
+            // Perform a standard Google search
+            window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
         }
     };
+
 
     input.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') doSearch();
@@ -306,7 +307,13 @@ function renderReadingList(entries, familyFriendly = false) {
 }
 
 function animateIntro() {
-    if (typeof window.anime === 'undefined') return;
+    // Fallback: if anime.js is not available, just show elements immediately
+    if (typeof window.anime === 'undefined') {
+        document.querySelectorAll('.top-bar, .search-section, .quick-access-section, .dashboard-content-wrapper > *').forEach(el => {
+            el.style.opacity = '1';
+        });
+        return;
+    }
     
     window.anime.timeline({
         easing: 'easeOutExpo',
@@ -331,3 +338,4 @@ function animateIntro() {
         delay: anime.stagger(150)
     }, '-=500');
 }
+
