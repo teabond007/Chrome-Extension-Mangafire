@@ -7,7 +7,7 @@
  * @version 3.8.0
  */
 
-import { CardEnhancer } from '../core/card-enhancer.js';
+import { CardEnhancer } from '../core/card-enhancer';
 import { OverlayFactory } from '../core/overlay-factory.js';
 import { Config, STATUS_COLORS } from '../core/config.js';
 import ReaderEnhancements from '../core/reader-enhancements.js';
@@ -281,10 +281,14 @@ async function initMangaPlusEnhancer() {
     });
 }
 
-// Initialize on load
-window.addEventListener('load', () => {
+// Robust initialization for document_idle scripts
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => setTimeout(initMangaPlusEnhancer, 1000));
+} else {
     setTimeout(initMangaPlusEnhancer, 1000);
-});
+}
+
+window.addEventListener('load', () => setTimeout(initMangaPlusEnhancer, 1000));
 
 // SPA Navigation
 let lastUrl = location.href;

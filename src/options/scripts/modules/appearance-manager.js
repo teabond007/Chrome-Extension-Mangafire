@@ -3,7 +3,7 @@
  * Handles preset themes, custom theme creator, and global border settings.
  */
 
-import { Log } from '../core/utils.js';
+import { Log } from '../ui/logger.js';
 
 let currentTheme = 'dark';
 let customTheme = {

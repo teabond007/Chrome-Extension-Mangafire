@@ -1,5 +1,5 @@
-import { Log, decodeHTMLEntities } from '../core/utils.js';
-import { fetchMDList } from '../core/mangadex-api.js';
+import { Log, decodeHTMLEntities } from '../ui/logger.js';
+import { fetchMDList } from '../../../scripts/core/mangadex-api.js';
 
 /**
  * @fileoverview Manages Data Portability (Import and Export) for the extension.

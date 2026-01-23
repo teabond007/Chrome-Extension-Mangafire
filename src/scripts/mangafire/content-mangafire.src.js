@@ -7,7 +7,7 @@
  * @version 3.8.0
  */
 
-import { CardEnhancer } from '../core/card-enhancer.js';
+import { CardEnhancer } from '../core/card-enhancer';
 import { OverlayFactory } from '../core/overlay-factory.js';
 import { Config, STATUS_COLORS } from '../core/config.js';
 import ReaderEnhancements from '../core/reader-enhancements.js';

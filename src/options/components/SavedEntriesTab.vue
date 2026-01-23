@@ -170,6 +170,22 @@
                 </div>
             </div>
 
+
+            <!-- Sync Progress Bar -->
+            <div v-if="syncState.isSyncing" class="sync-progress-container fade-in">
+                <div class="sync-info">
+                    <span class="sync-label">
+                        <span class="sync-spinner"></span>
+                        Updating Library...
+                    </span>
+                    <span class="sync-count">{{ syncState.current }} / {{ syncState.total }}</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" :style="{ width: syncState.percentage + '%' }"></div>
+                </div>
+                <div class="sync-details">{{ syncState.currentTitle }}</div>
+            </div>
+
             <!-- Manga Grid -->
             <div class="manga-grid" :class="{ compact: cardViewSize === 'compact' }">
                 <MangaCard 
@@ -195,7 +211,7 @@ import FilterGroup from './common/FilterGroup.vue';
 import LibraryStatistics from './LibraryStatistics.vue';
 import MangaCard from './common/MangaCard.vue';
 import { getFormatName } from '../scripts/ui/manga-card-factory.js';
-import * as LibFeatures from '../scripts/modules/library-features.js';
+import * as LibFeatures from '../../scripts/core/library-features.js';
 
 const showStats = ref(false);
 const isBulkMode = ref(false);
@@ -205,6 +221,14 @@ const customMarkers = ref([]);
 const personalData = ref({});
 const cardViewSize = ref('large');
 const familyFriendlyEnabled = ref(false);
+
+const syncState = reactive({
+    isSyncing: false,
+    current: 0,
+    total: 0,
+    percentage: 0,
+    currentTitle: ''
+});
 
 const librarySettings = reactive({
     bordersEnabled: true,
@@ -392,14 +416,21 @@ const showMarkerPicker = (entry) => {
 
 const cleanLibrary = () => {
     if (confirm("Remove duplicate entries?")) {
-        // Trigger library manager's clean function for now
-        document.getElementById('BtnCleanLibrary')?.click();
+        if (window.cleanLibraryDuplicates) {
+            window.cleanLibraryDuplicates();
+        } else {
+            console.error("Library cleaning function not found");
+        }
     }
 };
 
 const freshSync = () => {
-    if (confirm("Reset library cache and fresh sync?")) {
-        document.getElementById('BtnTrashAndSyncEntries')?.click();
+    if (confirm("Reset library cache and force fresh sync of all entries?")) {
+        if (window.forceSyncLibrary) {
+            window.forceSyncLibrary();
+        } else {
+            console.error("Library sync function not found");
+        }
     }
 };
 
@@ -474,6 +505,31 @@ onMounted(() => {
     
     // Global exposure for integration with legacy code
     window.refreshLibraryData = loadData;
+
+    // Sync Event Listeners
+    window.addEventListener('library-sync-start', (e) => {
+        syncState.isSyncing = true;
+        syncState.total = e.detail?.total || 0;
+        syncState.current = 0;
+        syncState.percentage = 0;
+        syncState.currentTitle = 'Starting...';
+    });
+
+    window.addEventListener('library-sync-progress', (e) => {
+        const { current, total, title } = e.detail;
+        syncState.isSyncing = true;
+        syncState.current = current;
+        syncState.total = total;
+        syncState.currentTitle = title || 'Processing...';
+        if (total > 0) {
+            syncState.percentage = Math.round((current / total) * 100);
+        }
+    });
+
+    window.addEventListener('library-sync-complete', () => {
+        syncState.isSyncing = false;
+        loadData(); // Refresh data one last time
+    });
 });
 </script>
 
@@ -523,5 +579,65 @@ onMounted(() => {
 
 .manga-grid.compact {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+}
+
+.sync-progress-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.sync-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.sync-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sync-spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--text-secondary);
+    border-top-color: var(--accent-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.progress-bar-bg {
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 6px;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: var(--accent-primary);
+    transition: width 0.3s ease;
+    border-radius: 10px;
+}
+
+.sync-details {
+    font-size: 11px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 </style>

@@ -11,16 +11,98 @@
 import { Config, STATUS_COLORS } from './config.js';
 import { OverlayFactory } from './overlay-factory.js';
 
+interface PlatformAdapter {
+    id: string;
+    // Prefix for namespaced storage keys
+    PREFIX?: string;
+    // CSS selectors for cards
+    selectors: {
+        card: string;
+        title?: string;
+        url?: string;
+        image?: string;
+    };
+    unitName?: string;
+    // Methods
+    extractCardData(element: HTMLElement): CardData;
+    validatePage?(): boolean;
+    getBadgePosition?(): { bottom?: string; left?: string; top?: string; right?: string };
+    buildChapterUrl?(entry: LibraryEntry, chapter: number): string;
+    applyBorder?(element: HTMLElement, color: string, size: number, style: string): void;
+    handleViewDetails?(entry: LibraryEntry, card: CardObject): void;
+}
+
+interface CardData {
+    id?: string;
+    title: string;
+    url?: string;
+    image?: string;
+    chapter?: string;
+    date?: string;
+}
+
+interface LibraryEntry {
+    title: string;
+    slug?: string;
+    source?: string;
+    sourceId?: string;
+    status: string;
+    chapters?: number;
+    readChapters?: (string | number)[];
+    lastReadChapter?: number;
+    lastRead?: number;
+    lastUpdated?: number;
+    anilistData?: {
+        id?: number;
+        chapters?: number;
+    };
+    hasNewChapters?: boolean;
+    mangafireUrl?: string;
+    sourceUrl?: string;
+    personalData?: {
+        rating?: number;
+    };
+    customMarker?: string;
+}
+
+interface EnhancerSettings {
+    highlighting: boolean;
+    progressBadges: boolean;
+    quickActions: boolean;
+    newChapterBadges: boolean;
+    border: {
+        size: number;
+        style: string;
+        radius: string;
+    };
+    customBookmarks: CustomBookmark[];
+    customBookmarksEnabled: boolean;
+}
+
+interface CustomBookmark {
+    name: string;
+    color: string;
+    style?: string;
+}
+
+interface CardObject {
+    element: HTMLElement;
+    data: CardData;
+}
+
 /**
  * Universal card enhancement for any platform.
  * Applies borders, badges, overlays using platform adapter.
  */
 export class CardEnhancer {
+    adapter: PlatformAdapter;
+    settings: EnhancerSettings;
+
     /**
      * @param {PlatformAdapter} adapter - Platform-specific adapter
      * @param {Object} settings - User settings from storage
      */
-    constructor(adapter, settings = {}) {
+    constructor(adapter: PlatformAdapter, settings: any = {}) {
         this.adapter = adapter;
         this.settings = {
             highlighting: settings.highlighting !== false,
@@ -41,7 +123,7 @@ export class CardEnhancer {
      * Enhance all cards on current page.
      * @returns {Promise<number>} Number of cards enhanced
      */
-    async enhanceAll() {
+    async enhanceAll(): Promise<number> {
         const cards = this.findCards();
         const library = await this.loadLibrary();
 
@@ -64,14 +146,14 @@ export class CardEnhancer {
      * Find all cards using adapter selectors.
      * @returns {Array<{element: HTMLElement, data: Object}>}
      */
-    findCards() {
+    findCards(): CardObject[] {
         const selector = this.adapter.selectors.card;
         if (!selector) return [];
 
         return Array.from(document.querySelectorAll(selector))
             .map(el => ({
-                element: el,
-                data: this.adapter.extractCardData(el)
+                element: el as HTMLElement,
+                data: this.adapter.extractCardData(el as HTMLElement)
             }))
             .filter(card => card.data.title || card.data.id);
     }
@@ -80,7 +162,7 @@ export class CardEnhancer {
      * Load library entries from storage.
      * @returns {Promise<Array>}
      */
-    async loadLibrary() {
+    async loadLibrary(): Promise<LibraryEntry[]> {
         return new Promise((resolve) => {
             chrome.storage.local.get(['savedEntriesMerged', 'userBookmarks', 'savedReadChapters'], (data) => {
                 if (chrome.runtime.lastError) {
@@ -93,14 +175,14 @@ export class CardEnhancer {
                 const readChapters = data.savedReadChapters || {};
 
                 // Merge and deduplicate
-                const merged = new Map();
-                [...userBookmarks, ...savedEntries].forEach(entry => {
+                const merged = new Map<string, LibraryEntry>();
+                [...userBookmarks, ...savedEntries].forEach((entry: LibraryEntry) => {
                     if (entry?.title) {
                         // Attach read chapters
                         const historyKey = this.findHistoryKey(entry.title, entry.slug, readChapters);
                         entry.readChapters = historyKey ? readChapters[historyKey] : [];
                         entry.lastReadChapter = this.getHighestChapter(entry.readChapters);
-                        
+
                         merged.set(entry.title, entry);
                     }
                 });
@@ -117,14 +199,14 @@ export class CardEnhancer {
      * @param {Object} readChapters - Read chapters map
      * @returns {string|null}
      */
-    findHistoryKey(title, slug, readChapters) {
+    findHistoryKey(title: string, slug: string | undefined, readChapters: Record<string, any>): string | null {
         if (!readChapters) return null;
 
         // Try namespaced key with adapter prefix
         if (slug) {
             const namespacedKey = `${this.adapter.PREFIX || ''}${slug}`;
             if (readChapters[namespacedKey]) return namespacedKey;
-            
+
             // Try direct slug match
             if (readChapters[slug]) return slug;
 
@@ -153,7 +235,7 @@ export class CardEnhancer {
      * @param {Array} library - Library entries
      * @returns {Object|null}
      */
-    findMatch(card, library) {
+    findMatch(card: CardObject, library: LibraryEntry[]): LibraryEntry | undefined {
         // Try exact source+ID match first
         const exactMatch = library.find(e =>
             e.source === this.adapter.id &&
@@ -173,12 +255,12 @@ export class CardEnhancer {
      * @param {Object} card - Card object
      * @param {Object} entry - Library entry
      */
-    applyEnhancements(card, entry) {
+    applyEnhancements(card: CardObject, entry: LibraryEntry) {
         if (this.settings.highlighting) {
             this.applyBorder(card, entry);
         }
 
-        if (this.settings.progressBadges && entry.readChapters?.length > 0) {
+        if (this.settings.progressBadges && (entry.readChapters?.length || 0) > 0) {
             this.applyProgressBadge(card, entry);
         }
 
@@ -196,7 +278,7 @@ export class CardEnhancer {
      * @param {Object} card - Card object
      * @param {Object} entry - Library entry
      */
-    applyBorder(card, entry) {
+    applyBorder(card: CardObject, entry: LibraryEntry) {
         const status = entry.status?.trim().toLowerCase() || '';
         let color = 'transparent';
         let style = this.settings.border.style;
@@ -226,7 +308,7 @@ export class CardEnhancer {
             this.adapter.applyBorder(card.element, color, this.settings.border.size, style);
         } else {
             // Default border application
-            const target = card.element.closest('li') || card.element;
+            const target = (card.element.closest('li') || card.element) as HTMLElement;
             target.style.setProperty('border', `${this.settings.border.size}px ${style} ${color}`, 'important');
             target.style.setProperty('border-radius', this.settings.border.radius, 'important');
             target.style.setProperty('box-sizing', 'border-box', 'important');
@@ -238,17 +320,17 @@ export class CardEnhancer {
      * @param {Object} card - Card object
      * @param {Object} entry - Library entry
      */
-    applyProgressBadge(card, entry) {
+    applyProgressBadge(card: CardObject, entry: LibraryEntry) {
         const unitName = this.adapter.unitName === 'episode' ? 'Ep.' : 'Ch.';
         const totalChapters = entry.chapters || entry.anilistData?.chapters;
-        
+
         // Show "Ch. X/Y" if total known, otherwise "Ch. X+" to indicate ongoing
         const text = totalChapters
             ? `${unitName} ${entry.lastReadChapter}/${totalChapters}`
             : `${unitName} ${entry.lastReadChapter}+`;
 
         const badge = this.createBadge(text, 'progress');
-        
+
         // Get position from adapter or use default
         const position = this.adapter.getBadgePosition?.() || { bottom: '4px', left: '4px' };
         Object.assign(badge.style, position);
@@ -260,7 +342,7 @@ export class CardEnhancer {
      * Apply "NEW" badge for unread chapters.
      * @param {Object} card - Card object
      */
-    applyNewBadge(card) {
+    applyNewBadge(card: CardObject) {
         const badge = this.createBadge('NEW', 'new');
         badge.style.cssText += 'top: 4px; right: 4px;';
         this.insertBadge(card.element, badge);
@@ -270,18 +352,18 @@ export class CardEnhancer {
      * @param {Object} card - Card object
      * @param {Object} entry - Library entry
      */
-    applyQuickActions(card, entry) {
+    applyQuickActions(card: CardObject, entry: LibraryEntry) {
         // Inject styles once
         OverlayFactory.injectStyles();
-        
+
         // Define callbacks for tooltip actions
         const callbacks = {
-            continue: (entry, btn, e) => this.handleContinueReading(entry, card),
-            status: (entry, btn, e) => this.handleStatusChange(entry, btn, card),
-            rating: (entry, btn, e) => this.handleRatingChange(entry, btn, card),
-            details: (entry, btn, e) => this.handleViewDetails(entry, card)
+            continue: (entry: any, btn: any, e: any) => this.handleContinueReading(entry, card),
+            status: (entry: any, btn: any, e: any) => this.handleStatusChange(entry, btn, card),
+            rating: (entry: any, btn: any, e: any) => this.handleRatingChange(entry, btn, card),
+            details: (entry: any, btn: any, e: any) => this.handleViewDetails(entry, card)
         };
-        
+
         const tooltip = OverlayFactory.create(entry, this.adapter, callbacks);
         card.element.style.position = 'relative';
         card.element.appendChild(tooltip);
@@ -292,14 +374,14 @@ export class CardEnhancer {
      * @param {Object} entry - Library entry
      * @param {Object} card - Card object
      */
-    handleContinueReading(entry, card) {
+    handleContinueReading(entry: LibraryEntry, card: CardObject) {
         const nextChapter = OverlayFactory.calculateNextChapter(entry);
         const url = this.adapter.buildChapterUrl?.(entry, nextChapter);
-        
+
         if (url) {
             window.location.href = url;
         } else if (entry.mangafireUrl || entry.sourceUrl) {
-            window.location.href = entry.mangafireUrl || entry.sourceUrl;
+            window.location.href = entry.mangafireUrl || entry.sourceUrl || '';
         } else if (card.data.url) {
             window.location.href = card.data.url;
         } else {
@@ -313,21 +395,21 @@ export class CardEnhancer {
      * @param {HTMLElement} btn - Clicked button
      * @param {Object} card - Card object
      */
-    handleStatusChange(entry, btn, card) {
+    handleStatusChange(entry: LibraryEntry, btn: HTMLElement, card: CardObject) {
         // Remove existing picker if any
         document.querySelectorAll('.bmh-status-picker').forEach(p => p.remove());
-        
+
         const picker = OverlayFactory.createStatusPicker(
             entry,
             (newStatus, entry) => this.saveStatusChange(entry, newStatus),
             this.settings.customBookmarks
         );
-        
+
         // Position picker at button location (fixed position)
         const rect = btn.getBoundingClientRect();
         picker.style.left = `${rect.left}px`;
         picker.style.top = `${rect.bottom + 8}px`;
-        
+
         document.body.appendChild(picker);
     }
 
@@ -337,20 +419,20 @@ export class CardEnhancer {
      * @param {HTMLElement} btn - Clicked element
      * @param {Object} card - Card object
      */
-    handleRatingChange(entry, btn, card) {
+    handleRatingChange(entry: LibraryEntry, btn: HTMLElement, card: CardObject) {
         // Remove existing picker if any
         document.querySelectorAll('.bmh-rating-picker').forEach(p => p.remove());
-        
+
         const picker = OverlayFactory.createRatingPicker(
             entry,
             (rating, entry) => this.saveRatingChange(entry, rating)
         );
-        
+
         // Position picker at button location (fixed position)
         const rect = btn.getBoundingClientRect();
         picker.style.left = `${rect.left}px`;
         picker.style.top = `${rect.bottom + 8}px`;
-        
+
         document.body.appendChild(picker);
     }
 
@@ -360,7 +442,13 @@ export class CardEnhancer {
      * @param {Object} entry - Library entry
      * @param {Object} card - Card object
      */
-    handleViewDetails(entry, card) {
+    handleViewDetails(entry: LibraryEntry, card: CardObject) {
+        // Allow adapter to override details handling
+        if (this.adapter.handleViewDetails) {
+            this.adapter.handleViewDetails(entry, card);
+            return;
+        }
+
         // Send message to background to open options page with details modal
         chrome.runtime.sendMessage({
             type: 'showMangaDetails',
@@ -377,37 +465,37 @@ export class CardEnhancer {
      * @param {Object} entry - Library entry
      * @param {string} newStatus - New status value
      */
-    async saveStatusChange(entry, newStatus) {
+    async saveStatusChange(entry: LibraryEntry, newStatus: string) {
         try {
-            const data = await new Promise(resolve => {
+            const data: any = await new Promise(resolve => {
                 chrome.storage.local.get(['savedEntriesMerged', 'userBookmarks'], resolve);
             });
-            
+
             const entries = data.savedEntriesMerged || [];
             const bookmarks = data.userBookmarks || [];
-            
+
             // Update in savedEntriesMerged
-            const idx = entries.findIndex(e => 
+            const idx = entries.findIndex((e: LibraryEntry) =>
                 this.normalizeTitle(e.title) === this.normalizeTitle(entry.title)
             );
             if (idx !== -1) {
                 entries[idx].status = newStatus;
             }
-            
+
             // Update in userBookmarks
-            const bidx = bookmarks.findIndex(b => 
+            const bidx = bookmarks.findIndex((b: LibraryEntry) =>
                 this.normalizeTitle(b.title) === this.normalizeTitle(entry.title)
             );
             if (bidx !== -1) {
                 bookmarks[bidx].status = newStatus;
             }
-            
+
             await new Promise(resolve => {
-                chrome.storage.local.set({ savedEntriesMerged: entries, userBookmarks: bookmarks }, resolve);
+                chrome.storage.local.set({ savedEntriesMerged: entries, userBookmarks: bookmarks }, resolve as () => void);
             });
-            
+
             console.log(`[CardEnhancer] Status updated: ${entry.title} → ${newStatus}`);
-            
+
             // Re-enhance to reflect change
             this.enhanceAll();
         } catch (e) {
@@ -420,27 +508,27 @@ export class CardEnhancer {
      * @param {Object} entry - Library entry
      * @param {number} rating - New rating value (0-10)
      */
-    async saveRatingChange(entry, rating) {
+    async saveRatingChange(entry: LibraryEntry, rating: number) {
         try {
-            const data = await new Promise(resolve => {
+            const data: any = await new Promise(resolve => {
                 chrome.storage.local.get(['savedEntriesMerged'], resolve);
             });
-            
+
             const entries = data.savedEntriesMerged || [];
-            const idx = entries.findIndex(e => 
+            const idx = entries.findIndex((e: LibraryEntry) =>
                 this.normalizeTitle(e.title) === this.normalizeTitle(entry.title)
             );
-            
+
             if (idx !== -1) {
                 if (!entries[idx].personalData) {
                     entries[idx].personalData = {};
                 }
                 entries[idx].personalData.rating = rating;
-                
+
                 await new Promise(resolve => {
-                    chrome.storage.local.set({ savedEntriesMerged: entries }, resolve);
+                    chrome.storage.local.set({ savedEntriesMerged: entries }, resolve as () => void);
                 });
-                
+
                 console.log(`[CardEnhancer] Rating updated: ${entry.title} → ${rating}`);
             }
         } catch (e) {
@@ -454,7 +542,7 @@ export class CardEnhancer {
      * @param {string} type - Badge type (progress, new, etc.)
      * @returns {HTMLElement}
      */
-    createBadge(text, type) {
+    createBadge(text: string, type: string): HTMLElement {
         const badge = document.createElement('div');
         badge.className = `bmh-badge bmh-badge-${type}`;
         badge.textContent = text;
@@ -485,13 +573,13 @@ export class CardEnhancer {
      * @param {HTMLElement} element - Card element
      * @param {HTMLElement} badge - Badge element
      */
-    insertBadge(element, badge) {
+    insertBadge(element: HTMLElement, badge: HTMLElement) {
         // Remove existing badge of same type
         const existingBadge = element.querySelector(`.bmh-badge-${badge.classList[1]?.replace('bmh-badge-', '')}`);
         if (existingBadge) existingBadge.remove();
 
         // Find best container (usually an image wrapper)
-        const imgContainer = element.querySelector('div[class*="cover"], div[class*="thumb"], [class*="img"]')?.parentElement || element;
+        const imgContainer = (element.querySelector('div[class*="cover"], div[class*="thumb"], [class*="img"]') as HTMLElement)?.parentElement || element;
         imgContainer.style.position = 'relative';
         imgContainer.appendChild(badge);
     }
@@ -502,7 +590,7 @@ export class CardEnhancer {
      * @param {string} title - Title to normalize
      * @returns {string}
      */
-    normalizeTitle(title) {
+    normalizeTitle(title: string): string {
         if (!title) return '';
         // Strict alphanumeric normalization to avoid mismatch on special chars
         return title.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -513,7 +601,7 @@ export class CardEnhancer {
      * @param {Array} chapters - Array of chapter strings/numbers
      * @returns {number}
      */
-    getHighestChapter(chapters) {
+    getHighestChapter(chapters: (string | number)[]): number {
         if (!chapters || chapters.length === 0) return 0;
         let highest = 0;
         chapters.forEach(ch => {

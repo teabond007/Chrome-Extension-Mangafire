@@ -159,7 +159,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import { getFormatName, getStatusInfo } from '../scripts/ui/manga-card-factory.js';
-import * as LibFeatures from '../scripts/modules/library-features.js';
+import * as LibFeatures from '../../scripts/core/library-features.js';
 import { animateModalEntry, playSuccessAnimation } from '../scripts/ui/anime-utils.js';
 
 // State

@@ -7,10 +7,12 @@
  * @version 3.8.0
  */
 
-import { CardEnhancer } from '../core/card-enhancer.js';
+import { CardEnhancer } from '../core/card-enhancer';
 import { OverlayFactory } from '../core/overlay-factory.js';
 import { Config, STATUS_COLORS } from '../core/config.js';
 import ReaderEnhancements from '../core/reader-enhancements.js';
+
+console.log("[Webtoons] Script loaded! URL:", window.location.href);
 
 // ============================================================================
 // WEBTOONS ADAPTER
@@ -23,10 +25,18 @@ const WebtoonsAdapter = {
     PREFIX: 'webtoon:',
 
     selectors: {
-        card: '.daily_card_item, .ranking_item, .challenge_item, li[class*="card"]',
-        cardTitle: '.title, .subj, .info .subj, p.subj',
-        cardLink: 'a[href*="/webtoon/"], a[href*="/challenge/"], a[href*="title_no"]',
-        cardCover: '.thumb img, .pic img, img'
+        // Select LI elements that contain the title anchor tags
+        // This covers Daily, Trending, Genre, Canvas, etc. which all use '..._title_a' classes
+        card: 'li:has(a[class*="_title_a"])',
+        
+        // Title text is usually in a strong tag with class .title or .subj
+        cardTitle: '.title, .subj, strong.title',
+        
+        // The main anchor tag
+        cardLink: 'a[class*="_title_a"], a.link',
+        
+        // Cover image
+        cardCover: 'img'
     },
 
     extractCardData(cardElement) {
@@ -214,8 +224,9 @@ function saveReadEpisode() {
 // ============================================================================
 
 function Log(message) {
-    if (!chrome.runtime?.id) return;
     const text = typeof message === 'object' ? JSON.stringify(message) : message;
+    console.log(`[Webtoons] ${text}`);
+    if (!chrome.runtime?.id) return;
     chrome.runtime.sendMessage({ type: 'log', text: `[Webtoons] ${text}` }, () => {
         if (chrome.runtime.lastError) { /* ignore */ }
     });
@@ -284,6 +295,12 @@ async function initWebtoonsEnhancer() {
     });
 
     // Initial enhancement
+    const cards = enhancer.findCards();
+    Log(`Found ${cards.length} potential cards`);
+    if (cards.length > 0) {
+        Log(`Sample card data: ${JSON.stringify(cards[0].data)}`);
+    }
+
     const count = await enhancer.enhanceAll();
     Log(`Enhanced ${count} cards (Quick Actions: ${settings.WebtoonsQuickActionsEnabled !== false ? 'ON' : 'OFF'})`);
 
@@ -308,10 +325,14 @@ async function initWebtoonsEnhancer() {
     });
 }
 
-// Initialize on load
-window.addEventListener('load', () => {
+// Robust initialization for document_idle scripts
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => setTimeout(initWebtoonsEnhancer, 800));
+} else {
     setTimeout(initWebtoonsEnhancer, 500);
-});
+}
+
+window.addEventListener('load', () => setTimeout(initWebtoonsEnhancer, 500));
 
 // URL change handler (for SPA-like behavior if any)
 let lastUrl = location.href;

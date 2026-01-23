@@ -1,6 +1,8 @@
 import { createApp } from 'vue'
 import App from './App.vue'
-import './scripts/core/preloader.js'
+import './scripts/ui/preloader.js';
+import './options.scss';
+import { init } from './scripts/options.js';
 import anime from 'animejs'
 
 // Expose anime globally for backward compatibility

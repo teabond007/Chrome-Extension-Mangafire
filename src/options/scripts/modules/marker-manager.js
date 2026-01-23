@@ -3,7 +3,7 @@
  * Allows users to create, view, and delete personalized markers with custom colors and border styles.
  */
 
-import { Log } from '../core/utils.js';
+import { Log } from '../ui/logger.js';
 
 /**
  * Initializes the marker manager module.

@@ -4,8 +4,8 @@
  * Part of the Bookmarks Marker/Highlighter Chrome Extension.
  */
 
-import { fetchMangaFromAnilist } from '../../options/scripts/core/anilist-api.js';
-import { fetchMangaFromMangadex } from '../../options/scripts/core/mangadex-api.js';
+import { fetchMangaFromAnilist } from '../core/anilist-api';
+import { fetchMangaFromMangadex } from '../core/mangadex-api.js';
 
 /**
  * Sends log messages safely, suppressing errors when receiving end doesn't exist.

@@ -337,6 +337,17 @@ export async function cleanMangadexCache() {
 }
 
 /**
+ * Clears all entries from the MangaDex cache immediately.
+ * @async
+ * @returns {Promise<void>}
+ */
+export async function wipeMangadexCache() {
+  return new Promise((resolve) => {
+    chrome.storage.local.remove('mangadexCache', resolve);
+  });
+}
+
+/**
  * Extracts MDList ID from URL or returns the ID directly.
  * Supports formats: UUID, full URL (https://mangadex.org/list/UUID)
  * @param {string} input - User input (URL or ID).

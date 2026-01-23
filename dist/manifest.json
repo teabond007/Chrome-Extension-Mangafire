@@ -34,32 +34,80 @@
   },
   "content_scripts": [
     {
-      "js": [
-        "assets/index.js-b06a8ec5.js"
-      ],
       "matches": [
         "*://mangafire.to/*"
+      ],
+      "js": [
+        "src/scripts/mangafire/content-mangafire.src.js-loader.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://mangadex.org/*"
+      ],
+      "js": [
+        "src/scripts/mangadex/content-mangadex.src.js-loader.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://asuracomic.net/*",
+        "*://asurascans.com/*",
+        "*://asuratoon.com/*"
+      ],
+      "js": [
+        "src/scripts/asurascans/content-asurascans.src.js-loader.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://www.webtoons.com/*"
+      ],
+      "js": [
+        "src/scripts/webtoons/content-webtoons.src.js-loader.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://manganato.com/*",
+        "*://chapmanganato.com/*"
+      ],
+      "js": [
+        "src/scripts/manganato/content-manganato.src.js-loader.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://mangaplus.shueisha.co.jp/*"
+      ],
+      "js": [
+        "src/scripts/mangaplus/content-mangaplus.src.js-loader.js"
       ],
       "run_at": "document_idle"
     }
   ],
   "web_accessible_resources": [
     {
-      "matches": [
-        "<all_urls>"
-      ],
       "resources": [
         "icons/*",
         "images/*"
       ],
-      "use_dynamic_url": false
+      "matches": [
+        "<all_urls>"
+      ]
     },
     {
       "matches": [
-        "*://mangafire.to/*"
+        "<all_urls>"
       ],
       "resources": [
-        "assets/index.js-b06a8ec5.js"
+        "**/*",
+        "*"
       ],
       "use_dynamic_url": false
     }

@@ -3,16 +3,18 @@
  */
 
 // Redundant theme import removed
-import { initTabs, initInfoRedirects, initScrollToTop } from './ui/ui-navigation.js';
+// Redundant theme import removed
+// Redundant theme import removed
+import { initTabs, initInfoRedirects, initScrollToTop, initUrlParams, initMessageListeners } from './ui/ui-navigation.js';
 import { initFeatureToggles } from './modules/feature-toggles.js';
 import { initSettings } from './modules/settings-manager.js';
 import { initMarkerManager } from './modules/marker-manager.js';
 import { initImportExport } from './modules/import-export.js';
-import { initLibrary } from './modules/library-manager.js';
+import { initLibrary } from '../../scripts/core/library-manager';
 import { initQuickAccessManager } from './modules/quick-access-manager.js';
 import { initAppearanceManager } from './modules/appearance-manager.js';
 import { CrystalSelect } from './ui/custom-select.js';
-import { Log } from './core/utils.js';
+import { Log } from './ui/logger.js';
 
 /**
  * Main initialization event listener.
@@ -22,57 +24,29 @@ import { Log } from './core/utils.js';
 export function init() {
 
     // 2. Navigation
-    /**
-     * Initializes the tab navigation functionality.
-     */
     initTabs();
-    /**
-     * Initializes redirects for info links.
-     */
     initInfoRedirects();
-    /**
-     * Initializes the scroll-to-top button functionality.
-     */
     initScrollToTop();
+    initUrlParams();
+    initMessageListeners();
 
     // 3. Settings & Toggles
-    /**
-     * Initializes the feature toggles manager.
-     */
     initFeatureToggles();
-    /**
-     * Initializes the settings manager.
-     */
     initSettings();
 
     // 4. Custom Markers
-    /**
-     * Initializes the custom marker manager.
-     */
     initMarkerManager();
 
     // 5. Import / Export
-    /**
-     * Initializes the import/export functionality.
-     */
     initImportExport();
 
     // 6. Saved Entries
-    /**
-     * Initializes the library manager for saved entries.
-     */
     initLibrary();
 
     // 7. Quick Access
-    /**
-     * Initializes the quick access shortcuts manager.
-     */
     initQuickAccessManager();
     
     // 8. Appearance & Themes
-    /**
-     * Initializes the appearance manager for themes and global styles.
-     */
     initAppearanceManager();
 
     // 8.5 Initial Animation (Anime.js)
@@ -121,8 +95,7 @@ export function init() {
     } catch (e) {
         console.error("CrystalSelect Error:", e);
     }
-    }
-
+}
 
 /**
  * Handle messages from background/runtime

@@ -7,10 +7,12 @@
  * @version 3.8.0
  */
 
-import { CardEnhancer } from '../core/card-enhancer.js';
+import { CardEnhancer } from '../core/card-enhancer';
 import { OverlayFactory } from '../core/overlay-factory.js';
 import { Config } from '../core/config.js';
 import ReaderEnhancements from '../core/reader-enhancements.js';
+
+
 
 // ============================================================================
 // ASURA ADAPTER
@@ -33,11 +35,6 @@ const AsuraAdapter = {
         cardCover: 'img.object-cover, img'
     },
 
-    /**
-     * Extract manga data from a card element.
-     * @param {HTMLElement} cardElement - The card DOM element
-     * @returns {Object} Extracted card data
-     */
     extractCardData(cardElement) {
         let title = '';
         let url = '';
@@ -69,11 +66,6 @@ const AsuraAdapter = {
         return { id: slug, title, slug, url };
     },
 
-    /**
-     * Extract slug from Asura URL.
-     * @param {string} url - Full URL
-     * @returns {string} Extracted slug
-     */
     extractSlug(url) {
         try {
             const parts = new URL(url).pathname.split('/').filter(p => p);
@@ -87,33 +79,16 @@ const AsuraAdapter = {
         }
     },
 
-    /**
-     * Apply border styling to card element.
-     * @param {HTMLElement} element - Target element
-     * @param {string} color - Border color
-     * @param {number} size - Border thickness
-     * @param {string} style - Border style
-     */
     applyBorder(element, color, size, style) {
         element.style.setProperty('border', `${size}px ${style} ${color}`, 'important');
         element.style.setProperty('border-radius', '8px', 'important');
         element.style.setProperty('box-sizing', 'border-box', 'important');
     },
 
-    /**
-     * Get badge positioning for Asura cards.
-     * @returns {Object} Position styles
-     */
     getBadgePosition() {
         return { bottom: '8px', left: '8px' };
     },
 
-    /**
-     * Build chapter URL for continue reading.
-     * @param {Object} entry - Library entry
-     * @param {number} chapter - Chapter number
-     * @returns {string|null} Chapter URL
-     */
     buildChapterUrl(entry, chapter) {
         if (entry.slug) {
             return `https://asuracomic.net/series/${entry.slug}/chapter-${chapter}`;
@@ -121,7 +96,6 @@ const AsuraAdapter = {
         return null;
     },
 
-    // Reader detection and navigation methods
     isReaderPage() {
         return window.location.href.includes('/chapter');
     },
@@ -136,7 +110,6 @@ const AsuraAdapter = {
     },
 
     goToNextChapter() {
-        // Asura has navigation buttons
         const nextBtn = document.querySelector('a[href*="/chapter"]:has(svg[class*="right"]), button:has(svg[stroke*="next"]), .next-chapter');
         if (nextBtn) nextBtn.click();
     },
@@ -156,23 +129,13 @@ const AsuraAdapter = {
     }
 };
 
-// ============================================================================
-// READING HISTORY TRACKING
-// ============================================================================
 
-/**
- * Extract chapter number from Asura chapter URL.
- * @param {string} url - Current page URL
- * @returns {string|null} Chapter number
- */
+
 function extractChapterFromUrl(url) {
     const match = url.match(/\/chapter[/-]?([\d.-]+)/i);
     return match ? match[1] : null;
 }
 
-/**
- * Save current chapter to reading history.
- */
 function saveReadChapter() {
     if (!chrome.runtime?.id) return;
 
@@ -180,7 +143,6 @@ function saveReadChapter() {
     const chapterNo = extractChapterFromUrl(href);
     if (!chapterNo) return;
 
-    // Get series title from breadcrumbs/header
     const titleEl = document.querySelector('h1, span.font-bold, a[href*="/series/"]');
     const title = titleEl?.textContent?.trim();
     if (!title) return;
@@ -206,7 +168,6 @@ function saveReadChapter() {
             });
         }
 
-        // Notify background for auto-sync
         chrome.runtime.sendMessage({
             type: 'autoSyncEntry',
             title: title,
@@ -220,14 +181,8 @@ function saveReadChapter() {
     });
 }
 
-// ============================================================================
-// UTILITIES
-// ============================================================================
 
-/**
- * Log messages via extension messaging.
- * @param {string|Object} message - Message to log
- */
+
 function Log(message) {
     if (!chrome.runtime?.id) return;
     const text = typeof message === 'object' ? JSON.stringify(message) : message;
@@ -236,9 +191,6 @@ function Log(message) {
     });
 }
 
-/**
- * Inject CSS styles for animations.
- */
 function injectStyles() {
     if (document.getElementById('bmh-asura-styles')) return;
 
@@ -251,112 +203,111 @@ function injectStyles() {
         }
     `;
     document.head.appendChild(styles);
-
-    // Inject all overlay/picker/modal styles from OverlayFactory
     OverlayFactory.injectStyles();
 }
 
-// ============================================================================
-// MAIN ENTRY POINT
-// ============================================================================
 
-/**
- * Initialize the Asura Scans card enhancer with Quick Actions.
- */
+
 async function initAsuraEnhancer() {
-    if (!chrome.runtime?.id) return;
-
-    Log('Asura Scans CardEnhancer v3.8.0 (with Quick Actions) initializing...');
-    injectStyles();
-
-    // Load user settings
-    const settings = await new Promise(resolve => {
-        chrome.storage.local.get([
-            'AsuraScansHighlightEnabled',
-            'AsuraScansQuickActionsEnabled',
-            'CustomBorderSize',
-            'CustomBorderSizefeatureEnabled',
-            'CustomBookmarksfeatureEnabled',
-            'customBookmarks'
-        ], data => {
-            if (chrome.runtime.lastError) {
-                resolve({});
-                return;
-            }
-            resolve(data);
-        });
-    });
-
-    // Check if highlighting is disabled
-    if (settings.AsuraScansHighlightEnabled === false) {
-        Log('Highlighting disabled');
-        return;
-    }
-
-    // Create enhancer with settings including Quick Actions
-    const enhancer = new CardEnhancer(AsuraAdapter, {
-        highlighting: true,
-        progressBadges: true,
-        quickActions: settings.AsuraScansQuickActionsEnabled !== false, // Enabled by default
-        CustomBorderSize: settings.CustomBorderSizefeatureEnabled ? settings.CustomBorderSize : 4,
-        CustomBookmarksfeatureEnabled: settings.CustomBookmarksfeatureEnabled,
-        customBookmarks: settings.customBookmarks
-    });
-
-    // Initial enhancement
-    const count = await enhancer.enhanceAll();
-    Log(`Enhanced ${count} cards (Quick Actions: ${settings.AsuraScansQuickActionsEnabled !== false ? 'ON' : 'OFF'})`);
-
-    // Track reading on chapter pages & initialize reader enhancements
-    if (window.location.href.includes('/chapter')) {
-        saveReadChapter();
-        
-        // Initialize reader enhancements (auto-scroll, keybinds, progress)
-        const reader = new ReaderEnhancements(AsuraAdapter);
-        reader.init();
-        Log('Reader enhancements initialized');
-    }
-
-    // Mutation observer for dynamic content (Asura uses React/Next.js)
-    let debounceTimer;
-    const observer = new MutationObserver(() => {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => enhancer.enhanceAll(), 200);
-    });
-
-    observer.observe(document.body, {
-        childList: true,
-        subtree: true
-    });
-
-    // SPA navigation handler
-    let lastUrl = location.href;
-    const urlObserver = new MutationObserver(() => {
-        if (location.href !== lastUrl) {
-            lastUrl = location.href;
-
-            // Reset enhanced status
-            document.querySelectorAll('[data-bmh-enhanced]').forEach(el => {
-                delete el.dataset.bmhEnhanced;
-            });
-
-            setTimeout(() => enhancer.enhanceAll(), 800);
-
-            if (location.href.includes('/chapter')) {
-                setTimeout(saveReadChapter, 1000);
-            }
+    try {
+        if (!chrome.runtime?.id) {
+            console.error("[AsuraScans] Invalid runtime ID");
+            return;
         }
-    });
 
-    urlObserver.observe(document, { subtree: true, childList: true });
+        Log('Asura Scans CardEnhancer v3.8.0 (with Quick Actions) initializing...');
+        injectStyles();
+
+        Log('Fetching settings...');
+        const settings = await new Promise(resolve => {
+            chrome.storage.local.get([
+                'AsuraScansHighlightEnabled',
+                'AsuraScansQuickActionsEnabled',
+                'CustomBorderSize',
+                'CustomBorderSizefeatureEnabled',
+                'CustomBookmarksfeatureEnabled',
+                'customBookmarks'
+            ], data => {
+                if (chrome.runtime.lastError) {
+                    Log(`Settings error: ${chrome.runtime.lastError.message}`);
+                    resolve({});
+                    return;
+                }
+                resolve(data);
+            });
+        });
+        Log(`Settings loaded: ${JSON.stringify(settings)}`);
+
+        if (settings.AsuraScansHighlightEnabled === false) {
+            Log('Highlighting disabled');
+            return;
+        }
+
+        if (typeof CardEnhancer === 'undefined') {
+            Log('CRITICAL: CardEnhancer is undefined!');
+            return;
+        }
+
+        const enhancer = new CardEnhancer(AsuraAdapter, {
+            highlighting: true,
+            progressBadges: true,
+            quickActions: settings.AsuraScansQuickActionsEnabled !== false,
+            CustomBorderSize: settings.CustomBorderSizefeatureEnabled ? settings.CustomBorderSize : 4,
+            CustomBookmarksfeatureEnabled: settings.CustomBookmarksfeatureEnabled,
+            customBookmarks: settings.customBookmarks
+        });
+
+        const cards = enhancer.findCards();
+        Log(`Found ${cards.length} potential cards`);
+        
+        const count = await enhancer.enhanceAll();
+        Log(`Enhanced ${count} cards`);
+
+        if (window.location.href.includes('/chapter')) {
+            Log('Initializing reader features...');
+            saveReadChapter();
+            const reader = new ReaderEnhancements(AsuraAdapter);
+            reader.init();
+            Log('Reader enhancements initialized');
+        }
+
+        let debounceTimer;
+        const observer = new MutationObserver(() => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => enhancer.enhanceAll(), 200);
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+
+        let lastUrl = location.href;
+        const urlObserver = new MutationObserver(() => {
+            if (location.href !== lastUrl) {
+                lastUrl = location.href;
+                document.querySelectorAll('[data-bmh-enhanced]').forEach(el => {
+                    delete el.dataset.bmhEnhanced;
+                });
+                setTimeout(() => enhancer.enhanceAll(), 800);
+                if (location.href.includes('/chapter')) {
+                    setTimeout(saveReadChapter, 1000);
+                }
+            }
+        });
+        urlObserver.observe(document, { subtree: true, childList: true });
+    } catch (e) {
+        console.error("[AsuraScans] CRITICAL ERROR:", e);
+        Log(`CRITICAL ERROR: ${e.message}`);
+    }
 }
 
-// Initialize on load
-window.addEventListener('load', () => {
+// Robust initialization for document_idle scripts
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => setTimeout(initAsuraEnhancer, 800));
+} else {
     setTimeout(initAsuraEnhancer, 500);
-});
+}
 
-// Also try on DOMContentLoaded for faster init
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(initAsuraEnhancer, 800);
-});
+window.addEventListener('load', () => setTimeout(initAsuraEnhancer, 500));
+
