@@ -27,7 +27,7 @@ interface PlatformAdapter {
     extractCardData(element: HTMLElement): CardData;
     validatePage?(): boolean;
     getBadgePosition?(): { bottom?: string; left?: string; top?: string; right?: string };
-    buildChapterUrl?(entry: LibraryEntry, chapter: number): string;
+    buildChapterUrl?(entry: LibraryEntry, chapter: number): string | null;
     applyBorder?(element: HTMLElement, color: string, size: number, style: string): void;
     handleViewDetails?(entry: LibraryEntry, card: CardObject): void;
 }
@@ -330,13 +330,8 @@ export class CardEnhancer {
             ? `${unitName} ${entry.lastReadChapter}/${totalChapters}`
             : `${unitName} ${entry.lastReadChapter}+`;
 
-        const badge = this.createBadge(text, 'progress');
-
-        // Get position from adapter or use default
         const position = this.adapter.getBadgePosition?.() || { bottom: '4px', left: '4px' };
-        Object.assign(badge.style, position);
-
-        this.insertBadge(card.element, badge);
+        OverlayFactory.mountStatusBadge(card.element, text, 'progress', position);
     }
 
     /**
@@ -344,9 +339,7 @@ export class CardEnhancer {
      * @param {Object} card - Card object
      */
     applyNewBadge(card: CardObject) {
-        const badge = this.createBadge('NEW', 'new');
-        badge.style.cssText += 'top: 4px; right: 4px;';
-        this.insertBadge(card.element, badge);
+        OverlayFactory.mountStatusBadge(card.element, 'NEW', 'new');
     }
     /**
      * Apply quick actions tooltip.
@@ -354,20 +347,16 @@ export class CardEnhancer {
      * @param {Object} entry - Library entry
      */
     applyQuickActions(card: CardObject, entry: LibraryEntry) {
-        // Inject styles once
-        OverlayFactory.injectStyles();
-
         // Define callbacks for tooltip actions
         const callbacks = {
-            continue: (entry: any, btn: any, e: any) => this.handleContinueReading(entry, card),
-            status: (entry: any, btn: any, e: any) => this.handleStatusChange(entry, btn, card),
-            rating: (entry: any, btn: any, e: any) => this.handleRatingChange(entry, btn, card),
-            details: (entry: any, btn: any, e: any) => this.handleViewDetails(entry, card)
+            continue: (e: any) => this.handleContinueReading(e, card),
+            status: (e: any, target?: any) => this.handleStatusChange(e, target || null as any, card),
+            rating: (e: any, target?: any) => this.handleRatingChange(e, target || null as any, card),
+            details: (e: any) => this.handleViewDetails(e, card)
         };
 
-        const tooltip = OverlayFactory.create(entry, this.adapter, callbacks);
+        OverlayFactory.mountQuickActions(card.element, entry, this.adapter, callbacks);
         card.element.style.position = 'relative';
-        card.element.appendChild(tooltip);
     }
 
     /**
@@ -397,21 +386,12 @@ export class CardEnhancer {
      * @param {Object} card - Card object
      */
     handleStatusChange(entry: LibraryEntry, btn: HTMLElement, card: CardObject) {
-        // Remove existing picker if any
-        document.querySelectorAll('.bmh-status-picker').forEach(p => p.remove());
-
-        const picker = OverlayFactory.createStatusPicker(
+        OverlayFactory.mountStatusPicker(
+            btn,
             entry,
-            (newStatus: string, entry: LibraryEntry) => this.saveStatusChange(entry, newStatus),
-            this.settings.customBookmarks
+            this.settings.customBookmarks,
+            (newStatus: string, entry: LibraryEntry) => this.saveStatusChange(entry, newStatus)
         );
-
-        // Position picker at button location (fixed position)
-        const rect = btn.getBoundingClientRect();
-        picker.style.left = `${rect.left}px`;
-        picker.style.top = `${rect.bottom + 8}px`;
-
-        document.body.appendChild(picker);
     }
 
     /**
@@ -421,20 +401,11 @@ export class CardEnhancer {
      * @param {Object} card - Card object
      */
     handleRatingChange(entry: LibraryEntry, btn: HTMLElement, card: CardObject) {
-        // Remove existing picker if any
-        document.querySelectorAll('.bmh-rating-picker').forEach(p => p.remove());
-
-        const picker = OverlayFactory.createRatingPicker(
+        OverlayFactory.mountRatingPicker(
+            btn,
             entry,
             (rating: number, entry: LibraryEntry) => this.saveRatingChange(entry, rating)
         );
-
-        // Position picker at button location (fixed position)
-        const rect = btn.getBoundingClientRect();
-        picker.style.left = `${rect.left}px`;
-        picker.style.top = `${rect.bottom + 8}px`;
-
-        document.body.appendChild(picker);
     }
 
     /**
@@ -536,55 +507,6 @@ export class CardEnhancer {
             console.error('[CardEnhancer] Failed to save rating:', e);
         }
     }
-
-    /**
-     * Create a badge element.
-     * @param {string} text - Badge text
-     * @param {string} type - Badge type (progress, new, etc.)
-     * @returns {HTMLElement}
-     */
-    createBadge(text: string, type: string): HTMLElement {
-        const badge = document.createElement('div');
-        badge.className = `bmh-badge bmh-badge-${type}`;
-        badge.textContent = text;
-        badge.style.cssText = `
-            position: absolute;
-            background: rgba(0, 0, 0, 0.85);
-            color: #fff;
-            font-size: 11px;
-            font-weight: 600;
-            padding: 4px 8px;
-            border-radius: 6px;
-            z-index: 20;
-            pointer-events: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.1);
-        `;
-
-        if (type === 'new') {
-            badge.style.background = '#ef4444';
-            badge.style.animation = 'bmh-pulse 2s infinite';
-        }
-
-        return badge;
-    }
-
-    /**
-     * Insert badge into card element.
-     * @param {HTMLElement} element - Card element
-     * @param {HTMLElement} badge - Badge element
-     */
-    insertBadge(element: HTMLElement, badge: HTMLElement) {
-        // Remove existing badge of same type
-        const existingBadge = element.querySelector(`.bmh-badge-${badge.classList[1]?.replace('bmh-badge-', '')}`);
-        if (existingBadge) existingBadge.remove();
-
-        // Find best container (usually an image wrapper)
-        const imgContainer = (element.querySelector('div[class*="cover"], div[class*="thumb"], [class*="img"]') as HTMLElement)?.parentElement || element;
-        imgContainer.style.position = 'relative';
-        imgContainer.appendChild(badge);
-    }
-
 
     /**
      * Normalize title for matching.

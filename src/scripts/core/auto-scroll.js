@@ -13,6 +13,8 @@ class AutoScrollController {
         this.intervalId = null;
         this.showPanel = options.showPanel !== false;
         this.panel = null;
+        this.vueApp = null;
+        this.adapter = options.adapter || null;
         this.scrollTarget = null;
         this.lastScrollPos = -1;
         this.stuckCount = 0;
@@ -177,6 +179,11 @@ class AutoScrollController {
      * Updates panel UI state.
      */
     updatePanelState() {
+        if (this.vueApp && this.vueApp.vm) {
+            this.vueApp.vm.isRunning = this.isRunning;
+            return;
+        }
+
         if (!this.panel) return;
         const btn = this.panel.querySelector('.bmh-as-toggle');
         if (btn) {
@@ -189,6 +196,23 @@ class AutoScrollController {
      * Creates the control panel.
      */
     createControlPanel() {
+        // Phase 2: Use Vue mounting for MangaFire
+        if (this.adapter && this.adapter.id === 'mangafire') {
+            const props = {
+                speed: this.speed,
+                isRunning: this.isRunning
+            };
+            const handlers = {
+                onToggle: () => this.toggle(),
+                onSpeedChange: (val) => this.setSpeed(val)
+            };
+
+            import('./overlay-factory.js').then(module => {
+                this.vueApp = module.OverlayFactory.mountReaderControls(props, handlers);
+            });
+            return;
+        }
+
         const existing = document.querySelector('.bmh-autoscroll-panel');
         if (existing) existing.remove();
 

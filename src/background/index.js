@@ -7,7 +7,7 @@ import {
   scrapeBookmarksFromUnopenedTab, 
   scrapeReadMangasFromUnopenedTab, 
   handleAutoSyncEntry 
-} from '../scripts/mangafire/scraper.js';
+} from '../scripts/content/adapters/mangafire/scraper';
 
 // Open options page when extension icon clicked
 chrome.action.onClicked.addListener(() => {

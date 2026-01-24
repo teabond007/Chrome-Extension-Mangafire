@@ -8,11 +8,497 @@
  * @version 3.8.1
  */
 
+import { createApp } from 'vue';
+import QuickActions from '../content/components/QuickActions.vue';
+import StatusPicker from '../content/components/StatusPicker.vue';
+import RatingPicker from '../content/components/RatingPicker.vue';
+import StatusBadge from '../content/components/StatusBadge.vue';
+import ReaderControls from '../content/components/ReaderControls.vue';
+
 /**
  * Factory for creating quick action tooltips on manga/webtoon cards.
  * Provides consistent UX across all platforms while respecting platform-specific terminology.
  */
 export class OverlayFactory {
+    /**
+     * Create and mount a Vue-based Status Picker.
+     * @param {HTMLElement} host - The anchor element (usually the button clicked)
+     * @param {Object} entry - Library entry data
+     * @param {Array} customStatuses - User custom statuses
+     * @param {Function} onSelect - Callback when status is selected
+     */
+    static mountStatusPicker(host, entry, customStatuses, onSelect) {
+        // Remove existing pickers first
+        document.querySelectorAll('.bmh-vue-picker-container').forEach(p => p.remove());
+
+        const container = document.createElement('div');
+        container.className = 'bmh-vue-picker-container bmh-vue-status-picker';
+        document.body.appendChild(container);
+
+        const shadow = container.attachShadow({ mode: 'open' });
+        const mountPoint = document.createElement('div');
+        shadow.appendChild(mountPoint);
+
+        // Inject Picker styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .bmh-status-picker {
+                background: rgba(20, 20, 25, 0.98);
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                border-radius: 12px;
+                padding: 12px;
+                min-width: 180px;
+                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+                backdrop-filter: blur(16px);
+                animation: bmh-picker-slide 0.2s ease-out;
+                font-family: sans-serif;
+            }
+            @keyframes bmh-picker-slide {
+                from { opacity: 0; transform: scale(0.95) translateY(-8px); }
+                to { opacity: 1; transform: scale(1) translateY(0); }
+            }
+            .bmh-picker-header {
+                font-size: 11px;
+                color: rgba(255, 255, 255, 0.5);
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                padding-bottom: 8px;
+                margin-bottom: 8px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            }
+            .bmh-picker-options {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+            }
+            .bmh-picker-option {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                width: 100%;
+                padding: 10px 12px;
+                background: transparent;
+                border: none;
+                border-radius: 8px;
+                color: #fff;
+                font-size: 13px;
+                cursor: pointer;
+                transition: all 0.15s ease;
+                text-align: left;
+            }
+            .bmh-picker-option:hover { background: rgba(255, 255, 255, 0.1); }
+            .bmh-picker-option.active { background: rgba(255, 255, 255, 0.15); }
+            .bmh-picker-dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                flex-shrink: 0;
+            }
+        `;
+        shadow.appendChild(style);
+
+        const rect = host.getBoundingClientRect();
+        container.style.position = 'fixed';
+        container.style.left = `${rect.left}px`;
+        container.style.top = `${rect.bottom + 8}px`;
+        container.style.zIndex = '10000';
+
+        let outsideClickHandler;
+        const cleanup = () => {
+            app.unmount();
+            container.remove();
+            if (outsideClickHandler) {
+                document.removeEventListener('click', outsideClickHandler);
+            }
+        };
+
+        const app = createApp(StatusPicker, {
+            entry,
+            customStatuses,
+            onSelect: (status) => {
+                onSelect(status, entry);
+                cleanup();
+            }
+        });
+
+        outsideClickHandler = (e) => {
+            if (!container.contains(e.target) && !host.contains(e.target)) {
+                cleanup();
+            }
+        };
+
+        setTimeout(() => document.addEventListener('click', outsideClickHandler), 0);
+        
+        return app.mount(mountPoint);
+    }
+
+    /**
+     * Create and mount a Vue-based Rating Picker.
+     * @param {HTMLElement} host - The anchor element
+     * @param {Object} entry - Library entry data
+     * @param {Function} onSelect - Callback when rating is selected
+     */
+    static mountRatingPicker(host, entry, onSelect) {
+        // Remove existing pickers first
+        document.querySelectorAll('.bmh-vue-picker-container').forEach(p => p.remove());
+
+        const container = document.createElement('div');
+        container.className = 'bmh-vue-picker-container bmh-vue-rating-picker';
+        document.body.appendChild(container);
+
+        const shadow = container.attachShadow({ mode: 'open' });
+        const mountPoint = document.createElement('div');
+        shadow.appendChild(mountPoint);
+
+        // Inject Rating Picker styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .bmh-rating-picker {
+                background: rgba(20, 20, 25, 0.98);
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                border-radius: 12px;
+                padding: 12px;
+                min-width: 180px;
+                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+                backdrop-filter: blur(16px);
+                animation: bmh-picker-slide 0.2s ease-out;
+                font-family: sans-serif;
+            }
+            @keyframes bmh-picker-slide {
+                from { opacity: 0; transform: scale(0.95) translateY(-8px); }
+                to { opacity: 1; transform: scale(1) translateY(0); }
+            }
+            .bmh-picker-header {
+                font-size: 11px;
+                color: rgba(255, 255, 255, 0.5);
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                padding-bottom: 8px;
+                margin-bottom: 8px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            }
+            .bmh-rating-grid {
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 6px;
+                margin-bottom: 10px;
+            }
+            .bmh-rating-num {
+                width: 36px;
+                height: 36px;
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                border-radius: 8px;
+                background: transparent;
+                color: #fff;
+                font-size: 14px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.15s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .bmh-rating-num:hover, .bmh-rating-num.hovered {
+                background: rgba(251, 191, 36, 0.3);
+                border-color: #fbbf24;
+                color: #fbbf24;
+            }
+            .bmh-rating-num.active {
+                background: #fbbf24;
+                border-color: #fbbf24;
+                color: #000;
+            }
+            .bmh-rating-clear {
+                width: 100%;
+                padding: 8px;
+                background: transparent;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 6px;
+                color: rgba(255, 255, 255, 0.6);
+                font-size: 12px;
+                cursor: pointer;
+                transition: all 0.15s ease;
+            }
+            .bmh-rating-clear:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+        `;
+        shadow.appendChild(style);
+
+        const rect = host.getBoundingClientRect();
+        container.style.position = 'fixed';
+        container.style.left = `${rect.left}px`;
+        container.style.top = `${rect.bottom + 8}px`;
+        container.style.zIndex = '10000';
+
+        let outsideClickHandler;
+        const cleanup = () => {
+            app.unmount();
+            container.remove();
+            if (outsideClickHandler) {
+                document.removeEventListener('click', outsideClickHandler);
+            }
+        };
+
+        const app = createApp(RatingPicker, { 
+            entry,
+            onSelect: (rating) => {
+                onSelect(rating, entry);
+                cleanup();
+            }
+        });
+
+        outsideClickHandler = (e) => {
+            if (!container.contains(e.target) && !host.contains(e.target)) {
+                cleanup();
+            }
+        };
+
+        setTimeout(() => document.addEventListener('click', outsideClickHandler), 0);
+        
+        return app.mount(mountPoint);
+    }
+
+    /**
+     * Create and mount a Vue-based Status Badge.
+     * @param {HTMLElement} host - The card element
+     * @param {String} text - Badge text
+     * @param {String} type - 'progress' or 'new'
+     * @param {Object} position - Position overrides
+     */
+    static mountStatusBadge(host, text, type = 'progress', position = {}) {
+        const container = document.createElement('div');
+        container.className = 'bmh-vue-badge-container';
+        host.appendChild(container);
+
+        const shadow = container.attachShadow({ mode: 'open' });
+        const mountPoint = document.createElement('div');
+        shadow.appendChild(mountPoint);
+
+        // Inject Badge styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .bmh-badge {
+                position: absolute;
+                padding: 2px 6px;
+                border-radius: 4px;
+                font-size: 10px;
+                font-weight: 700;
+                color: white;
+                z-index: 50;
+                pointer-events: none;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                font-family: sans-serif;
+            }
+            .bmh-badge-progress {
+                background: rgba(0, 0, 0, 0.75);
+                backdrop-filter: blur(4px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            .bmh-badge-new {
+                background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+                animation: bmh-pulse 2s infinite;
+            }
+            @keyframes bmh-pulse {
+                0%, 100% { transform: scale(1); opacity: 1; }
+                50% { transform: scale(1.05); opacity: 0.9; }
+            }
+        `;
+        shadow.appendChild(style);
+
+        const app = createApp(StatusBadge, { text, type, position });
+        return app.mount(mountPoint);
+    }
+
+    /**
+     * Create and mount a Vue-based auto-scroll control panel.
+     * @param {Object} props - Component props (speed, isRunning)
+     * @param {Object} handlers - Event handlers (toggle, speed-change)
+     */
+    static mountReaderControls(props, handlers) {
+        const existing = document.querySelector('.bmh-vue-reader-container');
+        if (existing) existing.remove();
+
+        const container = document.createElement('div');
+        container.className = 'bmh-vue-reader-container';
+        document.body.appendChild(container);
+
+        const shadow = container.attachShadow({ mode: 'open' });
+        const mountPoint = document.createElement('div');
+        shadow.appendChild(mountPoint);
+
+        // Inject Reader Controls styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .bmh-autoscroll-panel {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                background: rgba(0, 0, 0, 0.95);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 10px;
+                padding: 10px 14px;
+                color: white;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+                font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+                pointer-events: auto;
+            }
+            .bmh-as-toggle {
+                background: #4f46e5;
+                color: white;
+                border: none;
+                padding: 8px 14px;
+                border-radius: 6px;
+                font-size: 12px;
+                font-weight: 600;
+                cursor: pointer;
+                min-width: 70px;
+                transition: background 0.2s;
+            }
+            .bmh-as-toggle:hover { background: #4338ca; }
+            .bmh-as-toggle.active { background: #dc2626; }
+            .bmh-as-toggle.active:hover { background: #b91c1c; }
+            .bmh-as-speed-control {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+            .bmh-as-label { color: rgba(255, 255, 255, 0.7); font-size: 11px; }
+            .bmh-as-speed {
+                width: 60px;
+                height: 4px;
+                -webkit-appearance: none;
+                appearance: none;
+                background: rgba(255, 255, 255, 0.3);
+                border-radius: 2px;
+            }
+            .bmh-as-speed::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 12px;
+                height: 12px;
+                background: white;
+                border-radius: 50%;
+            }
+            .bmh-as-speed-value { color: rgba(255, 255, 255, 0.9); font-size: 11px; min-width: 24px; }
+        `;
+        shadow.appendChild(style);
+
+        container.style.position = 'fixed';
+        container.style.bottom = '20px';
+        container.style.right = '20px';
+        container.style.zIndex = '2147483647';
+
+        const app = createApp(ReaderControls, {
+            initialSpeed: props.speed,
+            isRunning: props.isRunning
+        });
+
+        // Set up events
+        app.config.globalProperties.$onToggle = handlers.onToggle;
+        app.config.globalProperties.$onSpeedChange = handlers.onSpeedChange;
+        
+        // Better to use props for PoC simplicity
+        // But for this one we'll use props + emits
+        
+        return {
+            app,
+            vm: app.mount(mountPoint),
+            container
+        };
+    }
+
+    /**
+     * Create and mount a Vue-based Quick Actions tooltip.
+     * @param {HTMLElement} host - The element to attach the tooltip to
+     * @param {Object} entry - Library entry data
+     * @param {Object} adapter - Platform adapter
+     * @param {Object} callbacks - Action callback functions
+     */
+    static mountQuickActions(host, entry, adapter, callbacks = {}) {
+        // Create a container for the Shadow DOM
+        const container = document.createElement('div');
+        container.className = 'bmh-vue-container';
+        host.appendChild(container);
+
+        // Create Shadow Root for style isolation
+        const shadow = container.attachShadow({ mode: 'open' });
+        
+        // Create a mount point inside the shadow DOM
+        const mountPoint = document.createElement('div');
+        shadow.appendChild(mountPoint);
+
+        // Inject scoped styles into the shadow DOM
+        const style = document.createElement('style');
+        style.textContent = `
+            .bmh-quick-tooltip {
+                display: flex;
+                gap: 4px;
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                z-index: 100;
+            }
+            .bmh-tt-btn {
+                width: 28px;
+                height: 28px;
+                border: none;
+                border-radius: 6px;
+                background: rgba(0, 0, 0, 0.85);
+                color: #fff;
+                font-size: 12px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.15s ease;
+                backdrop-filter: blur(8px);
+                box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            }
+            .bmh-tt-btn:hover {
+                transform: scale(1.1);
+                background: rgba(30, 30, 30, 0.95);
+            }
+            .bmh-tt-continue {
+                background: linear-gradient(135deg, #4CAF50, #388e3c);
+            }
+            .bmh-tt-continue.bmh-btn-disabled {
+                background: rgba(80, 80, 80, 0.8);
+                opacity: 0.7;
+                filter: grayscale(1);
+                box-shadow: none;
+            }
+            .bmh-tt-status-dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+            }
+            .bmh-tt-rating {
+                font-weight: 700;
+                color: #fbbf24;
+            }
+            .bmh-tt-info {
+                font-size: 14px;
+            }
+        `;
+        shadow.appendChild(style);
+
+        // Create Vue App
+        const app = createApp(QuickActions, {
+            entry,
+            adapter,
+            callbacks
+        });
+
+        const mountedApp = app.mount(mountPoint);
+        
+        // Listen for the custom event if we use a different mounting strategy,
+        // but here we can just pass callbacks as props for simplicity or use provide/inject.
+        // Let's update QuickActions.vue to accept callbacks as props for Phase 1.
+        
+        return app;
+    }
+
     /**
      * Create a compact tooltip with quick action icons.
      * Shows on hover, minimal and unobtrusive.
@@ -241,21 +727,6 @@ export class OverlayFactory {
 
         OverlayFactory.autoCloseOnOutsideClick(picker);
         return picker;
-    }
-
-    /**
-     * Helper to auto-close picker on outside click.
-     */
-    static autoCloseOnOutsideClick(picker) {
-        setTimeout(() => {
-            const handler = (e) => {
-                if (!picker.contains(e.target)) {
-                    picker.remove();
-                    document.removeEventListener('click', handler);
-                }
-            };
-            document.addEventListener('click', handler);
-        }, 0);
     }
 
     /**

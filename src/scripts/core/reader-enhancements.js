@@ -75,7 +75,8 @@ class ReaderEnhancements {
         if (this.options.autoScroll && settings.autoScrollEnabled !== false) {
             this.autoScroll = new AutoScrollController({
                 speed: settings.autoScrollSpeed || 50,
-                showPanel: true
+                showPanel: true,
+                adapter: this.adapter
             });
             this.autoScroll.init();
         }
