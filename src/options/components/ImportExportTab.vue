@@ -205,7 +205,7 @@
 <style scoped>
 /* Import & Export Tab Styles - migrated from _import-export.css */
 .export-import-grid {
-    max-width: 900px !important;
+    width: 100%;
 }
 
 .secondary-bg-card {

@@ -34,22 +34,93 @@
   },
   "content_scripts": [
     {
+      "js": [
+        "assets/content-mangafire.src.js-loader-ea15341f.js"
+      ],
       "matches": [
         "*://mangafire.to/*"
       ],
+      "run_at": "document_idle"
+    },
+    {
       "js": [
-        "src/scripts/mangafire/content-mangafire.src.js-loader.js"
+        "assets/content-mangadex.src.js-loader-41cfe88f.js"
+      ],
+      "matches": [
+        "*://mangadex.org/*"
       ],
       "run_at": "document_idle"
+    },
+    {
+      "js": [
+        "assets/content-asurascans.src.js-loader-b1faf349.js"
+      ],
+      "matches": [
+        "*://asuracomic.net/*",
+        "*://asurascans.com/*",
+        "*://asuratoon.com/*"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "js": [
+        "assets/content-webtoons.src.js-loader-9f718504.js"
+      ],
+      "matches": [
+        "*://www.webtoons.com/*"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "js": [
+        "assets/content-manganato.src.js-loader-b64b143f.js"
+      ],
+      "matches": [
+        "*://manganato.com/*",
+        "*://chapmanganato.com/*"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "js": [
+        "assets/content-mangaplus.src.js-loader-b10a4c4e.js"
+      ],
+      "matches": [
+        "*://mangaplus.shueisha.co.jp/*"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "resources": [
+        "icons/*",
+        "images/*"
+      ],
+      "use_dynamic_url": false
+    },
+    {
+      "matches": [
+        "*://mangafire.to/*"
+      ],
+      "resources": [
+        "assets/reader-enhancements-db3a7f4d.js",
+        "assets/content-mangafire.src.js-d520ac30.js"
+      ],
+      "use_dynamic_url": false
     },
     {
       "matches": [
         "*://mangadex.org/*"
       ],
-      "js": [
-        "src/scripts/mangadex/content-mangadex.src.js-loader.js"
+      "resources": [
+        "assets/reader-enhancements-db3a7f4d.js",
+        "assets/content-mangadex.src.js-4d1fa0aa.js"
       ],
-      "run_at": "document_idle"
+      "use_dynamic_url": false
     },
     {
       "matches": [
@@ -57,57 +128,40 @@
         "*://asurascans.com/*",
         "*://asuratoon.com/*"
       ],
-      "js": [
-        "src/scripts/asurascans/content-asurascans.src.js-loader.js"
+      "resources": [
+        "assets/reader-enhancements-db3a7f4d.js",
+        "assets/content-asurascans.src.js-32057910.js"
       ],
-      "run_at": "document_idle"
+      "use_dynamic_url": false
     },
     {
       "matches": [
         "*://www.webtoons.com/*"
       ],
-      "js": [
-        "src/scripts/webtoons/content-webtoons.src.js-loader.js"
+      "resources": [
+        "assets/reader-enhancements-db3a7f4d.js",
+        "assets/content-webtoons.src.js-1bcf520e.js"
       ],
-      "run_at": "document_idle"
+      "use_dynamic_url": false
     },
     {
       "matches": [
-        "*://manganato.com/*",
-        "*://chapmanganato.com/*"
+        "*://chapmanganato.com/*",
+        "*://manganato.com/*"
       ],
-      "js": [
-        "src/scripts/manganato/content-manganato.src.js-loader.js"
+      "resources": [
+        "assets/reader-enhancements-db3a7f4d.js",
+        "assets/content-manganato.src.js-ccfcc45f.js"
       ],
-      "run_at": "document_idle"
+      "use_dynamic_url": false
     },
     {
       "matches": [
         "*://mangaplus.shueisha.co.jp/*"
       ],
-      "js": [
-        "src/scripts/mangaplus/content-mangaplus.src.js-loader.js"
-      ],
-      "run_at": "document_idle"
-    }
-  ],
-  "web_accessible_resources": [
-    {
       "resources": [
-        "icons/*",
-        "images/*"
-      ],
-      "matches": [
-        "<all_urls>"
-      ]
-    },
-    {
-      "matches": [
-        "<all_urls>"
-      ],
-      "resources": [
-        "**/*",
-        "*"
+        "assets/reader-enhancements-db3a7f4d.js",
+        "assets/content-mangaplus.src.js-928a5ff5.js"
       ],
       "use_dynamic_url": false
     }

@@ -180,8 +180,9 @@ export class CardEnhancer {
                     if (entry?.title) {
                         // Attach read chapters
                         const historyKey = this.findHistoryKey(entry.title, entry.slug, readChapters);
-                        entry.readChapters = historyKey ? readChapters[historyKey] : [];
-                        entry.lastReadChapter = this.getHighestChapter(entry.readChapters);
+                        const chaptersForEntry = historyKey ? (readChapters as Record<string, (string | number)[]>)[historyKey] : [];
+                        entry.readChapters = chaptersForEntry;
+                        entry.lastReadChapter = this.getHighestChapter(chaptersForEntry);
 
                         merged.set(entry.title, entry);
                     }
@@ -401,7 +402,7 @@ export class CardEnhancer {
 
         const picker = OverlayFactory.createStatusPicker(
             entry,
-            (newStatus, entry) => this.saveStatusChange(entry, newStatus),
+            (newStatus: string, entry: LibraryEntry) => this.saveStatusChange(entry, newStatus),
             this.settings.customBookmarks
         );
 
@@ -425,7 +426,7 @@ export class CardEnhancer {
 
         const picker = OverlayFactory.createRatingPicker(
             entry,
-            (rating, entry) => this.saveRatingChange(entry, rating)
+            (rating: number, entry: LibraryEntry) => this.saveRatingChange(entry, rating)
         );
 
         // Position picker at button location (fixed position)

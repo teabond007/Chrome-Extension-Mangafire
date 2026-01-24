@@ -297,19 +297,12 @@
 @media (min-width: 1600px) {
     .manga-grid {
         grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        max-width: 1400px;
-        margin: 0 auto;
     }
 }
 
 @media (min-width: 2000px) {
     .manga-grid {
-        grid-template-columns: repeat(6, 1fr);
-        max-width: 1600px;
-    }
-
-    .content-grid {
-        margin: 0 auto;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     }
 }
 
