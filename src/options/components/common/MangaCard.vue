@@ -146,9 +146,11 @@ const cardStyle = computed(() => {
         };
     }
     
-    const thickness = `${props.librarySettings.borderThickness || 2}px`;
+    const thicknessValue = props.librarySettings.borderThickness || 2;
+    const thickness = `${thicknessValue}px`;
     return {
-        border: `${thickness} ${statusInfo.value.borderStyle || 'solid'} ${statusInfo.value.borderColor}`
+        border: `${thickness} ${statusInfo.value.borderStyle || 'solid'} ${statusInfo.value.borderColor}`,
+        '--border-thickness': thickness
     };
 });
 

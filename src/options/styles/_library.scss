@@ -442,15 +442,17 @@
     /* Card Actions (on hover) */
     &-actions {
         position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
+        bottom: var(--border-thickness, 0);
+        left: var(--border-thickness, 0);
+        right: var(--border-thickness, 0);
         background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
         padding: 40px 12px 12px;
         opacity: 0;
         transition: opacity 0.3s ease;
         display: flex;
         gap: 8px;
+        border-bottom-left-radius: inherit;
+        border-bottom-right-radius: inherit;
     }
 }
 

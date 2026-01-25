@@ -37,7 +37,7 @@
                 <span class="icon">☕</span>
                 <span class="label nav-text">Support Dev</span>
             </a>
-            <div class="version-info nav-text">Version 3.8.0</div>
+            <div class="version-info nav-text">Version 4.0.0</div>
             
             <button class="collapse-toggle" @click="toggleSidebar">
                 <span class="arrow-icon">{{ isOpen ? '❮' : '❯' }}</span>

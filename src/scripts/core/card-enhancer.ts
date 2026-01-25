@@ -124,22 +124,43 @@ export class CardEnhancer {
      * @returns {Promise<number>} Number of cards enhanced
      */
     async enhanceAll(): Promise<number> {
-        const cards = this.findCards();
-        const library = await this.loadLibrary();
+        try {
+            const cards = this.findCards();
+            const library = await this.loadLibrary();
 
-        let enhanced = 0;
-        for (const card of cards) {
-            if (card.element.dataset.bmhEnhanced) continue;
+            let enhanced = 0;
+            for (const card of cards) {
+                try {
+                    if (card.element.dataset.bmhEnhanced) continue;
 
-            const match = this.findMatch(card, library);
-            if (match) {
-                this.applyEnhancements(card, match);
-                enhanced++;
+                    const match = this.findMatch(card, library);
+
+                    if (match) {
+                        this.applyEnhancements(card, match);
+                    } else if (this.settings.quickActions) {
+                        // Skeleton for new items
+                        const skeletonEntry: LibraryEntry = {
+                            title: card.data.title,
+                            slug: card.data.id,
+                            status: 'Add to Library',
+                            source: this.adapter.id,
+                            sourceId: card.data.id,
+                            sourceUrl: card.data.url
+                        };
+                        this.applyQuickActions(card, skeletonEntry);
+                    }
+
+                    card.element.dataset.bmhEnhanced = 'true';
+                    enhanced++;
+                } catch (cardError) {
+                    console.error('[CardEnhancer] Error enhancing card:', cardError, card);
+                }
             }
-            card.element.dataset.bmhEnhanced = 'true';
+            return enhanced;
+        } catch (err) {
+            console.error('[CardEnhancer] Global enhancement error:', err);
+            return 0;
         }
-
-        return enhanced;
     }
 
     /**
@@ -280,20 +301,23 @@ export class CardEnhancer {
      * @param {Object} entry - Library entry
      */
     applyBorder(card: CardObject, entry: LibraryEntry) {
-        const status = entry.status?.trim().toLowerCase() || '';
-        let color = 'transparent';
+        const status = (entry.status || '').trim().toLowerCase();
+        if (!status || status === 'add to library') return;
+
+        let color = '';
         let style = this.settings.border.style;
 
-        // Get color from config
-        for (const [key, value] of Object.entries(STATUS_COLORS)) {
-            if (status.includes(key.toLowerCase())) {
+        // Try to match from config (case-insensitive)
+        const entries = Object.entries(STATUS_COLORS);
+        for (const [key, value] of entries) {
+            if (status === key.toLowerCase() || status.includes(key.toLowerCase())) {
                 color = value;
                 break;
             }
         }
 
         // Custom bookmark overrides
-        if (this.settings.customBookmarksEnabled) {
+        if (this.settings.customBookmarksEnabled && this.settings.customBookmarks) {
             this.settings.customBookmarks.forEach(custom => {
                 if (custom.name && status.includes(custom.name.toLowerCase())) {
                     color = custom.color;
@@ -302,13 +326,12 @@ export class CardEnhancer {
             });
         }
 
-        if (color === 'transparent') return;
+        if (!color) return;
 
         // Use adapter's custom method if available
         if (this.adapter.applyBorder) {
             this.adapter.applyBorder(card.element, color, this.settings.border.size, style);
         } else {
-            // Default border application
             const target = (card.element.closest('li') || card.element) as HTMLElement;
             target.style.setProperty('border', `${this.settings.border.size}px ${style} ${color}`, 'important');
             target.style.setProperty('border-radius', this.settings.border.radius, 'important');
@@ -458,8 +481,18 @@ export class CardEnhancer {
             const bidx = bookmarks.findIndex((b: LibraryEntry) =>
                 this.normalizeTitle(b.title) === this.normalizeTitle(entry.title)
             );
+
             if (bidx !== -1) {
                 bookmarks[bidx].status = newStatus;
+            } else if (idx === -1) {
+                // If not found in either, add it as a new bookmark
+                const newEntry: LibraryEntry = {
+                    ...entry,
+                    status: newStatus,
+                    lastUpdated: Date.now()
+                };
+                bookmarks.push(newEntry);
+                console.log(`[CardEnhancer] Added new entry to library: ${entry.title}`);
             }
 
             await new Promise(resolve => {
@@ -468,8 +501,16 @@ export class CardEnhancer {
 
             console.log(`[CardEnhancer] Status updated: ${entry.title} → ${newStatus}`);
 
-            // Re-enhance to reflect change
-            this.enhanceAll();
+            // Clear enhanced flags to force refresh on next scan or just trigger it
+            // Actually, we should probably set a small timeout to let storage settle
+            setTimeout(() => {
+                document.querySelectorAll('[data-bmh-enhanced]').forEach(el => {
+                    (el as HTMLElement).removeAttribute('data-bmh-enhanced');
+                    // Also remove injected containers
+                    el.querySelectorAll('.bmh-vue-container, .bmh-vue-badge-container').forEach(c => c.remove());
+                });
+                this.enhanceAll();
+            }, 100);
         } catch (e) {
             console.error('[CardEnhancer] Failed to save status:', e);
         }

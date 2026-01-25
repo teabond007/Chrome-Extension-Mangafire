@@ -1,6 +1,7 @@
 <template>
     <div v-if="isOpen" id="mangaDetailsModal" class="modal-overlay" @click.self="closeModal">
         <div class="modal-content fade-in">
+            <div v-if="bannerUrl" class="modal-ambient-glow" :style="ambientGlowStyle"></div>
             <button class="modal-close" id="closeMangaDetails" @click="closeModal">&times;</button>
             <div v-if="bannerUrl" id="modalBanner" class="modal-banner" :style="bannerStyle"></div>
             <div class="modal-body" ref="modalBodyRef">
@@ -210,6 +211,27 @@ const bannerStyle = computed(() => {
         backgroundImage: `url('${bannerUrl.value}')`,
         display: 'block',
         filter: ani.value?.bannerImage ? 'none' : 'blur(4px) brightness(0.7)'
+    };
+});
+
+/**
+ * Ambient glow style
+ */
+const ambientGlowStyle = computed(() => {
+    if (!bannerUrl.value) return {};
+    return {
+        backgroundImage: `url('${bannerUrl.value}')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        filter: 'blur(100px) saturate(2.5) brightness(0.7) opacity(0.35)',
+        position: 'absolute',
+        top: '-10%',
+        left: '-10%',
+        width: '120%',
+        height: '120%',
+        zIndex: '-1',
+        pointerEvents: 'none',
+        transform: 'translate3d(0, 0, 0)'
     };
 });
 
@@ -454,6 +476,14 @@ onMounted(() => {
     overflow: hidden;
     display: flex;
     flex-direction: column;
+}
+
+.modal-ambient-glow {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    z-index: 0;
+    pointer-events: none;
 }
 
 .modal-banner {

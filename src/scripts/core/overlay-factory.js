@@ -433,52 +433,79 @@ export class OverlayFactory {
         style.textContent = `
             .bmh-quick-tooltip {
                 display: flex;
-                gap: 4px;
+                gap: 6px;
                 position: absolute;
                 top: 8px;
                 right: 8px;
                 z-index: 100;
+                opacity: 0;
+                transform: translateY(-8px);
+                transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+                pointer-events: none;
+            }
+            :host(:hover) .bmh-quick-tooltip,
+            :host-context([data-bmh-enhanced]:hover) .bmh-quick-tooltip {
+                opacity: 1;
+                transform: translateY(0);
+                pointer-events: auto;
             }
             .bmh-tt-btn {
-                width: 28px;
-                height: 28px;
+                width: 32px;
+                height: 32px;
                 border: none;
-                border-radius: 6px;
-                background: rgba(0, 0, 0, 0.85);
+                border-radius: 8px;
+                background: rgba(15, 15, 20, 0.95);
                 color: #fff;
-                font-size: 12px;
+                font-size: 14px;
                 cursor: pointer;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                transition: all 0.15s ease;
-                backdrop-filter: blur(8px);
-                box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+                transition: all 0.2s ease;
+                backdrop-filter: blur(12px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+                border: 1px solid rgba(255,255,255,0.1);
+                padding: 0;
             }
             .bmh-tt-btn:hover {
-                transform: scale(1.1);
-                background: rgba(30, 30, 30, 0.95);
+                transform: translateY(-2px) scale(1.05);
+                background: rgba(30, 30, 40, 0.95);
+                border-color: rgba(255,255,255,0.2);
+                box-shadow: 0 6px 16px rgba(0,0,0,0.6);
             }
             .bmh-tt-continue {
-                background: linear-gradient(135deg, #4CAF50, #388e3c);
+                background: linear-gradient(135deg, #10b981, #059669);
             }
             .bmh-tt-continue.bmh-btn-disabled {
-                background: rgba(80, 80, 80, 0.8);
-                opacity: 0.7;
+                background: rgba(60, 60, 70, 0.8);
+                opacity: 0.5;
                 filter: grayscale(1);
                 box-shadow: none;
+                cursor: not-allowed;
             }
             .bmh-tt-status-dot {
                 width: 10px;
                 height: 10px;
                 border-radius: 50%;
+                box-shadow: 0 0 8px var(--status-color);
             }
             .bmh-tt-rating {
                 font-weight: 700;
                 color: #fbbf24;
             }
             .bmh-tt-info {
-                font-size: 14px;
+                color: #60a5fa;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: transparent !important;
+                box-shadow: none !important;
+                border-color: transparent !important;
+            }
+            .bmh-tt-info svg {
+                width: 20px;
+                height: 20px;
+                display: block;
             }
         `;
         shadow.appendChild(style);
@@ -761,8 +788,8 @@ export class OverlayFactory {
                 display: flex;
                 gap: 4px;
                 opacity: 0;
-                transform: translateY(-4px);
-                transition: all 0.2s ease;
+                transform: translateY(-8px);
+                transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
                 z-index: 60;
                 pointer-events: none;
             }
@@ -774,46 +801,50 @@ export class OverlayFactory {
             }
 
             .bmh-tt-btn {
-                width: 28px;
-                height: 28px;
+                width: 32px;
+                height: 32px;
                 border: none;
-                border-radius: 6px;
-                background: rgba(0, 0, 0, 0.85);
+                border-radius: 8px;
+                background: rgba(15, 15, 20, 0.9);
                 color: #fff;
-                font-size: 12px;
+                font-size: 14px;
                 cursor: pointer;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                transition: all 0.15s ease;
-                backdrop-filter: blur(8px);
-                box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+                transition: all 0.2s ease;
+                backdrop-filter: blur(12px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+                border: 1px solid rgba(255,255,255,0.1);
             }
 
             .bmh-tt-btn:hover {
-                transform: scale(1.1);
-                background: rgba(30, 30, 30, 0.95);
+                transform: translateY(-2px) scale(1.05);
+                background: rgba(30, 30, 40, 0.95);
+                border-color: rgba(255,255,255,0.2);
+                box-shadow: 0 6px 16px rgba(0,0,0,0.6);
             }
 
             .bmh-tt-continue {
-                background: linear-gradient(135deg, #4CAF50, #388e3c);
+                background: linear-gradient(135deg, #10b981, #059669);
             }
-
             .bmh-tt-continue.bmh-btn-disabled {
-                background: rgba(80, 80, 80, 0.8);
-                opacity: 0.7;
+                background: rgba(60, 60, 70, 0.8);
+                opacity: 0.5;
                 filter: grayscale(1);
                 box-shadow: none;
+                cursor: not-allowed;
             }
 
             .bmh-tt-continue:not(.bmh-btn-disabled):hover {
-                background: linear-gradient(135deg, #66BB6A, #43A047);
+                background: linear-gradient(135deg, #10b981, #059669);
             }
 
             .bmh-tt-status-dot {
                 width: 10px;
                 height: 10px;
                 border-radius: 50%;
+                box-shadow: 0 0 8px var(--status-color);
             }
 
             .bmh-tt-rating {
@@ -822,7 +853,18 @@ export class OverlayFactory {
             }
 
             .bmh-tt-info {
-                font-size: 14px;
+                color: #60a5fa;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: transparent !important;
+                box-shadow: none !important;
+                border: none !important;
+            }
+            .bmh-tt-info svg {
+                width: 20px;
+                height: 20px;
+                display: block;
             }
 
             /* ===== PICKERS (Status & Rating) ===== */

@@ -511,3 +511,26 @@ label {
         border: 1px solid rgba(255, 255, 255, 0.05);
     }
 }
+
+/* Info button transparency */
+.info-redirect-btn {
+    background: transparent !important;
+    border: none !important;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: color 0.2s;
+    outline: none;
+    box-shadow: none;
+
+    &:hover {
+        color: var(--accent-primary);
+    }
+
+    svg {
+        pointer-events: none;
+    }
+}

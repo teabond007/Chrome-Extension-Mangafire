@@ -35,7 +35,7 @@
   "content_scripts": [
     {
       "js": [
-        "assets/main.ts-loader-58e4117c.js"
+        "assets/main.ts-loader-4f7136de.js"
       ],
       "matches": [
         "*://mangafire.to/*",
@@ -50,7 +50,7 @@
       ],
       "run_at": "document_idle",
       "css": [
-        "assets/main-5f3479e4.css"
+        "assets/main-b9291171.css"
       ]
     }
   ],
@@ -78,9 +78,9 @@
         "*://www.webtoons.com/*"
       ],
       "resources": [
-        "assets/runtime-dom.esm-bundler-1e3063a8.js",
+        "assets/runtime-dom.esm-bundler-7bf71c36.js",
         "assets/_plugin-vue_export-helper-c27b6911.js",
-        "assets/main.ts-e4abbaee.js"
+        "assets/main.ts-ce28d76b.js"
       ],
       "use_dynamic_url": false
     }

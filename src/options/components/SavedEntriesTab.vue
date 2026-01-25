@@ -115,7 +115,10 @@
                         <option value="Light Novel">Light Novel</option>
                     </select>
 
-                    <input type="text" v-model="filters.search" placeholder="Search titles..." class="input-field">
+                    <div class="search-wrapper">
+                        <input type="text" v-model="filters.search" placeholder="Search titles..." class="input-field">
+                        <button v-if="filters.search" @click="filters.search = ''" class="search-clear-btn" title="Clear search">&times;</button>
+                    </div>
 
                     <div class="view-toggle-group">
                         <button 
@@ -640,4 +643,32 @@ onMounted(() => {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+/* Search clear button */
+.search-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-clear-btn {
+    position: absolute;
+    right: 8px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.search-clear-btn:hover {
+    color: var(--text-primary);
+}
+
 </style>

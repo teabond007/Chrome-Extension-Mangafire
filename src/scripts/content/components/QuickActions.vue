@@ -1,16 +1,6 @@
 <template>
   <div class="bmh-quick-tooltip" :data-entry-id="entry.slug || entry.id || ''">
-    <!-- Continue Reading Button -->
-    <button 
-      class="bmh-tt-btn bmh-tt-continue" 
-      :class="{ 'bmh-btn-disabled': !hasHistory }"
-      @click.stop.prevent="onAction('continue', $event)"
-      :title="continueTitle"
-    >
-      ▶
-    </button>
-
-    <!-- Status Picker Toggle -->
+    <!-- Status Picker Toggle (Always shown) -->
     <button 
       class="bmh-tt-btn bmh-tt-status" 
       @click.stop.prevent="onAction('status', $event)"
@@ -20,23 +10,40 @@
       <span class="bmh-tt-status-dot" :style="{ background: statusColor }"></span>
     </button>
 
-    <!-- Rating Picker Toggle -->
-    <button 
-      class="bmh-tt-btn bmh-tt-rating" 
-      @click.stop.prevent="onAction('rating', $event)"
-      :title="`Rating: ${currentRating}/10`"
-    >
-      {{ currentRating > 0 ? currentRating : '★' }}
-    </button>
+    <!-- Other buttons - only shown if already in library -->
+    <template v-if="entry.status && entry.status !== 'Add to Library'">
+      <!-- Continue Reading Button -->
+      <button 
+        class="bmh-tt-btn bmh-tt-continue" 
+        :class="{ 'bmh-btn-disabled': !hasHistory }"
+        @click.stop.prevent="onAction('continue', $event)"
+        :title="continueTitle"
+      >
+        ▶
+      </button>
 
-    <!-- Details Button -->
-    <button 
-      class="bmh-tt-btn bmh-tt-info" 
-      @click.stop.prevent="onAction('details', $event)"
-      title="View Details"
-    >
-      ℹ
-    </button>
+      <!-- Rating Picker Toggle -->
+      <button 
+        class="bmh-tt-btn bmh-tt-rating" 
+        @click.stop.prevent="onAction('rating', $event)"
+        :title="`Rating: ${currentRating}/10`"
+      >
+        {{ currentRating > 0 ? currentRating : '★' }}
+      </button>
+
+      <!-- Details Button -->
+      <button 
+        class="bmh-tt-btn bmh-tt-info" 
+        @click.stop.prevent="onAction('details', $event)"
+        title="View Details"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+      </button>
+    </template>
   </div>
 </template>
 
