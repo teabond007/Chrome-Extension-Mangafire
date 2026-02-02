@@ -9,6 +9,7 @@
             <h3>Library Statistics</h3>
         </div>
         
+
         <div class="stats-grid-compact">
             <!-- Row 1: Main Status Stats -->
             <div class="stats-row stats-row-main">
@@ -39,6 +40,17 @@
                 <div class="stat-item-compact" style="--stat-color: #F44336">
                     <span class="stat-value-large">{{ stats.dropped }}</span>
                     <span class="stat-label-small">Dropped</span>
+                </div>
+
+                <!-- Merged Custom Markers -->
+                <div 
+                    v-for="marker in markerStats" 
+                    :key="marker.name"
+                    class="stat-item-compact marker-stat" 
+                    :style="{ '--stat-color': marker.color }"
+                >
+                    <span class="stat-value-large">{{ marker.count }}</span>
+                    <span class="stat-label-small">{{ marker.name }}</span>
                 </div>
             </div>
 
@@ -158,6 +170,10 @@ const props = defineProps({
     isVisible: {
         type: Boolean,
         default: false
+    },
+    customMarkers: {
+        type: Array,
+        default: () => []
     }
 });
 
@@ -170,17 +186,30 @@ const circumference = 2 * Math.PI * 70;
 const ringCircumference = 2 * Math.PI * 24;
 const genreColors = ['#7551FF', '#6B46C1', '#805AD5', '#9F7AEA', '#B794F4', '#D6BCFA'];
 
-// Statistics Calculation
+// Helper to normalize status strings for robust matching
+const normalizeStatus = (status) => (status || '').toLowerCase().trim().replace(/[-\s]/g, '');
+
 const stats = computed(() => {
     const total = props.entries.length;
     if (total === 0) return { total: 0, totalChapters: 0, reading: 0, completed: 0, planning: 0, onhold: 0, dropped: 0, avgScore: 0, completionRate: 0 };
 
-    const reading = props.entries.filter(e => e.status === 'Reading').length;
-    const completed = props.entries.filter(e => e.status === 'Completed').length;
-    const planning = props.entries.filter(e => e.status === 'Plan to Read').length;
-    const onhold = props.entries.filter(e => e.status === 'On Hold').length;
-    const dropped = props.entries.filter(e => e.status === 'Dropped').length;
-    const totalChapters = props.entries.reduce((sum, e) => sum + (parseInt(e.readChapters) || 0), 0);
+    let reading = 0;
+    let completed = 0;
+    let planning = 0;
+    let onhold = 0;
+    let dropped = 0;
+    let totalChapters = 0;
+
+    props.entries.forEach(e => {
+        const s = normalizeStatus(e.status);
+        if (s.includes('reading')) reading++;
+        else if (s === 'completed' || s === 'read') completed++;
+        else if (s.includes('plan')) planning++;
+        else if (s.includes('hold')) onhold++;
+        else if (s.includes('dropped')) dropped++;
+        
+        totalChapters += (parseInt(e.readChapters) || 0);
+    });
     
     const scoredEntries = props.entries.filter(e => e.anilistData?.averageScore);
     const avgScore = scoredEntries.length > 0 
@@ -192,15 +221,31 @@ const stats = computed(() => {
     return { total, totalChapters, reading, completed, planning, onhold, dropped, avgScore, completionRate };
 });
 
+const markerStats = computed(() => {
+    if (!props.customMarkers || props.customMarkers.length === 0) return [];
+    
+    return props.customMarkers.map(marker => {
+        const count = props.entries.filter(e => 
+            e.customMarker === marker.name || 
+            (e.status && e.status.toLowerCase() === marker.name.toLowerCase())
+        ).length;
+        return {
+            name: marker.name,
+            color: marker.color,
+            count
+        };
+    }).filter(m => m.count > 0);
+});
+
 const statusDistribution = computed(() => {
     if (stats.value.total === 0) return [];
-    
     const data = [
         { label: 'Reading', value: stats.value.reading, color: '#4CAF50' },
         { label: 'Completed', value: stats.value.completed, color: '#2196F3' },
         { label: 'Planning', value: stats.value.planning, color: '#9C27B0' },
         { label: 'On Hold', value: stats.value.onhold, color: '#FFC107' },
-        { label: 'Dropped', value: stats.value.dropped, color: '#F44336' }
+        { label: 'Dropped', value: stats.value.dropped, color: '#F44336' },
+        ...markerStats.value.map(m => ({ label: m.name, value: m.count, color: m.color }))
     ].filter(d => d.value > 0);
 
     let offset = 0;
@@ -485,6 +530,10 @@ onMounted(() => {
     border-bottom: 1px solid var(--border-color);
 }
 
+.marker-stat {
+    min-width: 100px;
+}
+
 .stats-row-secondary {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -531,8 +580,8 @@ onMounted(() => {
 .stat-item-compact:hover {
     background: rgba(255, 255, 255, 0.05);
     border-color: var(--stat-color, var(--accent-primary));
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
 }
 
 .stat-value-large {
@@ -586,6 +635,8 @@ onMounted(() => {
 
 .stat-mini:hover {
     background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .stat-mini-value {

@@ -22,6 +22,7 @@
             <!-- Stats Section (Vue Component) -->
             <LibraryStatistics 
                 :entries="savedEntries" 
+                :custom-markers="customMarkers"
                 :is-visible="showStats" 
             />
 
@@ -125,6 +126,7 @@
                             @click="setViewSize('compact')" 
                             class="view-toggle-btn" 
                             :class="{ active: cardViewSize === 'compact' }"
+                            title="Compact View"
                         >
                             <svg class="icon-svg icon-view-compact"></svg>
                         </button>
@@ -132,8 +134,17 @@
                             @click="setViewSize('large')" 
                             class="view-toggle-btn" 
                             :class="{ active: cardViewSize === 'large' }"
+                            title="Large View"
                         >
                             <svg class="icon-svg icon-view-large"></svg>
+                        </button>
+                        <button 
+                            @click="setViewSize('list')" 
+                            class="view-toggle-btn" 
+                            :class="{ active: cardViewSize === 'list' }"
+                            title="Detailed List View"
+                        >
+                            📋
                         </button>
                     </div>
                 </div>
@@ -189,8 +200,8 @@
                 <div class="sync-details">{{ syncState.currentTitle }}</div>
             </div>
 
-            <!-- Manga Grid -->
-            <div class="manga-grid" :class="{ compact: cardViewSize === 'compact' }">
+            <!-- Manga Grid (Card Views) -->
+            <div v-if="cardViewSize !== 'list'" class="manga-grid" :class="{ compact: cardViewSize === 'compact' }">
                 <MangaCard 
                     v-for="entry in sortedEntries" 
                     :key="entry.title + (entry.anilistData?.id || '')"
@@ -204,26 +215,73 @@
                     No matches found.
                 </div>
             </div>
+
+            <!-- Detailed List View (Modal-like) -->
+            <div v-else class="manga-list-view">
+                <MangaDetailsLargeView
+                    v-for="entry in visibleListEntries"
+                    :key="'list-' + entry.title + (entry.anilistData?.id || '')"
+                    :entry="entry"
+                    @open-modal="showDetails"
+                />
+                <div v-if="sortedEntries.length === 0" class="empty-library">
+                    No matches found.
+                </div>
+                <div v-if="hasMoreEntries" class="load-more-container">
+                    <button @click="loadMoreEntries" class="btn btn-primary">Load More</button>
+                </div>
+            </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { storeToRefs } from 'pinia';
 import FilterGroup from './common/FilterGroup.vue';
 import LibraryStatistics from './LibraryStatistics.vue';
 import MangaCard from './common/MangaCard.vue';
+import MangaDetailsLargeView from './MangaDetailsLargeView.vue';
 import { getFormatName } from '../scripts/ui/manga-card-factory.js';
 import * as LibFeatures from '../../scripts/core/library-features.js';
+import { useLibraryStore } from '../scripts/store/library.store.js';
+import { useSettingsStore } from '../scripts/store/settings.store.js';
+
+// Access Pinia Stores
+const libraryStore = useLibraryStore();
+const settingsStore = useSettingsStore();
+
+// Destructure reactive state from stores
+const { entries: savedEntries, history } = storeToRefs(libraryStore);
+const { 
+    libraryBordersEnabled, 
+    libraryUseGlow, 
+    libraryAnimatedBorders, 
+    libraryShowStatusIcon, 
+    libraryShowProgressBar
+} = storeToRefs(settingsStore);
+
+// Computed setting object for MangaCard compatibility
+const librarySettings = computed(() => ({
+    bordersEnabled: libraryBordersEnabled.value,
+    borderThickness: settingsStore.libraryThickness,
+    hideNoHistory: false, // TODO: Move to store if needed globally
+    useGlowEffect: libraryUseGlow.value,
+    animatedBorders: libraryAnimatedBorders.value,
+    showStatusIcon: libraryShowStatusIcon.value,
+    showProgressBar: libraryShowProgressBar.value,
+    smartInactivity: settingsStore.smartInactivity
+}));
 
 const showStats = ref(false);
 const isBulkMode = ref(false);
 const bulkStatus = ref('Reading');
-const savedEntries = ref([]);
-const customMarkers = ref([]);
+// const customMarkers = ref([]); // TODO: Add to store if markers are needed globally
+const customMarkers = ref([]); // Keeping local for now or need a MarkerStore
 const personalData = ref({});
 const cardViewSize = ref('large');
-const familyFriendlyEnabled = ref(false);
+const listVisibleCount = ref(5); // Number of entries visible in list view
+const familyFriendlyEnabled = ref(false); // TODO: Move to Settings Store
 
 const syncState = reactive({
     isSyncing: false,
@@ -231,17 +289,6 @@ const syncState = reactive({
     total: 0,
     percentage: 0,
     currentTitle: ''
-});
-
-const librarySettings = reactive({
-    bordersEnabled: true,
-    borderThickness: 2,
-    hideNoHistory: false,
-    useGlowEffect: false,
-    animatedBorders: false,
-    showStatusIcon: false,
-    showProgressBar: false,
-    smartInactivity: false
 });
 
 const filters = reactive({
@@ -278,20 +325,22 @@ const filteredEntries = computed(() => {
 
         // Status
         if (filters.status !== "All") {
+            const entryStatus = (entry.status || '').toLowerCase().trim().replace(/[-\s]/g, '');
+            const filterStatus = filters.status.toLowerCase().trim().replace(/[-\s]/g, '');
+
             if (filters.status.startsWith("marker:")) {
                 const markerName = filters.status.substring(7);
                 if (entry.customMarker !== markerName && entry.status !== markerName) return false;
             } else if (filters.status === "HasHistory") {
                 if (!(entry.lastRead || entry.lastChapterRead || (entry.readChapters > 0))) return false;
             } else {
-                if (entry.status !== filters.status) return false;
+                // Robust matching for statuses like "On Hold" / "ON-HOLD"
+                if (entryStatus !== filterStatus) return false;
             }
         }
 
-        // Hide No History Setting
-        if (librarySettings.hideNoHistory) {
-            if (!(entry.lastRead || entry.lastChapterRead || (entry.readChapters > 0))) return false;
-        }
+        // Hide No History Setting (Needs to be reactive to store if we move it there)
+        // ... kept local property check for now if not in passed settings object
 
         // Format
         if (filters.format !== "All") {
@@ -381,6 +430,19 @@ const sortedEntries = computed(() => {
     return list;
 });
 
+// Lazy loading for list view
+const visibleListEntries = computed(() => {
+    return sortedEntries.value.slice(0, listVisibleCount.value);
+});
+
+const hasMoreEntries = computed(() => {
+    return listVisibleCount.value < sortedEntries.value.length;
+});
+
+const loadMoreEntries = () => {
+    listVisibleCount.value += 5;
+};
+
 const toggleStats = () => {
     showStats.value = !showStats.value;
 };
@@ -393,6 +455,7 @@ const showDetails = (entry) => {
 
 const setViewSize = (size) => {
     cardViewSize.value = size;
+    listVisibleCount.value = 5; // Reset lazy loading when switching views
     chrome.storage.local.set({ cardViewSize: size });
 };
 
@@ -442,9 +505,12 @@ const applyBulkUpdate = async () => {
     if (count === 0) return;
     
     if (confirm(`Update all ${count} filtered items to "${bulkStatus.value}"?`)) {
+        // Here we still call direct storage or we should dispatch a store action
+        // For now, let's keep direct storage write but the Store will pick up changes via onChanged listener
         const updated = savedEntries.value.map(e => {
             const isMatch = sortedEntries.value.some(match => match.title === e.title);
             if (isMatch) {
+                // Remove marker if generic status set
                 return { ...e, status: bulkStatus.value, customMarker: null };
             }
             return e;
@@ -464,31 +530,15 @@ const loadData = () => {
         return;
     }
 
+    // Only load non-store managed data here (legacy mix)
     chrome.storage.local.get([
-        'savedEntriesMerged', 
         'customBookmarks', 
         'cardViewSize',
         'FamilyFriendlyfeatureEnabled',
-        'LibraryCardBordersEnabled',
-        'LibraryCardBorderThickness',
-        'LibraryHideNoHistory',
-        'LibraryGlowEffect',
-        'LibraryAnimatedBorders',
-        'LibraryStatusIcons',
-        'LibraryProgressBars'
     ], async (data) => {
-        savedEntries.value = data.savedEntriesMerged || [];
         customMarkers.value = data.customBookmarks || [];
         cardViewSize.value = data.cardViewSize || 'large';
         familyFriendlyEnabled.value = data.FamilyFriendlyfeatureEnabled || false;
-        
-        librarySettings.bordersEnabled = data.LibraryCardBordersEnabled !== false;
-        librarySettings.borderThickness = data.LibraryCardBorderThickness || 2;
-        librarySettings.hideNoHistory = data.LibraryHideNoHistory === true;
-        librarySettings.useGlowEffect = data.LibraryGlowEffect === true;
-        librarySettings.animatedBorders = data.LibraryAnimatedBorders === true;
-        librarySettings.showStatusIcon = data.LibraryStatusIcons === true;
-        librarySettings.showProgressBar = data.LibraryProgressBars === true;
 
         personalData.value = await LibFeatures.loadPersonalData();
     });
@@ -497,16 +547,18 @@ const loadData = () => {
 onMounted(() => {
     console.log('[SavedEntriesTab] Component MOUNTED');
     loadData();
+    // No need for separate chrome.storage.onChanged listener for entries here
+    // The Store handles it and updates `savedEntries` automatically!
+    
     chrome.storage.onChanged.addListener((changes, area) => {
         if (area === 'local') {
-            if (changes.savedEntriesMerged) savedEntries.value = changes.savedEntriesMerged.newValue || [];
+            // Only listen for things NOT in the store yet
             if (changes.customBookmarks) customMarkers.value = changes.customBookmarks.newValue || [];
-            if (changes.LibraryCardBordersEnabled) librarySettings.bordersEnabled = changes.LibraryCardBordersEnabled.newValue;
-            // ... add other settings listeners if needed
+            if (changes.FamilyFriendlyfeatureEnabled) familyFriendlyEnabled.value = changes.FamilyFriendlyfeatureEnabled.newValue;
         }
     });
-    
-    // Global exposure for integration with legacy code
+
+    // Global exposure for legacy integration - calling loadData() which now just refreshes local non-store state
     window.refreshLibraryData = loadData;
 
     // Sync Event Listeners
@@ -531,7 +583,8 @@ onMounted(() => {
 
     window.addEventListener('library-sync-complete', () => {
         syncState.isSyncing = false;
-        loadData(); // Refresh data one last time
+        loadData(); // Refresh local non-store data
+        // Store data updates automatically via its own listener
     });
 });
 </script>
@@ -669,6 +722,20 @@ onMounted(() => {
 
 .search-clear-btn:hover {
     color: var(--text-primary);
+}
+
+/* List View */
+.manga-list-view {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+}
+
+.load-more-container {
+    display: flex;
+    justify-content: center;
+    padding: 2rem 0;
 }
 
 </style>

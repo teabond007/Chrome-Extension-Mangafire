@@ -1,22 +1,25 @@
 <template>
-    <div class="feature-toggle-wrapper" :class="{ 'mt-10': marginTop }">
+    <div 
+        class="feature-toggle-wrapper" 
+        :class="{ 'mt-10': marginTop }"
+        @click="$emit('update:modelValue', !modelValue)"
+    >
         <div class="toggle-label-group">
-            <label :for="id" class="toggle-main-label">{{ label }}</label>
+            <label :for="id" class="toggle-main-label" @click.stop>{{ label }}</label>
             <span v-if="subLabel" class="toggle-sub-label">{{ subLabel }}</span>
         </div>
-        <label class="switch" :class="{ 'small-switch': small }">
-            <input 
-                type="checkbox" 
-                :id="id" 
-                :checked="modelValue" 
-                @change="$emit('update:modelValue', $event.target.checked)"
-            >
-            <span class="slider round"></span>
-        </label>
+        <ToggleSwitch 
+            :id="id"
+            :model-value="modelValue"
+            @update:model-value="$emit('update:modelValue', $event)"
+            @click.stop
+        />
     </div>
 </template>
 
 <script setup>
+import ToggleSwitch from './ToggleSwitch.vue';
+
 defineProps({
     id: {
         type: String,

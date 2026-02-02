@@ -373,78 +373,7 @@ label {
     overflow-y: auto;
 }
 
-/* Switch / Toggle Styles */
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 48px;
-    height: 26px;
 
-    input {
-        opacity: 0;
-        width: 0;
-        height: 0;
-
-        &:checked+.slider {
-            background-color: var(--accent-primary);
-
-            &:before {
-                transform: translateX(22px);
-            }
-        }
-
-        &:focus+.slider {
-            box-shadow: 0 0 1px var(--accent-primary);
-        }
-    }
-
-    &.small-switch {
-        width: 36px;
-        height: 20px;
-
-        .slider:before {
-            height: 14px;
-            width: 14px;
-            left: 3px;
-            bottom: 3px;
-        }
-
-        input:checked+.slider:before {
-            transform: translateX(16px);
-        }
-    }
-}
-
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: var(--border-color);
-    transition: .4s;
-
-    &:before {
-        position: absolute;
-        content: "";
-        height: 20px;
-        width: 20px;
-        left: 3px;
-        bottom: 3px;
-        background-color: white;
-        transition: .4s;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
-
-    &.round {
-        border-radius: 34px;
-
-        &:before {
-            border-radius: 50%;
-        }
-    }
-}
 
 /* Feature Toggle Components */
 .feature-toggle {
@@ -455,17 +384,25 @@ label {
         padding: 12px 16px;
         background-color: var(--bg-body);
         border-radius: var(--radius-sm);
-        margin-right: 16px;
         flex: 1;
+        transition: background-color 0.2s ease, transform 0.1s ease;
+        cursor: pointer;
+
+        &:hover {
+            background-color: rgba(67, 24, 255, 0.05);
+
+            .dark-mode & {
+                background-color: rgba(255, 255, 255, 0.05);
+            }
+        }
 
         &.no-bg-padding {
             background-color: transparent;
             padding: 0;
-            margin-right: 0;
-        }
 
-        &:last-child {
-            margin-right: 0;
+            &:hover {
+                background-color: transparent;
+            }
         }
     }
 

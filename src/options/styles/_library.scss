@@ -442,9 +442,10 @@
     /* Card Actions (on hover) */
     &-actions {
         position: absolute;
-        bottom: var(--border-thickness, 0);
-        left: var(--border-thickness, 0);
-        right: var(--border-thickness, 0);
+        bottom: -1px;
+        left: -1px;
+        right: -1px;
+        width: calc(100% + 2px);
         background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
         padding: 40px 12px 12px;
         opacity: 0;

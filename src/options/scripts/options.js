@@ -1,27 +1,30 @@
-/**
- * Options Page Entry Point (Modular)
- */
-
-// Redundant theme import removed
-// Redundant theme import removed
-// Redundant theme import removed
 import { initTabs, initInfoRedirects, initScrollToTop, initUrlParams, initMessageListeners } from './ui/ui-navigation.js';
 import { initFeatureToggles } from './modules/feature-toggles.js';
-import { initSettings } from './modules/settings-manager.js';
 import { initMarkerManager } from './modules/marker-manager.js';
 import { initImportExport } from './modules/import-export.js';
-import { initLibrary } from '../../scripts/core/library-manager';
 import { initQuickAccessManager } from './modules/quick-access-manager.js';
-import { initAppearanceManager } from './modules/appearance-manager.js';
 import { CrystalSelect } from './ui/custom-select.js';
 import { Log } from './ui/logger.js';
 
+import { useSettingsStore } from './store/settings.store.js';
+import { useLibraryStore } from './store/library.store.js';
+
+// Note: Pinia is initialized in src/options/index.js before this init() is called
+
 /**
  * Main initialization event listener.
- * Triggered when the DOM content is fully loaded.
+ * Triggered when the app is mounted.
  * Sequentially initializes all subsystems to ensure the options page is fully functional.
  */
-export function init() {
+export async function init() {
+    console.log("[Options] Initializing...");
+
+    // 1. Initialize Pinia Stores
+    const settingsStore = useSettingsStore();
+    const libraryStore = useLibraryStore();
+
+    // Load initial data (library only, settings loaded by App.vue)
+    await libraryStore.loadLibrary(); // This is async, UI should show loading state
 
     // 2. Navigation
     initTabs();
@@ -30,24 +33,22 @@ export function init() {
     initUrlParams();
     initMessageListeners();
 
-    // 3. Settings & Toggles
+    // 3. Legacy Modules (To be refactored later)
     initFeatureToggles();
-    initSettings();
-
-    // 4. Custom Markers
+    // initSettings(); // REPLACED BY PINIA
     initMarkerManager();
-
-    // 5. Import / Export
     initImportExport();
-
-    // 6. Saved Entries
-    initLibrary();
-
-    // 7. Quick Access
+    // initLibrary(); // REPLACED BY PINIA
     initQuickAccessManager();
-    
-    // 8. Appearance & Themes
-    initAppearanceManager();
+    // initAppearanceManager(); // REPLACED BY PINIA (mostly) but keeping for now for DOM manipulation
+
+    // Setup Storage Listener for Cross-Context Sync
+    chrome.storage.onChanged.addListener((changes, area) => {
+        if (area === 'local') {
+            settingsStore.syncFromStorage(changes);
+            libraryStore.syncFromStorage(changes);
+        }
+    });
 
     // 8.5 Initial Animation (Anime.js)
     if (typeof anime !== 'undefined') {
@@ -76,19 +77,7 @@ export function init() {
         });
     }
 
-    // 9. Clear Reading History
-    const clearHistoryBtn = document.getElementById("ClearReadingHistoryBtn");
-    if (clearHistoryBtn) {
-        clearHistoryBtn.addEventListener("click", () => {
-            chrome.storage.local.remove("userbookmarkshistory", () => {
-                Log("Reading history cleared.");
-                alert("Reading history cleared!");
-            });
-        });
-    }
-
     // 10. Premium Custom Selects
-    // Auto-init handles everything, including dynamic elements
     try {
         CrystalSelect.autoInit();
         Log("CrystalSelect auto-initialization enabled.");

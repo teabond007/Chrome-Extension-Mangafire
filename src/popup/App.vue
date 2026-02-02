@@ -3,84 +3,40 @@
 
     <header class="popup-header">
       <div class="brand">
-
         <span class="brand-text" style="color:rgb(153, 197, 197)">Color </span> <span
           class="brand-text header-text-gradient"> Marker</span>
       </div>
-      <button id="SyncBtn" class="btn-sync" title="Sync Bookmarks Now">
+      <button id="SyncBtn" class="btn-sync" title="Sync Bookmarks Now" @click="handleSync">
         <span class="icon-sync">↻</span>
       </button>
     </header>
 
     <div class="features-list">
-
-      <div class="feature-item">
+      
+      <!-- Feature Items -->
+      <div 
+        v-for="feature in features" 
+        :key="feature.id"
+        class="feature-item"
+        @click="toggleFeature(feature)"
+      >
         <div class="feature-info">
-          <span class="feature-name">Auto Sync</span>
+          <span class="feature-name">{{ feature.label }}</span>
+          <span v-if="feature.subLabel" class="feature-sub">{{ feature.subLabel }}</span>
         </div>
-        <label class="toggle-switch">
-          <input type="checkbox" id="AutoSync">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-      <div class="feature-item">
-        <div class="feature-info">
-          <span class="feature-name">Custom Markers</span>
-        </div>
-        <label class="toggle-switch">
-          <input type="checkbox" id="CustomBookmarks">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-      <div class="feature-item">
-        <div class="feature-info">
-          <span class="feature-name">Custom Borders</span>
-        </div>
-        <label class="toggle-switch">
-          <input type="checkbox" id="CustomBorderSize">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-      <div class="feature-item">
-        <div class="feature-info">
-          <span class="feature-name">Mark Homepage</span>
-        </div>
-        <label class="toggle-switch">
-          <input type="checkbox" id="MarkHomePage">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-      <div class="feature-item">
-
-        <div class="feature-info">
-          <span class="feature-name">Sync History</span>
-          <span class="feature-sub">Sync & Mark Read</span>
-        </div>
-        <label class="toggle-switch">
-          <input type="checkbox" id="SyncandMarkRead">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-      <div class="feature-item">
-        <div class="feature-info">
-          <span class="feature-name">Manga Dashboard</span>
-          <span class="feature-sub">New Tab Experience</span>
-        </div>
-        <label class="toggle-switch">
-          <input type="checkbox" id="NewTabDashboard">
-          <span class="slider"></span>
-        </label>
+        
+        <ToggleSwitch 
+            :id="feature.id"
+            :model-value="feature.value"
+            @update:model-value="val => updateFeature(feature, val)"
+            @click.stop
+        />
       </div>
 
     </div>
 
     <footer class="popup-footer">
-      <button id="oppenSettingsBtn" class="link-btn">
+      <button id="oppenSettingsBtn" class="link-btn" @click="openSettings">
         <span>Open Settings</span>
         &#8594;
       </button>
@@ -90,76 +46,90 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
+import ToggleSwitch from '../options/components/common/ToggleSwitch.vue';
 
-onMounted(() => {
+// State
+const features = ref([
+    { id: "AutoSync", storageKey: "AutoSyncfeatureEnabled", label: "Auto Sync", value: false },
+    { id: "CustomBookmarks", storageKey: "CustomBookmarksfeatureEnabled", label: "Custom Markers", value: false },
+    { id: "CustomBorderSize", storageKey: "CustomBorderSizefeatureEnabled", label: "Custom Borders", value: false },
+    { id: "MarkHomePage", storageKey: "MangaFireHighlightEnabled", label: "Mark Homepage", value: false },
+    { id: "SyncandMarkRead", storageKey: "SyncandMarkReadfeatureEnabled", label: "Sync History", subLabel: "Sync & Mark Read", value: false },
+    { id: "NewTabDashboard", storageKey: "NewTabDashboardfeatureEnabled", label: "Manga Dashboard", subLabel: "New Tab Experience", value: false }
+]);
+
+// Methods
+const handleSync = () => {
+    chrome.runtime.sendMessage({ type: "scrapeBookmarks", value: 1 });
     
-    // Open Options Page
-    document.getElementById("oppenSettingsBtn").addEventListener("click", () => {
-        if (chrome.runtime.openOptionsPage) {
-            chrome.runtime.openOptionsPage();
-        } else {
-            window.open(chrome.runtime.getURL('src/options/options.html'));
-        }
-    });
-
-    // Manual Sync Button
-    document.getElementById("SyncBtn").addEventListener("click", () => {
-        chrome.runtime.sendMessage({ type: "scrapeBookmarks", value: 1 });
-        
-        // Visual feedback
-        const btn = document.getElementById("SyncBtn");
+    // Visual feedback
+    const btn = document.getElementById("SyncBtn");
+    if(btn) {
         btn.style.transform = "rotate(360deg)";
         setTimeout(() => btn.style.transform = "none", 500);
+    }
+};
+
+const openSettings = () => {
+    if (chrome.runtime.openOptionsPage) {
+        chrome.runtime.openOptionsPage();
+    } else {
+        window.open(chrome.runtime.getURL('src/options/options.html'));
+    }
+};
+
+const toggleFeature = (feature) => {
+    feature.value = !feature.value;
+    saveFeature(feature);
+};
+
+const updateFeature = (feature, newVal) => {
+    feature.value = newVal;
+    saveFeature(feature);
+};
+
+const saveFeature = (feature) => {
+    const update = {};
+    update[feature.storageKey] = feature.value;
+    chrome.storage.local.set(update);
+};
+
+// Lifecycle
+onMounted(() => {
+    const keys = features.value.map(f => f.storageKey);
+    
+    // Initial Load
+    chrome.storage.local.get(keys, (data) => {
+        features.value.forEach(f => {
+            if (data[f.storageKey] !== undefined) {
+                f.value = data[f.storageKey];
+            } else if (f.storageKey === "WebtoonsHighlightfeatureEnabled") {
+                f.value = true; // Default true logic example if needed
+            }
+        });
     });
 
-    // Feature Toggles Logic
-    const features = [
-        { id: "AutoSync", storageKey: "AutoSyncfeatureEnabled" },
-        { id: "CustomBookmarks", storageKey: "CustomBookmarksfeatureEnabled" },
-        { id: "CustomBorderSize", storageKey: "CustomBorderSizefeatureEnabled" },
-        { id: "MarkHomePage", storageKey: "MangaFireHighlightEnabled" },
-        { id: "SyncandMarkRead", storageKey: "SyncandMarkReadfeatureEnabled" },
-        { id: "NewTabDashboard", storageKey: "NewTabDashboardfeatureEnabled" },
-        { id: "WebtoonsHighlight", storageKey: "WebtoonsHighlightfeatureEnabled", defaultValue: true }
-    ];
-
-    features.forEach(feature => {
-        const toggle = document.getElementById(feature.id);
-        if(!toggle) return;
-
-        // Load initial state with defaultValue support
-        chrome.storage.local.get(feature.storageKey, (data) => {
-            const defaultVal = feature.defaultValue !== undefined ? feature.defaultValue : false;
-            toggle.checked = data[feature.storageKey] !== undefined ? data[feature.storageKey] : defaultVal;
-        });
-
-        // Listen for changes
-        toggle.addEventListener("change", () => {
-             const update = {};
-             update[feature.storageKey] = toggle.checked;
-             chrome.storage.local.set(update);
-        });
-    });
-
-    // Optional: Listen for changes from Options page if valid
+    // Storage Listener
     chrome.storage.onChanged.addListener((changes, area) => {
         if (area === 'local') {
-            features.forEach(feature => {
-                if (changes[feature.storageKey]) {
-                    const toggle = document.getElementById(feature.id);
-                    if(toggle) toggle.checked = changes[feature.storageKey].newValue;
-                }
-            });
+            optionsFeaturesUpdate(changes);
         }
     });
-
 });
+
+const optionsFeaturesUpdate = (changes) => {
+    features.value.forEach(f => {
+        if (changes[f.storageKey]) {
+            f.value = changes[f.storageKey].newValue;
+        }
+    });
+};
 </script>
 
 <style>
 :root {
-  /* Reuse core variables from options.css */
+  /* Reuse core variables (matching options.css usually) */
   --bg-body: #F4F7FE;
   --bg-sidebar: #0B1437;
   --bg-popup: #FFFFFF;
@@ -169,25 +139,9 @@ onMounted(() => {
   --accent-hover: #3311CC;
   --border-color: #E0E5F2;
   --danger: #EE5D50;
-
-  /* Toggle Colors */
-  --toggle-inactive: #E0E5F2;
-  --toggle-active: #4318FF;
-  --toggle-thumb: #FFFFFF;
-
 }
 
-/* Text Gradient CSS */
-.header-text-gradient {
-  color: #82BDF5;
-  background-image: linear-gradient(45deg, #82BDF5 27%, #3299D1 44%, #8861FF 83%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  display: inline-block;
-}
-
-/* Dark Mode Support (if popup background is dark) */
+/* Dark Mode Support */
 @media (prefers-color-scheme: dark) {
   :root {
     --bg-body: #0B1437;
@@ -195,7 +149,6 @@ onMounted(() => {
     --text-primary: #FFFFFF;
     --text-secondary: #A3AED0;
     --border-color: #2B3674;
-    --toggle-inactive: #2B3674;
   }
 }
 
@@ -208,8 +161,7 @@ onMounted(() => {
 body {
   font-family: 'Inter', sans-serif;
   background-color: var(--bg-body);
-  width: 300px;
-  height: auto;
+  width: 320px;
   min-height: 400px;
 }
 
@@ -218,7 +170,6 @@ body {
   color: var(--text-primary);
   width: 100%;
   height: 100%;
-  /* Removed border-radius */
   display: flex;
   flex-direction: column;
 }
@@ -227,12 +178,10 @@ body {
 .popup-header {
   padding: 20px;
   background-color: var(--bg-sidebar);
-  /* Dark Header like sidebar */
   color: #FFFFFF;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-direction: column;
 }
 
 .brand {
@@ -243,9 +192,18 @@ body {
 
 .brand-text {
   font-weight: 700;
-  font-size: 28px;
+  font-size: 20px;
   letter-spacing: 0.5px;
   cursor: default;
+}
+
+.header-text-gradient {
+  color: #82BDF5;
+  background-image: linear-gradient(45deg, #82BDF5 27%, #3299D1 44%, #8861FF 83%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
 }
 
 .btn-sync {
@@ -274,31 +232,40 @@ body {
 
 /* Features List */
 .features-list {
-  padding: 10px 0;
+  padding: 12px;
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .feature-item {
-  padding: 12px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid var(--border-color);
-  margin: 10px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
+  padding: 12px 16px;
+  background-color: var(--bg-body); /* Using simplistic bg */
+  border-radius: 12px;
   cursor: pointer;
-  background-color: #0b1437b9;
+  transition: all 0.2s;
+  border: 1px solid transparent; /* Prepare for border transition */
+}
+
+/* Dark mode override for feature item bg */
+@media (prefers-color-scheme: dark) {
+    .feature-item {
+        background-color: #1B254B;
+    }
 }
 
 .feature-item:hover {
-  background-color: #2c4177;
-
-  border: 2px solid rgb(132, 145, 192);
+  background-color: rgba(67, 24, 255, 0.05); /* Light primary tint */
 }
 
-.feature-item:last-child {
-  border-bottom: none;
+@media (prefers-color-scheme: dark) {
+    .feature-item:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
 }
 
 .feature-info {
@@ -307,78 +274,26 @@ body {
 }
 
 .feature-name {
-  font-weight: 500;
+  font-weight: 600;
   font-size: 14px;
-
 }
 
 .feature-sub {
   font-size: 11px;
   color: var(--text-secondary);
-}
-
-/* Clean Toggle Switch */
-.toggle-switch {
-  position: relative;
-  display: inline-block;
-  width: 44px;
-  height: 24px;
-}
-
-.toggle-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--toggle-inactive);
-  transition: .4s;
-  border-radius: 34px;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 18px;
-  width: 18px;
-  left: 3px;
-  bottom: 3px;
-  background-color: var(--toggle-thumb);
-  transition: .4s;
-  border-radius: 50%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-input:checked+.slider {
-  background-color: var(--toggle-active);
-}
-
-input:checked+.slider:before {
-  transform: translateX(20px);
+  margin-top: 2px;
 }
 
 /* Footer */
 .popup-footer {
   padding: 0;
-  /* Remove padding for full button */
   background-color: var(--bg-sidebar);
-  /* Match header */
-  border-top: none;
 }
 
 .link-btn {
   background: var(--bg-sidebar);
-  /* Match header */
   border: none;
   color: #FFFFFF;
-  /* White text */
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -395,11 +310,5 @@ input:checked+.slider:before {
 
 .link-btn:hover {
   background-color: #2c3142;
-  /* Slightly lighter */
-  text-decoration: none;
-}
-
-.link-btn svg {
-  stroke: currentColor;
 }
 </style>

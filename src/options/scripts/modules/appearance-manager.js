@@ -108,7 +108,7 @@ function applyCustomTheme(data) {
     if (!data) return;
     const root = document.documentElement;
     
-    // Dynamic CSS Variable Injection - Adjusted to match _base.css
+    // Dynamic CSS Variable Injection - Adjusted to match _base.scss
     root.style.setProperty('--bg-body', data.bg);
     root.style.setProperty('--bg-card', data.bg);
     root.style.setProperty('--bg-sidebar', data.sidebar);
@@ -127,8 +127,8 @@ function applyCustomTheme(data) {
     root.style.setProperty('--input-bg', `rgba(${rgbBg}, 0.2)`);
     root.style.setProperty('--input-border', `rgba(${rgbText}, 0.1)`);
     
-    // Update body bg for immediate effect
-    document.body.style.backgroundColor = data.bg;
+    // Update body bg for immediate effect - Use background to support gradients if needed later
+    document.body.style.background = data.bg;
     Log(`Custom theme applied: BG=${data.bg}, Sidebar=${data.sidebar}`);
 }
 
@@ -142,7 +142,7 @@ function clearCustomThemeStyles() {
         '--border-color', '--input-bg', '--input-border'
     ];
     vars.forEach(v => root.style.removeProperty(v));
-    document.body.style.backgroundColor = '';
+    document.body.style.background = '';
 }
 
 function initGlobalBorders() {

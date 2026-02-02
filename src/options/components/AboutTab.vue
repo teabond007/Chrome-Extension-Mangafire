@@ -11,16 +11,15 @@
             <!-- Project Info Card (Restored) -->
             <div class="card">
                 <div class="card-body prose">
-                    <h2>MangaFire Bookmark Color Marker</h2>
-                    <p>A powerful Chrome Extension for <a href="https://mangafire.to/home"
-                            target="_blank">MangaFire.to</a> that enhances your browsing experience by
-                        automatically highlighting manga based on your bookmarks and reading history.</p>
+                    <h2>Cross Platform content manager</h2>
+                    <p>A powerful Chrome Extension designed for <a href="https://mangafire.to/home"
+                            target="_blank">MangaFire.to</a> and other popular manga reading sites that enhances your browsing experience by
+                        automatically highlighting manga based on your bookmarks and reading history, tracking your progress across platforms and more.</p>
 
-                    <h3>🚀 Why Use This?</h3>
-                    <p>Finding new manga to read can be frustrating when you can't instantly see what you've
-                        already read or saved. MangaFire's default interface doesn't always make this clear
-                        at a
-                        glance.</p>
+                    <h3>Why Use This?</h3>
+                    <p>you can sync your progress across multiple platforms and devices, and you can also track your reading history and bookmarks.
+                        Along with quality of life improvements injected into the website your reading from like status color bordering.
+                    </p>
                     <p><strong>Bookmark Color Marker</strong> solves this by visually tagging manga covers
                         with
                         colored borders corresponding to their status (e.g., Reading, Completed, Plan to
@@ -37,24 +36,19 @@
                         <li><strong>Custom Statuses</strong>: Create your own bookmark categories with
                             unique
                             names, colors, and border styles.</li>
-                        <li><strong>History Sync</strong>: Optionally highlight manga that are in your
-                            reading
-                            history but not bookmarked.</li>
-                        <li><strong>Visual Customization</strong>: Adjust border thickness and style (Solid,
-                            Dashed, Dotted, etc.).</li>
+                        <li><strong>Quick actions overlay</strong>: Hover over any manga to quickly manage it with quick actions.</li>
+                        <li><strong>Customization</strong>: over 50 settings or switches to customize your experience.</li>
+                        <li><strong>Internal library</strong>: Keep track of all the manga you've read and bookmarked and filter them anytime.</li>
                     </ul>
 
                     <hr class="divider">
 
                     <h3>📖 How to Use</h3>
                     <ol class="usage-list">
-                        <li><strong>Sync Data</strong>: Click 'Sync Bookmarks Now' in the Settings tab
-                            (requires
-                            login to MangaFire).</li>
-                        <li><strong>Browse</strong>: Visit MangaFire.to. Your lists will be highlighted!
-                        </li>
-                        <li><strong>Customize</strong>: Use the Settings tab to add new markers (e.g.
-                            "Favorites" in Gold).</li>
+                        <li><strong>Import Data</strong>: if your preferred site supports export you can get all the data immidietly.</li>
+                        <li><strong>Passive tracking</strong>: The extension will track your reading history and bookmarks automatically.</li>
+                        <li><strong>Customize</strong>: In the settings or appearance tab set your own rules on what the extension is doing or visual style.</li>
+                        <li><strong>Read like before</strong>: this is only for quality of life improvements, you can still read like before on your deisred site.</li>
                     </ol>
 
                     <hr class="divider">
@@ -62,7 +56,7 @@
                     <div class="alert-box">
                         <p><strong>Disclaimer:</strong> This is an unofficial extension and is not
                             affiliated
-                            with MangaFire.to.</p>
+                            with MangaFire.to or any other site.</p>
                     </div>
 
                     <hr class="divider">
@@ -86,6 +80,57 @@
                 </div>
             </div>
 
+            <!-- Supported pages Header -->
+            <div class="section-title-full">
+                <h2 class="section-label">Supported pages</h2>
+            </div>
+
+            <!-- Supported pages -->
+            <div class="supported-sites-grid">
+                <a href="https://mangafire.to" target="_blank" class="site-link-card">
+                    <img src="https://www.google.com/s2/favicons?domain=mangafire.to&sz=32" alt="MangaFire" class="site-icon">
+                    <div class="site-info">
+                        <span class="site-name">MangaFire</span>
+                        <span class="site-url">mangafire.to</span>
+                    </div>
+                </a>
+                <a href="https://mangadex.org" target="_blank" class="site-link-card">
+                    <img src="https://www.google.com/s2/favicons?domain=mangadex.org&sz=32" alt="MangaDex" class="site-icon">
+                    <div class="site-info">
+                        <span class="site-name">MangaDex</span>
+                        <span class="site-url">mangadex.org</span>
+                    </div>
+                </a>
+                <a href="https://asuracomic.net" target="_blank" class="site-link-card">
+                    <img src="https://www.google.com/s2/favicons?domain=asuracomic.net&sz=32" alt="Asura Scans" class="site-icon">
+                    <div class="site-info">
+                        <span class="site-name">Asura Scans</span>
+                        <span class="site-url">asuracomic.net</span>
+                    </div>
+                </a>
+                <a href="https://webtoon.com" target="_blank" class="site-link-card">
+                    <img src="https://www.google.com/s2/favicons?domain=webtoon.com&sz=32" alt="Webtoons" class="site-icon">
+                    <div class="site-info">
+                        <span class="site-name">Webtoons</span>
+                        <span class="site-url">webtoon.com</span>
+                    </div>
+                </a>
+                <a href="https://manganato.com" target="_blank" class="site-link-card">
+                    <img src="https://www.google.com/s2/favicons?domain=manganato.com&sz=32" alt="Manganato" class="site-icon">
+                    <div class="site-info">
+                        <span class="site-name">Manganato</span>
+                        <span class="site-url">manganato.com</span>
+                    </div>
+                </a>
+                <a href="https://mangaplus.com" target="_blank" class="site-link-card">
+                    <img src="https://www.google.com/s2/favicons?domain=mangaplus.com&sz=32" alt="MangaPlus" class="site-icon">
+                    <div class="site-info">
+                        <span class="site-name">MangaPlus</span>
+                        <span class="site-url">mangadex.org</span>
+                    </div>
+                </a>
+            </div>
+
             <!-- User Guide Header -->
             <div class="section-title-full">
                 <h2 class="section-label">User Guide & Feature Help</h2>
@@ -98,27 +143,31 @@
                 </GuideCard>
 
                 <GuideCard id="guide-markers" title="Custom Markers" icon="🎨">
-                    Go beyond default statuses! Create markers like "Favorite", "Top Tier", or "To-Read". You can customize the color and border style (dashed, double, etc.) for each marker.
+                    Create markers like "Favorite", "Top Tier", or "To-Read". You can customize the color and border style (dashed, double, etc.) for each marker. For when your prefered website allows custom markers/folders.
                 </GuideCard>
 
                 <GuideCard id="guide-general" title="General Preferences" icon="⚙️">
                     Toggle <b>Mark Homepage</b> to see highlights on the front page. Use <b>Sync & Mark Read</b> to track history. <b>Family Friendly</b> mode hides entries with adult-only tags.
                 </GuideCard>
 
+                <GuideCard id="guide-websites" title="Website Preferences" icon="⚙️">
+                    Specific settings that only change extensions behaviour on specific websites (e.x.  set higlighter border thicknes that is dependant on website).
+                </GuideCard>
+
                 <GuideCard id="guide-entries" title="Saved Entries" icon="📚">
-                    Your local manga library. Synchronize with AniList to get cover images and metadata. Use filters to browse your collection by status, format, or name.
+                    Your local manga library. Synchronizes with AniList + Mangadex to get all the data needed. Use filters to browse your collection and inspect or manage your content and reading history.
                 </GuideCard>
 
                 <GuideCard id="guide-backup" title="Backup & Restore" icon="💾">
-                    Always keep a backup! <b>Export</b> saves your bookmarks, settings, and cache. <b>Import</b> allows you to restore data or merge backups from different devices.
+                    <b>Export</b> Downloads a file with every single information saved by extension <b>Import</b> allows you to restore exported data or use export from other websites to merge data.
                 </GuideCard>
 
                 <GuideCard id="guide-personalization" title="Personalization" icon="🌙">
-                    Switch between light and dark modes in the sidebar. You can also adjust the thickness of the manga highlight borders to suit your visual preference.
+                    everything that changes the look or adds/removes features of extension itself is in Appearance tab. it will not affect any other website.
                 </GuideCard>
 
                 <GuideCard id="guide-dashboard" title="Dashboard Settings" icon="📊">
-                    Enable or disable the <b>Manga Dashboard</b> new tab page. Use <b>Packed Layout</b> to show more detailed statistics if you have many entries.
+                    <b>Manga Dashboard</b> replaces every new tab you open. Use <b>Packed Layout</b> to show more detailed statistics if you have many entries. 
                 </GuideCard>
 
                 <GuideCard id="guide-styles" title="Highlight Styles" icon="🖼️">
@@ -130,7 +179,7 @@
                 </GuideCard>
             </div>
 
-            <!-- Support Developer Section (Perfected) -->
+            <!-- Support Developer Section -->
             <div class="support-dev-card glass-card">
                 <div class="card-body">
                     <div class="support-header">
@@ -236,6 +285,56 @@ import GuideCard from './common/GuideCard.vue';
     margin-top: 20px;
 }
 
+.supported-sites-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 10px;
+}
+
+.site-link-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.site-link-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent-primary);
+    box-shadow: 0 4px 12px rgba(67, 24, 255, 0.1);
+    background: var(--bg-body);
+}
+
+.site-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: white;
+    padding: 2px;
+}
+
+.site-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.site-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.site-url {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
 .section-title-full {
     grid-column: 1 / -1;
     margin-top: 30px;
@@ -252,8 +351,8 @@ import GuideCard from './common/GuideCard.vue';
 }
 
 .guide-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
 }
 
 .guide-text {

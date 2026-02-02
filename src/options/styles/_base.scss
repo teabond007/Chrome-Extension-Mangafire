@@ -1,6 +1,6 @@
 :root {
     /* Color Palette - Light Mode (Default) */
-    --bg-body: #F4F7FE;
+    --bg-body: linear-gradient(135deg, #F4F7FE 0%, #ced9f6 100%);
     --bg-sidebar: #1E222D;
     /* Always dark in reference */
     --bg-card: #FFFFFF;
@@ -31,7 +31,7 @@
 
 /* Dark Mode Variables - Applied when .dark-mode class is present on root */
 .dark-mode {
-    --bg-body: #0B1437;
+    --bg-body: linear-gradient(135deg, #0B1437 0%, #091129 100%);
     /* Deep Blue/Black */
     --bg-sidebar: #111C44;
     --bg-card: #111C44;
@@ -46,7 +46,7 @@
 
 /* Black Mode Variables - High contrast AMOLED black */
 .black-mode {
-    --bg-body: #000000;
+    --bg-body: black;
     --bg-sidebar: #000000;
     --bg-card: #111141d0;
     --text-primary: #FFFFFF;
@@ -59,7 +59,7 @@
 
 /* Neon Mode Variables - Cyberpunk aesthetic */
 .neon-mode {
-    --bg-body: #030303;
+    --bg-body: black;
     --bg-sidebar: #050505;
     --bg-card: #100e14;
     --text-primary: #FFFFFF;
@@ -76,7 +76,7 @@
 
 /* Glassy Mode Variables - Semi-transparent and blur */
 .glassy-mode {
-    --bg-body: #0b1437;
+    --bg-body: linear-gradient(135deg, #0B1437 0%, #080E2C 100%);
     --bg-sidebar: rgba(17, 28, 68, 0.8);
     --bg-card: rgba(17, 28, 68, 0.4);
     --text-primary: #FFFFFF;
@@ -104,7 +104,7 @@
 
 body {
     font-family: 'Inter', sans-serif;
-    background-color: var(--bg-body);
+    background: var(--bg-body) fixed;
     color: var(--text-primary);
     /* Transition removed to prevent flash on load */
     height: 100vh;

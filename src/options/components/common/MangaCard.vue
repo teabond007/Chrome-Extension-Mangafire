@@ -27,7 +27,7 @@
 
             <div class="manga-card-actions">
                 <a 
-                    v-if="entry.lastMangafireUrl" 
+                    v-if="entry.lastMangafireUrl && (entry.lastChapterRead || entry.lastChapterRead === 0)" 
                     :href="entry.lastMangafireUrl" 
                     target="_blank" 
                     class="card-action-btn card-action-continue"
@@ -36,23 +36,6 @@
                 >
                     ▶ Ch.{{ entry.lastChapterRead || '?' }}
                 </a>
-                
-                <a 
-                    v-if="entry.anilistData?.siteUrl" 
-                    :href="entry.anilistData.siteUrl" 
-                    target="_blank" 
-                    class="card-action-btn"
-                    @click.stop
-                >
-                    View
-                </a>
-
-                <button 
-                    class="card-action-btn" 
-                    @click.stop="$emit('marker-click', entry)"
-                >
-                    {{ entry.customMarker ? '✓ ' + entry.customMarker : '+ Marker' }}
-                </button>
             </div>
         </div>
 

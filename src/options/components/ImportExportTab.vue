@@ -122,10 +122,9 @@
                         <div class="toggle-label-group">
                             <span class="toggle-main-label">Merge with current data</span>
                         </div>
-                        <label class="switch">
-                            <input type="checkbox" id="mergeImportToggle" checked>
-                            <span class="slider round"></span>
-                        </label>
+                        <ToggleSwitch 
+                            id="mergeImportToggle" 
+                        />
                     </div>
                     <button id="startImportBtn" class="btn btn-primary btn-with-icon">
                         <svg class="icon-svg icon-plus" style="width: 16px; height: 16px;"></svg>
@@ -200,6 +199,7 @@
 </template>
 
 <script setup>
+import ToggleSwitch from './common/ToggleSwitch.vue';
 </script>
 
 <style scoped>
