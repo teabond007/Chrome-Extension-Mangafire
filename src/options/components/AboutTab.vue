@@ -162,6 +162,10 @@
                     <b>Export</b> Downloads a file with every single information saved by extension <b>Import</b> allows you to restore exported data or use export from other websites to merge data.
                 </GuideCard>
 
+                <GuideCard id="guide-mangadex-import" title="MangaDex Import" icon="ℹ️">
+                   Importing from MangaDex requires fetching data directly from their website. <strong>You will be temporarily redirected</strong> to <em>mangadex.org</em> to retrieve your list securely. Please ensure you are logged in if your list is private (Private lists are not supported yet, public only).
+                </GuideCard>
+
                 <GuideCard id="guide-personalization" title="Personalization" icon="🌙">
                     everything that changes the look or adds/removes features of extension itself is in Appearance tab. it will not affect any other website.
                 </GuideCard>

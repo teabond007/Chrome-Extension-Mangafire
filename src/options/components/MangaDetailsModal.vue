@@ -37,23 +37,24 @@
                                 <span class="modal-meta-label">Released</span>
                                 <div class="modal-meta-value" id="modalReleased">{{ releasedDate }}</div>
                             </div>
-                            <div class="modal-meta-row" id="modalHistoryRow">
-                                <span class="modal-meta-label">History</span>
-                                <div class="modal-history-actions">
-                                    <button class="btn btn-ghost btn-sm" @click="toggleChaptersList"
-                                        style="padding: 2px 8px; font-size: 11px;">
-                                        {{ showChapters ? 'Hide Chapters' : 'Show Chapters' }}
-                                    </button>
-                                    <button class="btn btn-primary btn-sm" @click="handleMarkAllRead"
-                                        style="padding: 2px 8px; font-size: 11px;"
-                                        title="Mark all chapters as read up to total">✓ Mark All Read</button>
-                                </div>
-                                <div v-if="showChapters" id="modalReadChaptersList" class="modal-chapters-list">
-                                    <span v-for="ch in sortedChapters" :key="ch" class="chapter-pill">{{ ch }}</span>
-                                    <span v-if="sortedChapters.length === 0" style="color: var(--text-secondary); font-style: italic;">
-                                        No history found
-                                    </span>
-                                </div>
+                        </div>
+                        <!-- Separate History Section -->
+                        <div class="modal-sidebar-info modal-sidebar-history" id="modalHistoryRow">
+                            <span class="modal-meta-label">Reading History</span>
+                            <div class="modal-history-actions">
+                                <button class="btn btn-ghost btn-sm" @click="toggleChaptersList"
+                                    style="padding: 2px 8px; font-size: 11px;">
+                                    {{ showChapters ? 'Hide Chapters' : 'Show Chapters' }}
+                                </button>
+                                <button class="btn btn-primary btn-sm" @click="handleMarkAllRead"
+                                    style="padding: 2px 8px; font-size: 11px;"
+                                    title="Mark all chapters as read up to total">✓ Mark All Read</button>
+                            </div>
+                            <div v-if="showChapters" id="modalReadChaptersList" class="modal-chapters-list">
+                                <span v-for="ch in sortedChapters" :key="ch" class="chapter-pill">{{ ch }}</span>
+                                <span v-if="sortedChapters.length === 0" style="color: var(--text-secondary); font-style: italic;">
+                                    No history found
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -76,61 +77,69 @@
 
                         <!-- Personal Data Section -->
                         <div class="modal-personal-section" id="modalPersonalSection">
-                            <h4>📝 Your Data</h4>
-                            
-                            <!-- Rating -->
-                            <div class="modal-personal-row">
-                                <span class="modal-personal-label">Rating</span>
-                                <div class="modal-personal-content">
-                                    <div class="star-rating-container">
-                                        <span v-for="i in 5" :key="i" class="star-rating-star"
-                                            :class="getStarClass(i)"
-                                            @click="saveRating(i * 2)"
-                                            @mouseenter="hoverRating = i * 2"
-                                            @mouseleave="hoverRating = 0"
-                                        >
-                                            {{ getStarChar(i) }}
-                                        </span>
-                                        <span class="star-rating-value">
-                                            {{ personalData.rating > 0 ? (personalData.rating + '/10') : '' }}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Tags -->
-                            <div class="modal-personal-row">
-                                <span class="modal-personal-label">Tags</span>
-                                <div class="modal-personal-content">
-                                    <div class="tag-input-container">
-                                        <div class="tag-list">
-                                            <span v-for="tag in personalData.tags" :key="tag" class="tag-pill">
-                                                <span class="tag-pill-text">{{ tag }}</span>
-                                                <button class="tag-pill-remove" @click="removeTag(tag)">&times;</button>
-                                            </span>
-                                        </div>
-                                        <div class="tag-input-wrapper">
-                                            <input type="text" v-model="tagInputValue" class="tag-input" 
-                                                placeholder="Add tag..." @keydown.enter="addTag">
-                                            <div v-if="filteredSuggestions.length > 0" class="tag-suggestions">
-                                                <div v-for="match in filteredSuggestions" :key="match" 
-                                                    class="tag-suggestion-item" @click="addTagFromSuggestion(match)">
-                                                    {{ match }}
-                                                </div>
+                            <div class="personal-section-grid">
+                                <!-- Left Column: Header + Rating -->
+                                <div class="personal-left">
+                                    <h4>📝 Your Data</h4>
+                                    
+                                    <!-- Rating (10 stars) -->
+                                    <div class="modal-personal-row">
+                                        <span class="modal-personal-label">Rating</span>
+                                        <div class="modal-personal-content">
+                                            <div class="star-rating-container">
+                                                <span v-for="i in 10" :key="i" class="star-rating-star"
+                                                    :class="{ 'full': (hoverRating || personalData.rating) >= i }"
+                                                    @click="saveRating(i)"
+                                                    @mouseenter="hoverRating = i"
+                                                    @mouseleave="hoverRating = 0"
+                                                >
+                                                    {{ (hoverRating || personalData.rating) >= i ? '★' : '☆' }}
+                                                </span>
+                                                <span class="star-rating-value">
+                                                    {{ personalData.rating > 0 ? (personalData.rating + '/10') : '' }}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <!-- Notes -->
-                            <div class="modal-personal-row">
-                                <span class="modal-personal-label">Notes</span>
-                                <div class="modal-personal-content">
-                                    <div class="notes-editor-container">
-                                        <textarea v-model="personalData.notes" class="notes-textarea" 
-                                            placeholder="Add personal notes..." rows="3" @blur="saveNotes"></textarea>
-                                        <span class="notes-char-count">{{ (personalData.notes?.length || 0) }}/500</span>
+                                <!-- Right Column: Tags + Notes -->
+                                <div class="personal-right">
+                                    <!-- Tags -->
+                                    <div class="modal-personal-row">
+                                        <span class="modal-personal-label">Tags</span>
+                                        <div class="modal-personal-content">
+                                            <div class="tag-input-container">
+                                                <div class="tag-list">
+                                                    <span v-for="tag in personalData.tags" :key="tag" class="tag-pill">
+                                                        <span class="tag-pill-text">{{ tag }}</span>
+                                                        <button class="tag-pill-remove" @click="removeTag(tag)">&times;</button>
+                                                    </span>
+                                                </div>
+                                                <div class="tag-input-wrapper">
+                                                    <input type="text" v-model="tagInputValue" class="tag-input" 
+                                                        placeholder="Add tag..." @keydown.enter="addTag">
+                                                    <div v-if="filteredSuggestions.length > 0" class="tag-suggestions">
+                                                        <div v-for="match in filteredSuggestions" :key="match" 
+                                                            class="tag-suggestion-item" @click="addTagFromSuggestion(match)">
+                                                            {{ match }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Notes -->
+                                    <div class="modal-personal-row">
+                                        <span class="modal-personal-label">Notes</span>
+                                        <div class="modal-personal-content">
+                                            <div class="notes-editor-container">
+                                                <textarea v-model="personalData.notes" class="notes-textarea" 
+                                                    placeholder="Add personal notes..." rows="2" @blur="saveNotes"></textarea>
+                                                <span class="notes-char-count">{{ (personalData.notes?.length || 0) }}/500</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -427,20 +436,7 @@ const removeTag = async (tag) => {
     await LibFeatures.removeTagFromManga(currentEntry.value, tag);
 };
 
-// Rating display helpers
-const getStarClass = (i) => {
-    const val = i * 2;
-    const rating = hoverRating.value || personalData.value.rating;
-    if (rating >= val) return 'full';
-    if (rating >= val - 1) return 'half';
-    return '';
-};
-
-const getStarChar = (i) => {
-    const val = i * 2;
-    const rating = hoverRating.value || personalData.value.rating;
-    return rating >= val - 1 ? '★' : '☆';
-};
+// Rating display helpers (now simplified for 10-star direct system)
 
 // Exposure for backward compatibility
 onMounted(() => {
@@ -566,6 +562,21 @@ onMounted(() => {
     border-radius: var(--radius-md, 8px);
 }
 
+.modal-sidebar-history {
+    margin-top: 12px;
+    gap: 10px;
+}
+
+.format-badge {
+    width: fit-content;
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
 .modal-meta-row {
     display: flex;
     flex-direction: column;
@@ -621,6 +632,16 @@ onMounted(() => {
     border-radius: 100px;
     font-size: 12px;
     font-weight: 600;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    cursor: default;
+}
+
+.modal-genre-tag:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(67, 24, 255, 0.25);
+    border-color: var(--accent-primary);
+    background: rgba(67, 24, 255, 0.15);
 }
 
 .modal-tags {
@@ -636,6 +657,17 @@ onMounted(() => {
     background: rgba(255, 255, 255, 0.05);
     padding: 3px 8px;
     border-radius: 4px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    cursor: default;
+}
+
+.modal-tag:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(255, 255, 255, 0.1);
+    border-color: var(--border-color);
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
 }
 
 .modal-description {
@@ -738,11 +770,33 @@ onMounted(() => {
     border-radius: 8px;
 }
 
+.personal-section-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1.5rem;
+}
+
+.personal-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 180px;
+}
+
+.personal-left h4 {
+    margin: 0;
+}
+
+.personal-right {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
 .modal-personal-row {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    margin-bottom: 1rem;
+    gap: 6px;
 }
 
 .modal-personal-label {
@@ -755,17 +809,19 @@ onMounted(() => {
 .star-rating-container {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: 2px;
+    flex-wrap: wrap;
 }
 
 .star-rating-star {
     cursor: pointer;
-    font-size: 1.25rem;
-    transition: transform 0.1s;
+    font-size: 1rem;
+    transition: transform 0.1s, color 0.15s;
+    color: var(--text-secondary);
 }
 
 .star-rating-star:hover {
-    transform: scale(1.2);
+    transform: scale(1.15);
 }
 
 .star-rating-star.full {
@@ -773,8 +829,8 @@ onMounted(() => {
 }
 
 .star-rating-value {
-    margin-left: 8px;
-    font-size: 0.85rem;
+    margin-left: 6px;
+    font-size: 0.8rem;
     color: var(--text-secondary);
 }
 

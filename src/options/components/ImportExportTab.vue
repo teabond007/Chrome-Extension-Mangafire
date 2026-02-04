@@ -159,11 +159,18 @@
                     <div class="card-title-group">
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <h3>Import from MangaDex List</h3>
+                            <button class="info-redirect-btn" data-target="guide-mangadex-import"
+                                title="About MangaDex Import">
+                                <svg class="icon-svg icon-info" style="width: 16px; height: 16px;"></svg>
+                            </button>
                         </div>
                         <p class="description compact">Import manga from a public MangaDex reading list
                             (MDList).</p>
                     </div>
                 </div>
+
+                <!-- Info Guide Card -->
+
 
                 <div class="inner-info-card" style="flex-direction: column; gap: 12px;">
                     <div class="format-info" style="width: 100%;">
@@ -200,6 +207,7 @@
 
 <script setup>
 import ToggleSwitch from './common/ToggleSwitch.vue';
+
 </script>
 
 <style scoped>

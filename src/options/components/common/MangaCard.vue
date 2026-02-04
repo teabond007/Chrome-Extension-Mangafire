@@ -17,9 +17,7 @@
         >
             <div class="card-status-dot" :style="{ backgroundColor: statusInfo.borderColor }"></div>
             
-            <div v-if="librarySettings.showStatusIcon" class="manga-card-status-icon" :title="entry.status">
-                {{ statusEmoji }}
-            </div>
+
 
             <div v-if="showProgressBar" class="manga-card-progress-bar">
                 <div class="manga-card-progress-fill" :style="{ width: progressPercentage + '%' }"></div>
@@ -104,7 +102,7 @@ const props = defineProps({
             borderThickness: 2,
             useGlowEffect: false,
             animatedBorders: false,
-            showStatusIcon: false,
+
             showProgressBar: false,
             smartInactivity: false
         })
@@ -157,15 +155,7 @@ const coverUrl = computed(() => {
     return FALLBACK_COVER;
 });
 
-const statusEmoji = computed(() => {
-    const statusLower = (props.entry.status || '').toLowerCase();
-    if (statusLower.includes('reading')) return '📖';
-    if (statusLower === 'read' || statusLower.includes('completed')) return '✅';
-    if (statusLower.includes('dropped')) return '❌';
-    if (statusLower.includes('hold')) return '⏸️';
-    if (statusLower.includes('plan')) return '📋';
-    return '📚';
-});
+
 
 const showProgressBar = computed(() => {
     return props.librarySettings.showProgressBar && 

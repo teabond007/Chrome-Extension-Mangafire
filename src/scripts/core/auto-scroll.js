@@ -168,7 +168,7 @@ class AutoScrollController {
      * Sets the scroll speed.
      */
     setSpeed(speed) {
-        this.speed = Math.max(10, Math.min(300, speed));
+        this.speed = Math.max(10, Math.min(400, speed));
         if (this.isRunning) {
             this.stop();
             this.start();
@@ -217,17 +217,30 @@ class AutoScrollController {
         if (existing) existing.remove();
 
         const panel = document.createElement('div');
-        panel.className = 'bmh-autoscroll-panel';
+        panel.className = 'bmh-autoscroll-panel bmh-panel-idle';
         panel.innerHTML = `
             <button class="bmh-as-toggle" type="button">▶ Start</button>
             <div class="bmh-as-speed-control">
                 <span class="bmh-as-label">Speed:</span>
-                <input type="range" class="bmh-as-speed" min="20" max="200" value="${this.speed}">
-                <span class="bmh-as-speed-value">${this.speed}</span>
+                <input type="range" class="bmh-as-speed" min="20" max="400" value="${this.speed}">
+                <input type="number" class="bmh-as-speed-input" min="20" max="400" value="${this.speed}">
             </div>
         `;
 
         const self = this;
+        let idleTimeout = null;
+
+        // Idle state handlers
+        const setIdle = () => panel.classList.add('bmh-panel-idle');
+        const setActive = () => {
+            panel.classList.remove('bmh-panel-idle');
+            if (idleTimeout) clearTimeout(idleTimeout);
+        };
+
+        panel.addEventListener('mouseenter', setActive);
+        panel.addEventListener('mouseleave', () => {
+            idleTimeout = setTimeout(setIdle, 2000);
+        });
         
         panel.querySelector('.bmh-as-toggle').onclick = function(e) {
             e.preventDefault();
@@ -237,12 +250,25 @@ class AutoScrollController {
         };
 
         const slider = panel.querySelector('.bmh-as-speed');
-        const valueDisplay = panel.querySelector('.bmh-as-speed-value');
+        const numberInput = panel.querySelector('.bmh-as-speed-input');
         
         slider.oninput = function(e) {
             const val = parseInt(e.target.value);
             self.setSpeed(val);
-            valueDisplay.textContent = val;
+            numberInput.value = val;
+        };
+
+        numberInput.oninput = function(e) {
+            const val = parseInt(e.target.value) || 20;
+            self.setSpeed(val);
+            slider.value = val;
+        };
+
+        numberInput.onblur = function() {
+            const clamped = Math.max(20, Math.min(400, parseInt(numberInput.value) || 20));
+            numberInput.value = clamped;
+            slider.value = clamped;
+            self.setSpeed(clamped);
         };
 
         this.injectStyles();
@@ -276,6 +302,14 @@ class AutoScrollController {
                 font-size: 13px !important;
                 color: white !important;
                 box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+                transition: opacity 0.3s ease !important;
+                opacity: 1 !important;
+            }
+            .bmh-autoscroll-panel.bmh-panel-idle {
+                opacity: 0.4 !important;
+            }
+            .bmh-autoscroll-panel.bmh-panel-idle:hover {
+                opacity: 1 !important;
             }
             .bmh-as-toggle {
                 background: #4f46e5 !important;
@@ -314,10 +348,25 @@ class AutoScrollController {
                 background: white !important;
                 border-radius: 50% !important;
             }
-            .bmh-as-speed-value {
-                color: rgba(255, 255, 255, 0.9) !important;
+            .bmh-as-speed-input {
+                width: 42px !important;
+                padding: 4px 6px !important;
                 font-size: 11px !important;
-                min-width: 24px !important;
+                background: rgba(255, 255, 255, 0.15) !important;
+                border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                border-radius: 4px !important;
+                color: white !important;
+                text-align: center !important;
+            }
+            .bmh-as-speed-input:focus {
+                outline: none !important;
+                border-color: rgba(255, 255, 255, 0.5) !important;
+                background: rgba(255, 255, 255, 0.2) !important;
+            }
+            .bmh-as-speed-input::-webkit-inner-spin-button,
+            .bmh-as-speed-input::-webkit-outer-spin-button {
+                -webkit-appearance: none !important;
+                margin: 0 !important;
             }
         `;
         document.head.appendChild(style);

@@ -157,12 +157,7 @@
                         sub-label="Pulse animation for 'Reading' status" 
                         v-model="libraryAnimatedBorders"
                     />
-                    <SwitchControl 
-                        id="LibraryStatusIcons" 
-                        label="Status Icons" 
-                        sub-label="Show emoji overlay on cards" 
-                        v-model="libraryShowStatusIcon"
-                    />
+
                     <SwitchControl 
                         id="LibraryProgressBars" 
                         label="Progress Bars" 
@@ -196,7 +191,7 @@ const {
     libraryHideNoHistory,
     libraryUseGlow,
     libraryAnimatedBorders,
-    libraryShowStatusIcon,
+
     libraryShowProgressBar
 } = storeToRefs(settingsStore);
 
@@ -213,7 +208,7 @@ bindSetting(libraryBordersEnabled, 'libraryBordersEnabled');
 // I need to add it to store first if it's missing.
 bindSetting(libraryUseGlow, 'libraryUseGlow');
 bindSetting(libraryAnimatedBorders, 'libraryAnimatedBorders');
-bindSetting(libraryShowStatusIcon, 'libraryShowStatusIcon');
+
 bindSetting(libraryShowProgressBar, 'libraryShowProgressBar');
 
 // Theme Logic
@@ -362,7 +357,7 @@ const updateLibraryThickness = (e) => {
 .theme-label {
     font-size: 0.9rem;
     font-weight: 500;
-    color: var(--text-white, #fff);
+    color: var(--text-primary);
 }
 
 /* Color Creator Grid */
