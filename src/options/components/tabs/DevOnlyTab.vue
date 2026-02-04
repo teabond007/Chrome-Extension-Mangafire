@@ -97,10 +97,10 @@
 <script setup>
 import { watch } from 'vue';
 import { storeToRefs } from 'pinia';
-import ToggleSwitch from './common/ToggleSwitch.vue';
-import SwitchControl from './common/SwitchControl.vue';
-import SettingsCard from './common/SettingsCard.vue';
-import { useSettingsStore } from '../scripts/store/settings.store.js';
+import ToggleSwitch from '../common/ToggleSwitch.vue';
+import SwitchControl from '../common/SwitchControl.vue';
+import SettingsCard from '../common/SettingsCard.vue';
+import { useSettingsStore } from '../../scripts/store/settings.store.js';
 
 const settingsStore = useSettingsStore();
 const { 

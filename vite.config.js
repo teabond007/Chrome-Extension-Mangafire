@@ -8,4 +8,11 @@ export default defineConfig({
     vue(),
     crx({ manifest }),
   ],
+  css: {
+    preprocessorOptions: {
+      scss: {
+        api: 'modern-compiler',
+      },
+    },
+  },
 })
