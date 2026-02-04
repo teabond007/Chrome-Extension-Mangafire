@@ -14,6 +14,7 @@
                 icon="👤"
                 icon-bg="rgba(66, 133, 244, 0.15)"
                 icon-color="#4285F4"
+                guide-target="guide-profile-account"
                 full-height
             >
                 <!-- Signed In State -->
@@ -64,6 +65,7 @@
                 icon="⚙️"
                 icon-bg="rgba(117, 81, 255, 0.15)"
                 icon-color="var(--accent-primary)"
+                guide-target="guide-profile-sync"
                 full-height
             >
                 <div class="sync-settings" :class="{ disabled: !isSignedIn }">
@@ -227,6 +229,7 @@
                 icon="🔧"
                 icon-bg="rgba(255, 171, 0, 0.15)"
                 icon-color="#FFAB00"
+                guide-target="guide-profile-advanced"
             >
                 <div class="advanced-options">
                     <div class="option-row">
@@ -271,9 +274,9 @@
  */
 import { ref, onMounted, watch } from 'vue';
 import { storeToRefs } from 'pinia';
-import SettingsCard from './common/SettingsCard.vue';
-import SwitchControl from './common/SwitchControl.vue';
-import { useProfileStore } from '../scripts/store/profile.store.js';
+import SettingsCard from '../common/SettingsCard.vue';
+import SwitchControl from '../common/SwitchControl.vue';
+import { useProfileStore } from '../../scripts/store/profile.store.js';
 
 const profileStore = useProfileStore();
 

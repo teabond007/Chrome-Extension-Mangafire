@@ -1,9 +1,10 @@
-/* Cards */
 .card {
     background-color: var(--bg-card);
     border-radius: var(--radius-md);
     padding: 24px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    overflow: visible;
+    /* Prevent dropdown cutoff */
 
     .dark-mode & {
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);

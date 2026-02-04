@@ -29,13 +29,13 @@ import { init } from './scripts/options.js';
 import { useSettingsStore } from './scripts/store/settings.store.js';
 
 import Sidebar from './components/Sidebar.vue';
-import GeneralTab from './components/GeneralTab.vue';
-import AppearanceTab from './components/AppearanceTab.vue';
-import SavedEntriesTab from './components/SavedEntriesTab.vue';
-import ImportExportTab from './components/ImportExportTab.vue';
-import AboutTab from './components/AboutTab.vue';
-import ProfileTab from './components/ProfileTab.vue';
-import DevOnlyTab from './components/DevOnlyTab.vue';
+import GeneralTab from './components/tabs/GeneralTab.vue';
+import AppearanceTab from './components/tabs/AppearanceTab.vue';
+import SavedEntriesTab from './components/tabs/SavedEntriesTab.vue';
+import ImportExportTab from './components/tabs/ImportExportTab.vue';
+import AboutTab from './components/tabs/AboutTab.vue';
+import ProfileTab from './components/tabs/ProfileTab.vue';
+import DevOnlyTab from './components/tabs/DevOnlyTab.vue';
 import MangaDetailsModal from './components/MangaDetailsModal.vue';
 
 const settingsStore = useSettingsStore();

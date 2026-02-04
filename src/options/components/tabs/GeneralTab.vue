@@ -81,7 +81,7 @@
                     icon="⚡" 
                     icon-bg="rgba(79, 70, 229, 0.1)"
                     icon-color="var(--primary)"
-                    guide-target="guide-general"
+                    guide-target="guide-smart-automation"
                     full-height
                 >
                     <SwitchControl 
@@ -104,13 +104,7 @@
                         v-model="smartResume"
                         margin-top
                     />
-                    <SwitchControl 
-                        id="NotificationsEnabled" 
-                        label="New Chapter Alerts" 
-                        sub-label="Browser notifications for new releases"
-                        v-model="notifications"
-                        margin-top
-                    />
+
                 </SettingsCard>
 
                 <SettingsCard 
@@ -273,7 +267,7 @@
             <SettingsCard 
                 title="Quick Access Shortcuts" 
                 icon="🔗" 
-                guide-target="guide-personalization"
+                guide-target="guide-quick-access"
             >
                 <div class="card-body">
                     <p class="description">Customize the 5 shortcut circles on your Manga Dashboard.</p>
@@ -295,10 +289,10 @@
 <script setup>
 import { computed, watch } from 'vue';
 import { storeToRefs } from 'pinia';
-import ToggleSwitch from './common/ToggleSwitch.vue';
-import SwitchControl from './common/SwitchControl.vue';
-import SettingsCard from './common/SettingsCard.vue';
-import { useSettingsStore } from '../scripts/store/settings.store.js';
+import ToggleSwitch from '../common/ToggleSwitch.vue';
+import SwitchControl from '../common/SwitchControl.vue';
+import SettingsCard from '../common/SettingsCard.vue';
+import { useSettingsStore } from '../../scripts/store/settings.store.js';
 
 const settingsStore = useSettingsStore();
 
@@ -328,7 +322,7 @@ const {
     familyFriendly,
     smartAutoComplete,
     smartResume,
-    notifications,
+
     autoScroll,
     keybinds,
     progressTracking,
@@ -357,7 +351,7 @@ bindSetting(showReadingBadges, 'showReadingBadges');
 bindSetting(familyFriendly, 'familyFriendly');
 bindSetting(smartAutoComplete, 'smartAutoComplete');
 bindSetting(smartResume, 'smartResume');
-bindSetting(notifications, 'notifications');
+
 bindSetting(autoScroll, 'autoScroll');
 bindSetting(keybinds, 'keybinds');
 bindSetting(progressTracking, 'progressTracking');

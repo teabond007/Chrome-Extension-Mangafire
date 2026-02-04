@@ -36,7 +36,6 @@ export const useSettingsStore = defineStore('settings', {
         // Smart Automation
         smartAutoComplete: false, // SmartAutoComplet
         smartResume: false,       // SmartResumeLink
-        notifications: false,     // NotificationsEnabled
 
         // Reader Enhancements
         autoScroll: false,        // AutoScrollEnabled
@@ -77,7 +76,6 @@ export const useSettingsStore = defineStore('settings', {
                 'FamilyFriendly',
                 'SmartAutoComplete',
                 'SmartResumeLink',
-                'NotificationsEnabled',
                 'AutoScrollEnabled',
                 'KeybindsEnabled',
                 'ProgressTrackingEnabled',
@@ -111,7 +109,6 @@ export const useSettingsStore = defineStore('settings', {
             this.familyFriendly = !!data.FamilyFriendly;
             this.smartAutoComplete = !!data.SmartAutoComplete;
             this.smartResume = !!data.SmartResumeLink;
-            this.notifications = !!data.NotificationsEnabled;
             this.autoScroll = !!data.AutoScrollEnabled;
             this.keybinds = !!data.KeybindsEnabled;
             this.progressTracking = data.ProgressTrackingEnabled !== false;
@@ -155,7 +152,6 @@ export const useSettingsStore = defineStore('settings', {
                 case 'familyFriendly': storagePayload.FamilyFriendly = value; break;
                 case 'smartAutoComplete': storagePayload.SmartAutoComplete = value; break;
                 case 'smartResume': storagePayload.SmartResumeLink = value; break;
-                case 'notifications': storagePayload.NotificationsEnabled = value; break;
                 case 'autoScroll': storagePayload.AutoScrollEnabled = value; break;
                 case 'keybinds': storagePayload.KeybindsEnabled = value; break;
                 case 'progressTracking': storagePayload.ProgressTrackingEnabled = value; break;

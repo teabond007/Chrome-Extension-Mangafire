@@ -150,7 +150,7 @@
         left: var(--nav-width);
         right: 0;
         bottom: 0;
-        background-image: 
+        background-image:
             radial-gradient(circle at 2px 2px, rgba(130, 189, 245, 0.03) 1px, transparent 0);
         background-size: 40px 40px;
         pointer-events: none;
@@ -159,7 +159,7 @@
     }
 
     .dark-mode &::before {
-        background-image: 
+        background-image:
             radial-gradient(circle at 2px 2px, rgba(255, 255, 255, 0.02) 1px, transparent 0);
     }
 }
@@ -190,6 +190,8 @@
     width: 100%;
     max-width: min(90%, 1400px);
     margin: 0 auto;
+    overflow: visible;
+    /* Prevent dropdown cutoff */
 }
 
 /* --- TAB PANE VISIBILITY (FOUC FIX) --- */

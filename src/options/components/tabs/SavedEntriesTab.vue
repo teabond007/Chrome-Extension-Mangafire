@@ -67,6 +67,8 @@
                 
                 <div class="library-controls">
                     <select v-model="filters.sort" class="select-field" style="width: 140px;">
+                        <option value="last-read-desc">Recently Read</option>
+                        <option value="added-desc">Recently Added</option>
                         <option value="title-asc">A-Z</option>
                         <option value="title-desc">Z-A</option>
                         <option value="pop-desc">Most Popular</option>
@@ -74,8 +76,6 @@
                         <option value="score-desc">Highest Score</option>
                         <option value="rating-desc">My Rating ↓</option>
                         <option value="rating-asc">My Rating ↑</option>
-                        <option value="added-desc">Recently Added</option>
-                        <option value="last-read-desc">Recently Read</option>
                     </select>
 
                     <select v-model="filters.demographic" class="select-field">
@@ -238,14 +238,14 @@
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { storeToRefs } from 'pinia';
-import FilterGroup from './common/FilterGroup.vue';
-import LibraryStatistics from './LibraryStatistics.vue';
-import MangaCard from './common/MangaCard.vue';
-import MangaDetailsLargeView from './MangaDetailsLargeView.vue';
-import { getFormatName } from '../scripts/ui/manga-card-factory.js';
-import * as LibFeatures from '../../scripts/core/library-features.js';
-import { useLibraryStore } from '../scripts/store/library.store.js';
-import { useSettingsStore } from '../scripts/store/settings.store.js';
+import FilterGroup from '../common/FilterGroup.vue';
+import LibraryStatistics from '../LibraryStatistics.vue';
+import MangaCard from '../common/MangaCard.vue';
+import MangaDetailsLargeView from '../MangaDetailsLargeView.vue';
+import { getFormatName } from '../../scripts/ui/manga-card-factory.js';
+import * as LibFeatures from '../../../scripts/core/library-features.js';
+import { useLibraryStore } from '../../scripts/store/library.store.js';
+import { useSettingsStore } from '../../scripts/store/settings.store.js';
 
 // Access Pinia Stores
 const libraryStore = useLibraryStore();
@@ -480,24 +480,16 @@ const showMarkerPicker = (entry) => {
     if (window.showMarkerPicker) window.showMarkerPicker(entry);
 };
 
-const cleanLibrary = () => {
+const cleanLibrary = async () => {
     if (confirm("Remove duplicate entries?")) {
-        if (window.cleanLibraryDuplicates) {
-            window.cleanLibraryDuplicates();
-        } else {
-            console.error("Library cleaning function not found");
-        }
+        const count = await libraryStore.cleanDuplicates();
+        if (count === 0) alert("No duplicates found.");
     }
 };
 
-const freshSync = () => {
-    if (confirm("Reset library cache and force fresh sync of all entries?")) {
-        if (window.forceSyncLibrary) {
-            window.forceSyncLibrary();
-        } else {
-            console.error("Library sync function not found");
-        }
-    }
+const freshSync = async () => {
+    // forceSync handles its own confirmation logic
+    await libraryStore.forceSync();
 };
 
 const applyBulkUpdate = async () => {
@@ -738,4 +730,430 @@ onMounted(() => {
     padding: 2rem 0;
 }
 
+/* Library Header */
+.library-header {
+    background: linear-gradient(135deg, rgba(67, 24, 255, 0.1) 0%, rgba(106, 210, 255, 0.1) 100%);
+    border-radius: var(--radius-md);
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+:global(.dark-mode) .library-header {
+    background: linear-gradient(135deg, rgba(67, 24, 255, 0.15) 0%, rgba(106, 210, 255, 0.15) 100%);
+}
+
+.library-title-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.library-icon {
+    font-size: 24px;
+    width: 48px;
+    height: 48px;
+    background: var(--accent-primary);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.library-title-text h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+    margin-bottom: 2px;
+}
+
+.library-subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.library-controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.library-controls .select-field,
+.library-controls .input-field {
+    height: 36px;
+    min-width: 150px;
+    background: var(--bg-card);
+    font-size: 13px;
+}
+
+.library-controls .input-field {
+    min-width: 200px;
+}
+
+/* View Toggle Buttons */
+.view-toggle-group {
+    display: flex;
+    gap: 4px;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: var(--radius-sm);
+    padding: 4px;
+}
+
+.view-toggle-btn {
+    padding: 6px;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.view-toggle-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text-primary);
+}
+
+:global(.dark-mode) .view-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.view-toggle-btn.active {
+    background: var(--accent-primary);
+    color: white;
+}
+
+.view-toggle-btn.active:hover {
+    background: var(--accent-hover);
+}
+
+/* Advanced Filters Group */
+.advanced-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.chapter-range-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.range-separator {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+/* Small input and select variants */
+.input-sm {
+    height: 32px !important;
+    padding: 4px 8px !important;
+    font-size: 12px !important;
+}
+
+.select-sm {
+    height: 32px !important;
+    padding: 4px 8px !important;
+    font-size: 12px !important;
+    min-width: 100px !important;
+}
+
+/* Quick Filters Group */
+.quick-filters {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.filter-preset-btn {
+    font-size: 11px !important;
+    padding: 6px 12px !important;
+    border-radius: 20px !important;
+    transition: all 0.2s ease;
+}
+
+.filter-preset-btn:hover {
+    transform: scale(1.02);
+}
+
+.filter-preset-btn.active {
+    background: var(--accent-primary) !important;
+    color: white !important;
+    border-color: var(--accent-primary) !important;
+}
+
+/* Responsive adjustments */
+@media (max-height: 800px) and (min-width: 1200px) {
+    .library-header {
+        padding: 16px 20px;
+        gap: 12px;
+    }
+    .library-controls {
+        gap: 8px;
+    }
+    .library-controls .select-field,
+    .library-controls .input-field {
+        height: 32px;
+        min-width: 120px;
+        font-size: 12px;
+    }
+    .library-controls .input-field {
+        min-width: 160px;
+    }
+    .library-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+    }
+    .library-title-text h2 {
+        font-size: 18px;
+    }
+}
+
+@media (max-height: 700px) {
+    .library-header {
+        padding: 12px 16px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .library-controls {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    .library-controls .select-field {
+        min-width: 110px;
+        flex: 1 1 auto;
+        max-width: 150px;
+    }
+    .library-controls .input-field {
+        min-width: 140px;
+        flex: 2 1 auto;
+        max-width: 200px;
+    }
+}
+
+@media (min-aspect-ratio: 16/10) and (max-height: 900px) {
+    .library-header {
+        padding: 14px 18px;
+    }
+    .library-controls .select-field,
+    .library-controls .input-field {
+        height: 34px;
+        min-width: 125px;
+    }
+}
+/* Progress Bar */
+.loading-progress {
+    margin-bottom: 20px;
+}
+
+.progress-text {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.progress-bar-container {
+    width: 100%;
+    height: 6px;
+    background: var(--border-color);
+    border-radius: 100px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+    border-radius: 100px;
+    transition: width 0.3s ease;
+}
+
+/* Manga Cards Grid */
+.manga-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+    padding: 20px 0;
+}
+
+/* Compact View */
+.manga-grid.compact {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 16px;
+}
+
+.manga-grid.compact :deep(.manga-card-body) {
+    padding: 8px;
+}
+
+.manga-grid.compact :deep(.manga-card-title) {
+    font-size: 11px;
+    min-height: 28px;
+}
+
+.manga-grid.compact :deep(.manga-card-status) {
+    font-size: 9px;
+    padding: 2px 4px;
+}
+
+.manga-grid.compact :deep(.info-item) {
+    font-size: 10px;
+}
+
+.manga-grid.compact :deep(.card-status-dot) {
+    width: 10px;
+    height: 10px;
+    top: 6px;
+    right: 6px;
+}
+
+/* Responsive Grid */
+@media (min-width: 1600px) {
+    .manga-grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
+}
+
+@media (min-width: 2000px) {
+    .manga-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+}
+
+@media (max-width: 1200px) {
+    .manga-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    }
+    .manga-grid.compact {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+    .library-controls-advanced {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .quick-filters {
+        margin-left: 0;
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 768px) {
+    .manga-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 16px;
+    }
+    .manga-grid.compact {
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 12px;
+    }
+}
+
+/* New chapters badge indicator */
+.new-chapters-indicator {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 3px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 6px rgba(255, 107, 107, 0.4);
+    z-index: 5;
+    animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* Empty State */
+.empty-library {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+}
+
+.empty-library-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+    opacity: 0.3;
+}
+
+.empty-library p {
+    font-size: 14px;
+}
+
+/* Bulk Operations Bar */
+.bulk-ops-bar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(11, 20, 55, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--primary);
+    border-radius: 12px;
+    padding: 0.75rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    animation: fadeInDown 0.3s ease-out;
+}
+
+.bulk-info {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.bulk-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.bulk-actions span {
+    font-size: 0.9rem;
+    color: var(--text-white);
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 </style>

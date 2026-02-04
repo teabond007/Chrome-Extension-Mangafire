@@ -206,7 +206,7 @@
 </template>
 
 <script setup>
-import ToggleSwitch from './common/ToggleSwitch.vue';
+import ToggleSwitch from '../common/ToggleSwitch.vue';
 
 </script>
 
