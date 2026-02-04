@@ -10,6 +10,7 @@
             <SavedEntriesTab />
             <ImportExportTab />
             <AboutTab />
+            <ProfileTab />
             <DevOnlyTab />
         </main>
     </div>
@@ -33,6 +34,7 @@ import AppearanceTab from './components/AppearanceTab.vue';
 import SavedEntriesTab from './components/SavedEntriesTab.vue';
 import ImportExportTab from './components/ImportExportTab.vue';
 import AboutTab from './components/AboutTab.vue';
+import ProfileTab from './components/ProfileTab.vue';
 import DevOnlyTab from './components/DevOnlyTab.vue';
 import MangaDetailsModal from './components/MangaDetailsModal.vue';
 

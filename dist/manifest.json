@@ -20,8 +20,17 @@
   "permissions": [
     "scripting",
     "tabs",
-    "storage"
+    "storage",
+    "identity"
   ],
+  "oauth2": {
+    "client_id": "230078342235-anlc8rvjvbo5lg18tclldqpucfc0bja3.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/drive.appdata",
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/userinfo.profile"
+    ]
+  },
   "host_permissions": [
     "https://mangafire.to/user/bookmark",
     "https://graphql.anilist.co/*",
@@ -35,7 +44,7 @@
   "content_scripts": [
     {
       "js": [
-        "assets/main.ts-loader-cf1f6743.js"
+        "assets/main.ts-loader-ee34a482.js"
       ],
       "matches": [
         "*://mangafire.to/*",
@@ -78,9 +87,10 @@
         "*://www.webtoons.com/*"
       ],
       "resources": [
-        "assets/runtime-dom.esm-bundler-b6c739c6.js",
+        "assets/runtime-dom.esm-bundler-1d81061f.js",
         "assets/_plugin-vue_export-helper-c27b6911.js",
-        "assets/main.ts-daab597c.js"
+        "assets/preload-helper-cf010ec4.js",
+        "assets/main.ts-40f5769e.js"
       ],
       "use_dynamic_url": false
     }

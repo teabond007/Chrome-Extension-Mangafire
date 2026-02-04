@@ -28,6 +28,10 @@
                 <span class="nav-icon">ℹ️</span>
                 <span class="nav-text">About</span>
             </a>
+            <a href="#" class="nav-item" :class="{ active: activeTab === 'profile' }" @click="setActiveTab('profile')" data-tab="profile">
+                <span class="nav-icon">☁️</span>
+                <span class="nav-text">Profile & Sync</span>
+            </a>
             <a href="#" class="nav-item nav-item-dev" :class="{ active: activeTab === 'dev-only' }" @click="setActiveTab('dev-only')" data-tab="dev-only">
                 <span class="nav-icon">🛠️</span>
                 <span class="nav-text">Dev Only</span>
