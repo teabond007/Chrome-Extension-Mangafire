@@ -137,12 +137,15 @@
             </SettingsCard>
 
             <!-- Card 3: Cloud Sync Actions (Full Width) -->
-            <div class="card sync-actions-card" :class="{ disabled: !isSignedIn }">
-                <div class="card-header">
-                    <div class="card-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">☁️</div>
-                    <h3>Cloud Sync</h3>
-                </div>
-                <div class="card-body">
+            <SettingsCard 
+                title="Cloud Sync" 
+                icon="☁️"
+                icon-bg="rgba(16, 185, 129, 0.15)"
+                icon-color="#10b981"
+                guide-target="guide-profile-cloud"
+                class="sync-actions-card"
+            >
+                <div :class="{ disabled: !isSignedIn }">
                     <div class="sync-actions-grid">
                         <!-- Upload Action -->
                         <div class="action-card upload-card">
@@ -221,7 +224,7 @@
                         <button class="dismiss-btn" @click="dismissResult">×</button>
                     </div>
                 </div>
-            </div>
+            </SettingsCard>
 
             <!-- Card 4: Advanced Options -->
             <SettingsCard 

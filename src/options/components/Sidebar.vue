@@ -28,6 +28,10 @@
                 <span class="nav-icon">ℹ️</span>
                 <span class="nav-text">About</span>
             </a>
+            <a href="#" class="nav-item" :class="{ active: activeTab === 'custom-sites' }" @click="setActiveTab('custom-sites')" data-tab="custom-sites">
+                <span class="nav-icon">🌐</span>
+                <span class="nav-text">Custom Sites</span>
+            </a>
             <a href="#" class="nav-item" :class="{ active: activeTab === 'profile' }" @click="setActiveTab('profile')" data-tab="profile">
                 <span class="nav-icon">☁️</span>
                 <span class="nav-text">Profile & Sync</span>
@@ -45,7 +49,7 @@
                 <span class="icon">☕</span>
                 <span class="label nav-text">Support Dev</span>
             </a>
-            <div class="version-info nav-text">Version 4.0.0</div>
+            <div class="version-info nav-text">Version 5.0.0</div>
             
             <button class="collapse-toggle" @click="toggleSidebar">
                 <span class="arrow-icon">{{ isOpen ? '❮' : '❯' }}</span>

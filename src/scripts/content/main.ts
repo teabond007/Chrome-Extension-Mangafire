@@ -10,6 +10,9 @@ import { initManganato } from './adapters/manganato';
 import { initMangaPlus } from './adapters/mangaplus';
 import { initWebtoons } from './adapters/webtoons';
 
+// Selector tool - auto-initializes when ?bmh-selector-mode=true is in URL
+import './selector-tool';
+
 const ADAPTER_CONFIGS: any = [
     {
         hosts: ['mangafire.to'],
@@ -51,32 +54,59 @@ async function bootstrap() {
         c.hosts.some((h: string) => currentHost.includes(h))
     );
 
-    if (!config) {
-        console.warn(`[BMH] No adapter found for host: ${currentHost}`);
-        return;
-    }
-
     // Load ALL settings needed by various adapters
     const settingsKeys = [
         'CustomBorderSize',
         'CustomBorderSizefeatureEnabled',
         'CustomBookmarksfeatureEnabled',
         'customBookmarks',
-        `${config.settingsPrefix}HighlightEnabled`,
-        `${config.settingsPrefix}QuickActionsEnabled`,
-        `${config.settingsPrefix}ShowProgress`
+        'customSites',
+        'CustomSiteQuickActionsEnabled',
+        'CustomSiteHighlightEnabled'
     ];
 
     try {
-        const settings = await new Promise(resolve => {
+        const settings: any = await new Promise(resolve => {
             chrome.storage.local.get(settingsKeys, resolve);
         });
 
-        // Initialize the platform
-        await config.init(settings);
+        if (config) {
+            // Built-in adapter found
+            console.log(`[BMH] Built-in adapter found for ${currentHost}`);
+            const platformSettingsKeys = [
+                `${config.settingsPrefix}HighlightEnabled`,
+                `${config.settingsPrefix}QuickActionsEnabled`,
+                `${config.settingsPrefix}ShowProgress`
+            ];
+            const platformSettings: Record<string, any> = await new Promise(resolve => {
+                chrome.storage.local.get(platformSettingsKeys, resolve);
+            });
+            await config.init({ ...settings, ...platformSettings });
+        } else {
+            // Try to find a matching custom site configuration
+            console.log(`[BMH] No built-in adapter for ${currentHost}, checking custom sites...`);
+            const customSites = settings.customSites || [];
+            console.log('[BMH] Available custom sites:', customSites.map((s: any) => ({
+                hostname: s.hostname,
+                enabled: s.enabled,
+                selectors: s.selectors
+            })));
 
+            const customConfig = customSites.find((s: any) =>
+                s.enabled && currentHost.includes(s.hostname)
+            );
+
+            if (customConfig) {
+                console.log('[BMH] Matched custom config:', customConfig);
+                // Use generic adapter for custom site
+                const { initCustomSite } = await import('../core/generic-adapter');
+                await initCustomSite(customConfig, settings);
+            } else {
+                console.warn(`[BMH] No adapter found for host: ${currentHost}`);
+            }
+        }
     } catch (e) {
-        console.error(`[BMH] Failed to initialize adapter for ${config.settingsPrefix}:`, e);
+        console.error(`[BMH] Failed to initialize adapter:`, e);
     }
 }
 

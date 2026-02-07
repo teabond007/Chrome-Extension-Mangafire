@@ -292,7 +292,7 @@ const syncState = reactive({
 });
 
 const filters = reactive({
-    sort: 'title-asc',
+    sort: 'last-read-desc',
     demographic: 'All',
     status: 'All',
     genre: 'All',

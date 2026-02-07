@@ -82,6 +82,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   } else if (msg.type === "gdrive:deleteBackup") {
     handleGDriveDeleteBackup(sendResponse);
     return true;
+  } else if (msg.type === "custom-sites-updated") {
+    // Re-register content scripts for custom sites
+    handleCustomSitesUpdate(sendResponse);
+    return true;
   }
   
   // Mandatory response to prevent "The message port closed before a response was received"
@@ -197,3 +201,78 @@ async function handleGDriveDeleteBackup(sendResponse) {
     sendResponse({ success: false, error: error.message });
   }
 }
+
+// ========== Custom Sites Handler Functions ==========
+
+/**
+ * Updates dynamic content script registrations based on user-defined custom sites.
+ * Uses chrome.scripting.registerContentScripts to inject the main content script
+ * on custom site domains.
+ */
+async function handleCustomSitesUpdate(sendResponse) {
+  const CUSTOM_SCRIPT_ID = 'bmh-custom-sites';
+
+  try {
+    // Get current custom sites from storage
+    const data = await chrome.storage.local.get(['customSites']);
+    const customSites = data.customSites || [];
+    const enabledSites = customSites.filter(s => s.enabled && s.hostname);
+
+    // First, unregister any existing custom site scripts
+    try {
+      await chrome.scripting.unregisterContentScripts({ ids: [CUSTOM_SCRIPT_ID] });
+    } catch (e) {
+      // Script not registered yet, ignore
+    }
+
+    // If no enabled sites, we're done
+    if (enabledSites.length === 0) {
+      Log('Custom sites: No enabled sites, skipping registration');
+      if (sendResponse) sendResponse({ success: true, count: 0 });
+      return;
+    }
+
+    // Build match patterns for all enabled custom sites
+    const matches = enabledSites.map(site => `*://${site.hostname}/*`);
+    
+    // Get the manifest to find the correct compiled content script path
+    const manifest = chrome.runtime.getManifest();
+    const contentScriptPath = manifest.content_scripts?.[0]?.js?.[0];
+    
+    if (!contentScriptPath) {
+      console.error('[Background] Could not find content script path in manifest');
+      if (sendResponse) sendResponse({ success: false, error: 'No content script path found' });
+      return;
+    }
+
+    Log(`Custom sites: Using content script: ${contentScriptPath}`);
+
+    // Register the content script for custom sites
+    await chrome.scripting.registerContentScripts([{
+      id: CUSTOM_SCRIPT_ID,
+      matches: matches,
+      js: [contentScriptPath],
+      runAt: 'document_idle'
+    }]);
+
+    Log(`Custom sites: Registered script for ${enabledSites.length} site(s): ${matches.join(', ')}`);
+    if (sendResponse) sendResponse({ success: true, count: enabledSites.length });
+
+  } catch (error) {
+    console.error('[Background] Failed to update custom site scripts:', error);
+    if (sendResponse) sendResponse({ success: false, error: error.message });
+  }
+}
+
+// Re-register custom sites on extension startup
+chrome.runtime.onStartup.addListener(async () => {
+  Log('Extension startup - checking custom sites...');
+  handleCustomSitesUpdate(() => {});
+});
+
+// Also register on install/update
+chrome.runtime.onInstalled.addListener(async () => {
+  Log('Extension installed/updated - checking custom sites...');
+  handleCustomSitesUpdate(() => {});
+});
+
