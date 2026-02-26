@@ -232,23 +232,16 @@ export class GenericAdapter {
 
     /**
      * Applies highlight border to a manga card element.
+     * Applies directly to the card rather than inner elements for reliability.
      * @param {HTMLElement} element - Card element
      * @param {string} color - Border color
      * @param {number} size - Border width in pixels
      * @param {string} style - Border style (solid, dashed, etc.)
      */
     applyBorder(element: HTMLElement, color: string, size: number, style: string) {
-        // Try to find a natural container or image wrapper
-        const target = (
-            element.querySelector('a') ||
-            element.querySelector('img')?.parentElement ||
-            element
-        ) as HTMLElement;
-
-        target.style.setProperty('border', `${size}px ${style} ${color}`, 'important');
-        target.style.setProperty('border-radius', '8px', 'important');
-        target.style.setProperty('box-sizing', 'border-box', 'important');
-        target.style.setProperty('position', 'relative', 'important');
+        element.style.setProperty('border', `${size}px ${style} ${color}`, 'important');
+        element.style.setProperty('border-radius', '8px', 'important');
+        element.style.setProperty('box-sizing', 'border-box', 'important');
     }
 
     /**

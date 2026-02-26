@@ -10,7 +10,7 @@ import { createPanel } from './panel';
 /**
  * Checks URL for selector mode flag and initializes the tool.
  */
-export function initSelectorTool(): void {
+export function initSelectorTool() {
     const url = new URL(window.location.href);
     const selectorMode = url.searchParams.get('bmh-selector-mode');
     const siteId = url.searchParams.get('bmh-site-id');
@@ -41,4 +41,3 @@ export function initSelectorTool(): void {
 // Auto-initialize on import
 console.log('[BMH Selector] Module loaded');
 initSelectorTool();
-
