@@ -13,14 +13,26 @@ import { createPanel } from './panel';
  */
 export function initSelectorTool() {
     const url = new URL(window.location.href);
-    const selectorMode = url.searchParams.get('bmh-selector-mode');
-    const readerSelectorMode = url.searchParams.get('bmh-reader-selector-mode');
-    const siteId = url.searchParams.get('bmh-site-id');
+    let selectorMode = url.searchParams.get('bmh-selector-mode');
+    let readerSelectorMode = url.searchParams.get('bmh-reader-selector-mode');
+    let siteId = url.searchParams.get('bmh-site-id');
+
+    // Save to sessionStorage if present in URL
+    if (selectorMode || readerSelectorMode) {
+        sessionStorage.setItem('bmh-selector-mode', selectorMode || '');
+        sessionStorage.setItem('bmh-reader-selector-mode', readerSelectorMode || '');
+        sessionStorage.setItem('bmh-site-id', siteId || '');
+    } else {
+        // Restore from sessionStorage if URL params are missing (e.g. after redirect)
+        selectorMode = sessionStorage.getItem('bmh-selector-mode');
+        readerSelectorMode = sessionStorage.getItem('bmh-reader-selector-mode');
+        siteId = sessionStorage.getItem('bmh-site-id');
+    }
 
     const isActive = selectorMode === 'true' || readerSelectorMode === 'true';
     const isReaderMode = readerSelectorMode === 'true';
 
-    console.log('[BMH Selector] Checking URL params:', { selectorMode, readerSelectorMode, siteId, href: window.location.href });
+    console.log('[BMH Selector] Checking state:', { selectorMode, readerSelectorMode, siteId, href: window.location.href });
 
     if (isActive && siteId) {
         console.log(`[BMH Selector] ${isReaderMode ? 'Reader' : 'Listing'} selector mode detected, initializing panel...`);
@@ -46,4 +58,3 @@ export function initSelectorTool() {
 // Auto-initialize on import
 console.log('[BMH Selector] Module loaded');
 initSelectorTool();
-

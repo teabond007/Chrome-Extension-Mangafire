@@ -124,15 +124,11 @@ function isStableClass(cls) {
     return true;
 }
 
-/**
- * Builds a selector segment for a single DOM node using its tag name and stable classes.
- * Example outputs: "div.wrapper", "section.mt-5", "main", "div.original.card-lg"
- * @param {HTMLElement} node
- * @returns {string}
- */
 function buildSegment(node) {
     const tag = node.tagName.toLowerCase();
-    const stableClasses = Array.from(node.classList).filter(isStableClass);
+    const stableClasses = Array.from(node.classList)
+        .filter(isStableClass)
+        .map(cls => CSS.escape(cls));
 
     if (stableClasses.length > 0) {
         return `${tag}.${stableClasses.join('.')}`;

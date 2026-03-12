@@ -790,6 +790,11 @@ export function cleanup() {
     url.searchParams.delete('bmh-reader-selector-mode');
     url.searchParams.delete('bmh-site-id');
     window.history.replaceState({}, '', url.toString());
+
+    // Clear session storage so it doesn't persist across other tabs/reloads
+    sessionStorage.removeItem('bmh-selector-mode');
+    sessionStorage.removeItem('bmh-reader-selector-mode');
+    sessionStorage.removeItem('bmh-site-id');
 }
 
 /**

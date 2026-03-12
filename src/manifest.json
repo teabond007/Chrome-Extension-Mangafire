@@ -48,15 +48,7 @@
   "content_scripts": [
     {
       "matches": [
-        "*://mangafire.to/*",
-        "*://mangadex.org/*",
-        "*://asuracomic.net/*",
-        "*://asurascans.com/*",
-        "*://asuratoon.com/*",
-        "*://www.webtoons.com/*",
-        "*://manganato.com/*",
-        "*://chapmanganato.com/*",
-        "*://mangaplus.shueisha.co.jp/*"
+        "*://mangafire.to/*"
       ],
       "js": [
         "src/scripts/content/main.ts"

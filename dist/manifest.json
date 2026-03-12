@@ -48,18 +48,10 @@
   "content_scripts": [
     {
       "js": [
-        "assets/main.ts-loader-69187727.js"
+        "assets/main.ts-loader-f35e4501.js"
       ],
       "matches": [
-        "*://mangafire.to/*",
-        "*://mangadex.org/*",
-        "*://asuracomic.net/*",
-        "*://asurascans.com/*",
-        "*://asuratoon.com/*",
-        "*://www.webtoons.com/*",
-        "*://manganato.com/*",
-        "*://chapmanganato.com/*",
-        "*://mangaplus.shueisha.co.jp/*"
+        "*://mangafire.to/*"
       ],
       "run_at": "document_idle",
       "css": [
@@ -81,22 +73,14 @@
     },
     {
       "matches": [
-        "*://asuracomic.net/*",
-        "*://asurascans.com/*",
-        "*://asuratoon.com/*",
-        "*://chapmanganato.com/*",
-        "*://mangadex.org/*",
-        "*://mangafire.to/*",
-        "*://manganato.com/*",
-        "*://mangaplus.shueisha.co.jp/*",
-        "*://www.webtoons.com/*"
+        "*://mangafire.to/*"
       ],
       "resources": [
         "assets/preload-helper-cf010ec4.js",
         "assets/runtime-dom.esm-bundler-1d81061f.js",
         "assets/_plugin-vue_export-helper-c27b6911.js",
-        "assets/generic-adapter-7315a070.js",
-        "assets/main.ts-b7eea8fd.js"
+        "assets/generic-adapter-8e7c826c.js",
+        "assets/main.ts-a3a8e121.js"
       ],
       "use_dynamic_url": false
     }
