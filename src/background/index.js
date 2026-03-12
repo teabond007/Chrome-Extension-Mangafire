@@ -8,6 +8,8 @@ import {
   scrapeReadMangasFromUnopenedTab, 
   handleAutoSyncEntry 
 } from '../scripts/content/adapters/mangafire/scraper';
+import { fetchMangaFromAnilist } from '../scripts/core/anilist-api';
+import { fetchMangaFromMangadex } from '../scripts/core/mangadex-api.js';
 
 // Open options page when extension icon clicked
 chrome.action.onClicked.addListener(() => {
@@ -85,6 +87,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   } else if (msg.type === "custom-sites-updated") {
     // Re-register content scripts for custom sites
     handleCustomSitesUpdate(sendResponse);
+    return true;
+  } else if (msg.type === "fetchMetadata") {
+    // Fetch AniList/MangaDex metadata from background (avoids CORS on custom sites)
+    handleFetchMetadata(msg.title, msg.storageKey, sendResponse);
     return true;
   }
   
@@ -261,6 +267,59 @@ async function handleCustomSitesUpdate(sendResponse) {
   } catch (error) {
     console.error('[Background] Failed to update custom site scripts:', error);
     if (sendResponse) sendResponse({ success: false, error: error.message });
+  }
+}
+
+/**
+ * Fetches AniList/MangaDex metadata for a library entry and updates storage.
+ * Runs in the background to avoid CORS issues on custom site content scripts.
+ * @param {string} title - Manga title to search for
+ * @param {string} storageKey - Storage key to find the entry
+ * @param {Function} sendResponse - Response callback
+ */
+async function handleFetchMetadata(title, storageKey, sendResponse) {
+  try {
+    Log(`Fetching metadata for: ${title}`);
+
+    let data = await fetchMangaFromAnilist(title);
+    const isIncomplete = data && (!data.bannerImage || !data.description || !data.coverImage?.large);
+
+    if (!data || isIncomplete) {
+      const mdData = await fetchMangaFromMangadex(title);
+      if (mdData) {
+        if (!data) {
+          data = mdData;
+        } else {
+          if (!data.bannerImage) data.bannerImage = mdData.bannerImage;
+          if (!data.description) data.description = mdData.description;
+          if (!data.coverImage?.large && mdData.coverImage?.large) data.coverImage = mdData.coverImage;
+          if ((!data.genres || data.genres.length === 0) && mdData.genres?.length > 0) data.genres = mdData.genres;
+        }
+      }
+    }
+
+    if (!data) {
+      Log(`No metadata found for: ${title}`);
+      if (sendResponse) sendResponse({ success: false });
+      return;
+    }
+
+    // Update the entry in storage
+    const stored = await chrome.storage.local.get(['savedEntriesMerged']);
+    const library = stored.savedEntriesMerged || [];
+    const entry = library.find(e => e.slug === storageKey || e.title === title);
+
+    if (entry) {
+      entry.anilistData = data;
+      entry.lastChecked = Date.now();
+      await chrome.storage.local.set({ savedEntriesMerged: library });
+      Log(`Metadata saved for: ${title}`);
+    }
+
+    if (sendResponse) sendResponse({ success: true });
+  } catch (e) {
+    console.warn('[Background] Metadata fetch failed:', e);
+    if (sendResponse) sendResponse({ success: false, error: e.message });
   }
 }
 

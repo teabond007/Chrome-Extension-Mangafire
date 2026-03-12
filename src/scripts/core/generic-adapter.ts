@@ -32,6 +32,11 @@ export class GenericAdapter {
         card: string;
         title: string;
     }[];
+    readerSelectors: {
+        readerDetect: string;
+        readerTitle: string;
+        readerChapter: string;
+    };
 
     private config: any;
 
@@ -58,6 +63,13 @@ export class GenericAdapter {
                 title: config.selectors?.title || ''
             }];
         }
+
+        // Reader page selectors for progress tracking
+        this.readerSelectors = {
+            readerDetect: config.readerSelectors?.readerDetect || '',
+            readerTitle: config.readerSelectors?.readerTitle || '',
+            readerChapter: config.readerSelectors?.readerChapter || ''
+        };
     }
 
     get selectors() {
@@ -262,18 +274,94 @@ export class GenericAdapter {
 
     /**
      * Checks if current page is a reader page.
-     * Uses common reader URL patterns.
+     * Uses the user-configured readerDetect selector to find a signature element.
      * @returns {boolean}
      */
     isReaderPage(): boolean {
+        if (this.readerSelectors.readerDetect) {
+            try {
+                return !!document.querySelector(this.readerSelectors.readerDetect);
+            } catch {
+                return false;
+            }
+        }
+
+        // Fallback: common reader URL patterns
         const path = window.location.pathname.toLowerCase();
         return path.includes('/read') ||
             path.includes('/chapter') ||
             path.includes('/viewer');
     }
 
-    parseUrl(url: string) {
-        return null;
+    /**
+     * Extracts manga title and chapter number from reader page DOM elements.
+     * Uses the user-configured readerTitle and readerChapter selectors.
+     * @param {string} _url - Unused, extraction is DOM-based for custom sites
+     * @returns {{ slug: string, title: string, chapterNo: number } | null}
+     */
+    parseUrl(_url: string): { slug: string; title: string; chapterNo: number } | null {
+        if (!this.readerSelectors.readerTitle && !this.readerSelectors.readerChapter) {
+            return null;
+        }
+
+        let title = '';
+        let chapterNo = 0;
+
+        // Check if title and chapter selectors point to the same element
+        const sameElement = this.readerSelectors.readerTitle &&
+            this.readerSelectors.readerTitle === this.readerSelectors.readerChapter;
+
+        if (sameElement) {
+            // Both selectors are identical — extract chapter from the combined text
+            try {
+                const el = document.querySelector(this.readerSelectors.readerTitle);
+                const fullText = el?.textContent?.trim() || '';
+                // Match trailing chapter patterns: "Title Chapter 42", "Title Ch. 12.5", "Title #7", "Title - 103"
+                const chapterMatch = fullText.match(/[\s\-–—]+(?:chapter|ch\.?|#|episode|ep\.?)?\s*(\d+(?:\.\d+)?)\s*$/i);
+                if (chapterMatch) {
+                    chapterNo = parseFloat(chapterMatch[1]);
+                    title = fullText.slice(0, chapterMatch.index).trim();
+                } else {
+                    // No trailing chapter found, use full text as title
+                    title = fullText;
+                }
+            } catch (e) {
+                console.warn('[GenericAdapter] Combined title/chapter extraction error:', e);
+            }
+        } else {
+            // Extract title from configured element
+            if (this.readerSelectors.readerTitle) {
+                try {
+                    const titleEl = document.querySelector(this.readerSelectors.readerTitle);
+                    title = titleEl?.textContent?.trim() || '';
+                } catch (e) {
+                    console.warn('[GenericAdapter] Reader title extraction error:', e);
+                }
+            }
+
+            // Extract chapter number from configured element
+            if (this.readerSelectors.readerChapter) {
+                try {
+                    const chapterEl = document.querySelector(this.readerSelectors.readerChapter);
+                    const chapterText = chapterEl?.textContent?.trim() || '';
+                    // Extract numeric chapter from text like "Chapter 42", "Ch. 12.5", "#7"
+                    const match = chapterText.match(/(\d+(?:\.\d+)?)/);
+                    if (match) {
+                        chapterNo = parseFloat(match[1]);
+                    }
+                } catch (e) {
+                    console.warn('[GenericAdapter] Reader chapter extraction error:', e);
+                }
+            }
+        }
+
+        if (!title && !chapterNo) return null;
+
+        return {
+            slug: this.slugify(title),
+            title,
+            chapterNo
+        };
     }
 
     goToNextChapter() {

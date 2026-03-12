@@ -12,13 +12,17 @@ import { storage } from '../core/storage-adapter.js';
  * @property {string} hostname - The site hostname (e.g., "bato.to")
  * @property {string} name - User-friendly display name
  * @property {string} [description] - Optional description
- * @property {Object} selectors - CSS selectors for DOM elements
+ * @property {Object} selectors - CSS selectors for listing page DOM elements
  * @property {string} selectors.card - Manga card container selector
  * @property {string} selectors.title - Title element selector (relative to card)
  * @property {string} selectors.url - Link element selector (relative to card)
  * @property {string} [selectors.image] - Cover image selector
  * @property {string} [selectors.nextBtn] - Next chapter button (for reader pages)
  * @property {string} [selectors.prevBtn] - Previous chapter button
+ * @property {Object} [readerSelectors] - CSS selectors for reader page elements
+ * @property {string} [readerSelectors.readerDetect] - Element whose presence identifies a reader page
+ * @property {string} [readerSelectors.readerTitle] - Manga title on reader page
+ * @property {string} [readerSelectors.readerChapter] - Chapter number/name on reader page
  * @property {string} [customFunction] - Advanced: custom JS for complex extraction
  * @property {boolean} enabled - Whether this site config is active
  * @property {number} createdAt - Timestamp of creation
@@ -96,6 +100,11 @@ export const useCustomSitesStore = defineStore('customSites', {
                     image: siteData.selectors?.image || '',
                     nextBtn: siteData.selectors?.nextBtn || '',
                     prevBtn: siteData.selectors?.prevBtn || ''
+                },
+                readerSelectors: siteData.readerSelectors || {
+                    readerDetect: '',
+                    readerTitle: '',
+                    readerChapter: ''
                 },
                 customFunction: siteData.customFunction || '',
                 enabled: true,

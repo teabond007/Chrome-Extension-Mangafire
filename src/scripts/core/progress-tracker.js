@@ -33,7 +33,9 @@ class ProgressTracker {
     async init() {
         const urlData = this.parseCurrentUrl();
         
-        if (!urlData || !urlData.chapterNo) {
+        console.log('[ProgressTracker] parseCurrentUrl result:', urlData);
+
+        if (!urlData || (!urlData.chapterNo && !urlData.title && !urlData.slug)) {
             console.log('[ProgressTracker] Not a chapter page, skipping');
             return;
         }
@@ -41,6 +43,7 @@ class ProgressTracker {
         this.currentEntry = {
             source: this.adapter.id || this.adapter.PREFIX,
             slug: urlData.slug,
+            title: urlData.title || '',
             id: urlData.id,
             chapter: String(urlData.chapterNo),
             url: window.location.href
@@ -163,13 +166,35 @@ class ProgressTracker {
                 // Only update if this is a newer chapter
                 if (chapterNum > currentLast) {
                     entry.lastReadChapter = chapter;
+                    entry.lastChapterRead = chapter;
                     entry.lastMangafireUrl = url;
                 }
                 
                 entry.lastReadDate = Date.now();
+                entry.lastRead = Date.now();
                 entry.readChapters = history[storageKey].length;
                 
                 console.log('[ProgressTracker] Updated library entry:', entry.title || slug);
+            } else {
+                // No existing entry — create a new one so it appears in the library
+                const title = this.currentEntry.title || slug;
+                const newEntry = {
+                    title: title,
+                    slug: storageKey,
+                    source: source,
+                    sourceId: id || storageKey,
+                    sourceUrl: url,
+                    status: 'Reading',
+                    lastReadChapter: chapter,
+                    lastChapterRead: chapter,
+                    lastMangafireUrl: url,
+                    lastReadDate: Date.now(),
+                    lastRead: Date.now(),
+                    readChapters: history[storageKey].length,
+                    lastUpdated: Date.now()
+                };
+                library.push(newEntry);
+                console.log('[ProgressTracker] Created new library entry:', title);
             }
 
             // Save everything
@@ -190,6 +215,11 @@ class ProgressTracker {
                 // Background script might not be listening
             }
 
+            // Auto-fetch AniList metadata for newly created entries
+            if (!entry && (this.currentEntry.title || slug)) {
+                this.fetchMetadataForEntry(this.currentEntry.title || slug, storageKey);
+            }
+
         } catch (error) {
             console.error('[ProgressTracker] Failed to save progress:', error);
             this.isSaved = false; // Allow retry
@@ -203,6 +233,32 @@ class ProgressTracker {
         if (this.saveTimeout) {
             clearTimeout(this.saveTimeout);
             this.saveTimeout = null;
+        }
+    }
+    /**
+     * Requests metadata fetch from the background script for a new library entry.
+     * Background handles AniList/MangaDex API calls to avoid CORS issues on custom sites.
+     * @param {string} title - Manga title to search for
+     * @param {string} storageKey - Storage key to identify the entry
+     */
+    async fetchMetadataForEntry(title, storageKey) {
+        try {
+            console.log('[ProgressTracker] Requesting metadata fetch for:', title);
+            chrome.runtime.sendMessage({
+                type: 'fetchMetadata',
+                title: title,
+                storageKey: storageKey
+            }, (response) => {
+                if (chrome.runtime.lastError) {
+                    console.warn('[ProgressTracker] Metadata fetch message failed:', chrome.runtime.lastError);
+                    return;
+                }
+                if (response?.success) {
+                    console.log('[ProgressTracker] ✓ Metadata fetched for:', title);
+                }
+            });
+        } catch (e) {
+            console.warn('[ProgressTracker] Metadata request failed (non-critical):', e);
         }
     }
 }

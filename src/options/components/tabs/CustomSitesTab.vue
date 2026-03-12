@@ -88,6 +88,11 @@
                                 title="Edit Selectors"
                             >✏️</button>
                             <button 
+                                class="btn btn-icon btn-reader" 
+                                @click="editReaderPage(site)"
+                                title="Edit Reading Page"
+                            >📖</button>
+                            <button 
                                 class="btn btn-icon" 
                                 @click="toggleSite(site.id)"
                                 :title="site.enabled ? 'Disable' : 'Enable'"
@@ -161,6 +166,25 @@
                                         <code>{{ group.title || '(not set)' }}</code>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3>📖 Reader Selectors</h3>
+                        <p class="section-hint">Used to detect reader pages and extract progress (title + chapter).</p>
+                        <div class="selector-grid selector-grid-3">
+                            <div class="selector-item">
+                                <label>Detect Page</label>
+                                <code>{{ selectedSite.readerSelectors?.readerDetect || '(not set)' }}</code>
+                            </div>
+                            <div class="selector-item">
+                                <label>Reader Title</label>
+                                <code>{{ selectedSite.readerSelectors?.readerTitle || '(not set)' }}</code>
+                            </div>
+                            <div class="selector-item">
+                                <label>Chapter</label>
+                                <code>{{ selectedSite.readerSelectors?.readerChapter || '(not set)' }}</code>
                             </div>
                         </div>
                     </div>
@@ -351,22 +375,63 @@ function getSelectorStatusText(site) {
 }
 
 async function editSite(site) {
-    // Open site with selector mode to edit
+    // Open site with selector mode to edit listing page selectors
     const selectorUrl = `https://${site.hostname}?bmh-selector-mode=true&bmh-site-id=${site.id}`;
     const tab = await chrome.tabs.create({ url: selectorUrl });
 
-    // Inject the selector tool via background
-    if (tab.id) {
-        chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
-            if (tabId === tab.id && info.status === 'complete') {
-                chrome.tabs.onUpdated.removeListener(listener);
-                chrome.runtime.sendMessage({
-                    type: 'inject-selector-tool',
-                    tabId: tab.id
-                });
-            }
-        });
+    injectSelectorToolOnLoad(tab.id);
+}
+
+/**
+ * Prompts for an example reader page URL, then opens it with the reader-mode selector tool.
+ * The user must provide an actual chapter/reader URL so the selector tool has the right DOM to work with.
+ * @param {Object} site - Site config to edit reader selectors for
+ */
+async function editReaderPage(site) {
+    const exampleUrl = prompt(
+        'Paste an example reader/chapter page URL from this site.\n' +
+        'The selector tool needs to be on an actual chapter page to pick the right elements.\n\n' +
+        `Example: https://${site.hostname}/manga-name/chapter-1`
+    );
+
+    if (!exampleUrl) return;
+
+    // Validate the URL belongs to the same site
+    try {
+        const parsed = new URL(exampleUrl);
+        if (!parsed.hostname.includes(site.hostname)) {
+            alert(`That URL doesn't belong to ${site.hostname}. Please use a URL from the same site.`);
+            return;
+        }
+    } catch {
+        alert('Invalid URL. Please paste a valid chapter page URL.');
+        return;
     }
+
+    // Append reader selector params to the user-provided URL
+    const url = new URL(exampleUrl);
+    url.searchParams.set('bmh-reader-selector-mode', 'true');
+    url.searchParams.set('bmh-site-id', site.id);
+
+    const tab = await chrome.tabs.create({ url: url.toString() });
+    injectSelectorToolOnLoad(tab.id);
+}
+
+/**
+ * Injects the selector tool content script once the tab finishes loading.
+ * @param {number} tabId - Chrome tab ID to inject into
+ */
+function injectSelectorToolOnLoad(tabId) {
+    if (!tabId) return;
+    chrome.tabs.onUpdated.addListener(function listener(updatedTabId, info) {
+        if (updatedTabId === tabId && info.status === 'complete') {
+            chrome.tabs.onUpdated.removeListener(listener);
+            chrome.runtime.sendMessage({
+                type: 'inject-selector-tool',
+                tabId: tabId
+            });
+        }
+    });
 }
 
 async function toggleSite(id) {
@@ -548,6 +613,11 @@ onMounted(async () => {
     border-color: #ef4444;
 }
 
+.btn-icon.btn-reader:hover {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: #10b981;
+}
+
 /* Share Section */
 .share-actions {
     display: grid;
@@ -709,6 +779,10 @@ onMounted(async () => {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
+}
+
+.selector-grid-3 {
+    grid-template-columns: 1fr 1fr 1fr;
 }
 
 .selector-item {

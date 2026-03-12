@@ -48,7 +48,7 @@
   "content_scripts": [
     {
       "js": [
-        "assets/main.ts-loader-01655f24.js"
+        "assets/main.ts-loader-69187727.js"
       ],
       "matches": [
         "*://mangafire.to/*",
@@ -95,8 +95,8 @@
         "assets/preload-helper-cf010ec4.js",
         "assets/runtime-dom.esm-bundler-1d81061f.js",
         "assets/_plugin-vue_export-helper-c27b6911.js",
-        "assets/generic-adapter-270aa88d.js",
-        "assets/main.ts-7cd1fe4c.js"
+        "assets/generic-adapter-7315a070.js",
+        "assets/main.ts-b7eea8fd.js"
       ],
       "use_dynamic_url": false
     }

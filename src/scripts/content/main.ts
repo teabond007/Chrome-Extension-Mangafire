@@ -98,9 +98,19 @@ async function bootstrap() {
 
             if (customConfig) {
                 console.log('[BMH] Matched custom config:', customConfig);
-                // Use generic adapter for custom site
-                const { initCustomSite } = await import('../core/generic-adapter');
+                const { initCustomSite, GenericAdapter } = await import('../core/generic-adapter');
+
+                // Always enhance cards on any page
                 await initCustomSite(customConfig, settings);
+
+                // Additionally track progress if reader page is explicitly detected
+                const adapter = new GenericAdapter(customConfig);
+                if (customConfig.readerSelectors?.readerDetect && adapter.isReaderPage()) {
+                    console.log('[BMH] Reader page detected for custom site, initializing progress tracker');
+                    const { default: ProgressTracker } = await import('../core/progress-tracker');
+                    const tracker = new ProgressTracker(adapter);
+                    await tracker.init();
+                }
             } else {
                 console.warn(`[BMH] No adapter found for host: ${currentHost}`);
             }

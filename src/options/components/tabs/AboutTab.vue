@@ -249,6 +249,22 @@
 
             
 
+            <!-- Guide Section: Custom Sites -->
+            <h3 class="guide-section-header">Custom Sites</h3>
+            <div class="guide-grid">
+                <GuideCard id="guide-custom-add" title="Adding a New Site" icon="➕">
+                    Add unsupported manga sites to the extension by selecting key DOM elements like the manga card container and title. Open the site, launch the selector, and click on elements to teach the extension where to look.
+                </GuideCard>
+
+                <GuideCard id="guide-custom-list" title="Managing Your Sites" icon="📋">
+                    Manage your custom added sites. You can edit the selected elements by re-opening the selector tool, temporarily disable tracking for a particular site, or delete it entirely. For advanced users, custom Javascript extraction can be written.
+                </GuideCard>
+
+                <GuideCard id="guide-custom-share" title="Sharing Configurations" icon="📤">
+                    Export your custom site configurations as a JSON file to share with the community, or import configurations that others have made to instantly support new platforms without having to manually select elements.
+                </GuideCard>
+            </div>
+
             <!-- Guide Section: Profile & Sync -->
             <h3 class="guide-section-header">Reference: Profile & Cloud Sync</h3>
             <div class="guide-grid">

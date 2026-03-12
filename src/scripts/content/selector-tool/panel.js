@@ -3,6 +3,7 @@
  * A floating control panel for the DOM selector tool.
  * Renders in Shadow DOM to prevent style leakage from host page.
  * Uses DOM absolute path selectors instead of class-based CSS selectors.
+ * Supports two modes: listing mode (card/title) and reader mode (detect/title/chapter).
  * @module selector-tool/panel
  */
 
@@ -12,20 +13,30 @@ import * as highlighter from './highlighter';
 let panelContainer = null;
 let shadowRoot = null;
 
-/** Current field being assigned (card, title) */
+/** Current field being assigned (card, title OR readerDetect, readerTitle, readerChapter) */
 let activeField = 'card';
 
-/** Active group index */
+/** Active group index (listing mode only) */
 let activeGroupIndex = 0;
 
 /** Site config ID from URL params */
 let siteId = '';
 
-/** Collected selector groups */
+/** Whether operating in reader-selector mode */
+let isReaderMode = false;
+
+/** Collected selector groups (listing mode) */
 let selectorGroups = [{
     card: '',
     title: ''
 }];
+
+/** Reader selectors (reader mode) */
+let readerSelectors = {
+    readerDetect: '',
+    readerTitle: '',
+    readerChapter: ''
+};
 
 /** Current generalized selector from the DOM path generator */
 let currentGeneralizedSelector = '';
@@ -39,9 +50,11 @@ let currentSegments = [];
 /**
  * Creates and mounts the selector panel UI.
  * @param {string} configId - The custom site config ID
+ * @param {boolean} readerMode - Whether to use reader-selector mode
  */
-export function createPanel(configId) {
+export function createPanel(configId, readerMode = false) {
     siteId = configId;
+    isReaderMode = readerMode;
 
     panelContainer = document.createElement('div');
     panelContainer.id = 'bmh-selector-panel-container';
@@ -73,14 +86,26 @@ async function loadExistingSelectors() {
     try {
         const data = await chrome.storage.local.get(['customSites']);
         const site = data.customSites?.find(s => s.id === siteId);
-        if (site && site.selectors) {
-            if (Array.isArray(site.selectors)) {
-                selectorGroups = site.selectors;
-            } else {
-                selectorGroups = [{
-                    card: site.selectors.card || '',
-                    title: site.selectors.title || ''
-                }];
+        if (!site) return;
+
+        if (isReaderMode) {
+            if (site.readerSelectors) {
+                readerSelectors = {
+                    readerDetect: site.readerSelectors.readerDetect || '',
+                    readerTitle: site.readerSelectors.readerTitle || '',
+                    readerChapter: site.readerSelectors.readerChapter || ''
+                };
+            }
+        } else {
+            if (site.selectors) {
+                if (Array.isArray(site.selectors)) {
+                    selectorGroups = site.selectors;
+                } else {
+                    selectorGroups = [{
+                        card: site.selectors.card || '',
+                        title: site.selectors.title || ''
+                    }];
+                }
             }
         }
     } catch (e) {
@@ -393,15 +418,21 @@ function getPanelHTML() {
         </style>
         <div class="panel">
             <div class="panel-header">
-                <span class="panel-title">🎯 Element Selector</span>
+                <span class="panel-title">🎯 ${isReaderMode ? 'Reader Page Selector' : 'Element Selector'}</span>
                 <button class="close-btn" id="closeBtn">✕</button>
             </div>
             
-            <div id="groupTabs" class="group-tabs"></div>
+            <div id="groupTabs" class="group-tabs" ${isReaderMode ? 'style="display:none"' : ''}></div>
             
             <div class="field-tabs">
-                <button class="field-tab active" data-field="card">📦 Card</button>
-                <button class="field-tab" data-field="title">📝 Title</button>
+                ${isReaderMode ? `
+                    <button class="field-tab active" data-field="readerDetect">🔍 Detect Page</button>
+                    <button class="field-tab" data-field="readerTitle">📖 Reader Title</button>
+                    <button class="field-tab" data-field="readerChapter">#️⃣ Chapter</button>
+                ` : `
+                    <button class="field-tab active" data-field="card">📦 Card</button>
+                    <button class="field-tab" data-field="title">📝 Title</button>
+                `}
             </div>
             
             <div id="pathDisplay">
@@ -470,21 +501,28 @@ function attachEventListeners() {
     shadowRoot.getElementById('confirmBtn')?.addEventListener('click', () => {
         if (!currentGeneralizedSelector) return;
 
-        selectorGroups[activeGroupIndex][activeField] = currentGeneralizedSelector;
+        if (isReaderMode) {
+            readerSelectors[activeField] = currentGeneralizedSelector;
+        } else {
+            selectorGroups[activeGroupIndex][activeField] = currentGeneralizedSelector;
+        }
         currentGeneralizedSelector = '';
 
         updateTabsState();
 
         // Auto-advance to next field
-        if (activeField === 'card') {
+        if (isReaderMode) {
+            const readerFields = ['readerDetect', 'readerTitle', 'readerChapter'];
+            const currentIdx = readerFields.indexOf(activeField);
+            if (currentIdx < readerFields.length - 1) {
+                setActiveField(readerFields[currentIdx + 1]);
+            } else {
+                showSavedFeedback();
+            }
+        } else if (activeField === 'card') {
             setActiveField('title');
         } else {
-            const btn = shadowRoot?.getElementById('confirmBtn');
-            if (btn) {
-                const originalText = btn.textContent;
-                btn.textContent = 'Saved!';
-                setTimeout(() => { if (btn) btn.textContent = originalText; }, 1000);
-            }
+            showSavedFeedback();
         }
 
         highlighter.unfreezeSelection();
@@ -492,13 +530,21 @@ function attachEventListeners() {
 
     // Save — persist all selectors to Chrome storage
     shadowRoot.getElementById('saveBtn')?.addEventListener('click', async () => {
-        const invalidGroup = selectorGroups.findIndex(g => !g.card);
-        if (invalidGroup !== -1) {
-            alert(`Variant ${invalidGroup + 1} is missing a Card selector. Please fix or remove it.`);
-            activeGroupIndex = invalidGroup;
-            const fieldTab = shadowRoot?.querySelector(`[data-field="card"]`);
-            if (fieldTab) fieldTab.click();
-            return;
+        if (isReaderMode) {
+            if (!readerSelectors.readerDetect) {
+                alert('Please set a "Detect Page" selector so the extension knows when it\'s on a reader page.');
+                setActiveField('readerDetect');
+                return;
+            }
+        } else {
+            const invalidGroup = selectorGroups.findIndex(g => !g.card);
+            if (invalidGroup !== -1) {
+                alert(`Variant ${invalidGroup + 1} is missing a Card selector. Please fix or remove it.`);
+                activeGroupIndex = invalidGroup;
+                const fieldTab = shadowRoot?.querySelector(`[data-field="card"]`);
+                if (fieldTab) fieldTab.click();
+                return;
+            }
         }
 
         await saveConfiguration();
@@ -511,8 +557,20 @@ function attachEventListeners() {
 }
 
 /**
+ * Shows brief "Saved!" feedback on the confirm button.
+ */
+function showSavedFeedback() {
+    const btn = shadowRoot?.getElementById('confirmBtn');
+    if (btn) {
+        const originalText = btn.textContent;
+        btn.textContent = 'Saved!';
+        setTimeout(() => { if (btn) btn.textContent = originalText; }, 1000);
+    }
+}
+
+/**
  * Sets the active field being assigned.
- * @param {string} field - 'card' or 'title'
+ * @param {string} field - Field key from either listing or reader mode
  */
 function setActiveField(field) {
     activeField = field;
@@ -537,7 +595,9 @@ function showAssignedSelector() {
     const container = shadowRoot.getElementById('pathDisplay');
     if (!container) return;
 
-    const existing = selectorGroups[activeGroupIndex][activeField];
+    const existing = isReaderMode
+        ? readerSelectors[activeField]
+        : selectorGroups[activeGroupIndex]?.[activeField];
     if (existing) {
         container.innerHTML = `
             <div class="path-display assigned">
@@ -690,14 +750,19 @@ async function saveConfiguration() {
             return;
         }
 
-        sites[idx].selectors = selectorGroups;
+        if (isReaderMode) {
+            sites[idx].readerSelectors = { ...readerSelectors };
+        } else {
+            sites[idx].selectors = selectorGroups;
+        }
         sites[idx].updatedAt = Date.now();
 
         await chrome.storage.local.set({ customSites: sites });
 
         chrome.runtime.sendMessage({ type: 'custom-sites-updated' });
 
-        alert('Site configuration saved successfully!\n\nReload the page to see highlighting in action.');
+        const modeLabel = isReaderMode ? 'Reader page' : 'Site';
+        alert(`${modeLabel} configuration saved successfully!\n\nReload the page to see it in action.`);
         cleanup();
 
     } catch (err) {
@@ -722,6 +787,7 @@ export function cleanup() {
     // Remove selector mode from URL
     const url = new URL(window.location.href);
     url.searchParams.delete('bmh-selector-mode');
+    url.searchParams.delete('bmh-reader-selector-mode');
     url.searchParams.delete('bmh-site-id');
     window.history.replaceState({}, '', url.toString());
 }
@@ -782,12 +848,22 @@ function renderGroupTabs() {
  */
 function updateTabsState() {
     if (!shadowRoot) return;
-    ['card', 'title'].forEach(field => {
+
+    const fields = isReaderMode
+        ? ['readerDetect', 'readerTitle', 'readerChapter']
+        : ['card', 'title'];
+
+    fields.forEach(field => {
         const tab = shadowRoot?.querySelector(`[data-field="${field}"]`);
-        if (tab) {
-            tab.classList.toggle('complete', !!selectorGroups[activeGroupIndex][field]);
-        }
+        if (!tab) return;
+
+        const hasValue = isReaderMode
+            ? !!readerSelectors[field]
+            : !!selectorGroups[activeGroupIndex]?.[field];
+
+        tab.classList.toggle('complete', hasValue);
     });
-    // Also refresh group tabs to update completion indicators
-    renderGroupTabs();
+
+    // Also refresh group tabs in listing mode
+    if (!isReaderMode) renderGroupTabs();
 }
