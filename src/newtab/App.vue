@@ -64,14 +64,14 @@
 
             <!-- Sidebar (Packed Only) -->
             <aside class="dashboard-sidebar packed-only">
-                <div class="stats-card glass-card">
+                <div class="stats-card standard-card">
                     <h3>Library Overview</h3>
                     <div id="library-stats" class="stats-grid">
                         <!-- Stats injected here -->
                     </div>
                 </div>
 
-                <div class="discovery-card glass-card">
+                <div class="discovery-card standard-card">
                     <h3>Quick Discovery</h3>
                     <p id="random-suggestion-text">Sync your library to see suggestions!</p>
                     <button id="random-suggestion-btn" class="quick-link-btn">Show Random</button>
@@ -96,6 +96,6 @@ onMounted(() => {
 });
 </script>
 
-<style>
-@import './newtab.css';
+<style lang="scss">
+@import './newtab.scss';
 </style>

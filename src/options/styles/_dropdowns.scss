@@ -103,10 +103,7 @@
     /* Glassmorphism for dark modes */
     .dark-mode &,
     .black-mode &,
-    .neon-mode &,
-    .glassy-mode & {
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
+    .neon-mode & {
         background: rgba(17, 28, 68, 0.85);
         border-color: rgba(255, 255, 255, 0.1);
     }

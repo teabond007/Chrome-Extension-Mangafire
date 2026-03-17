@@ -38,7 +38,7 @@ const positionStyle = computed(() => {
 });
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .bmh-badge {
   position: absolute;
   padding: 2px 6px;
@@ -51,17 +51,16 @@ const positionStyle = computed(() => {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
 
-.bmh-badge-progress {
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
+  &.bmh-badge-progress {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
 
-.bmh-badge-new {
-  background: linear-gradient(135deg, #FF6B6B, #FF8E53);
-  animation: bmh-pulse 2s infinite;
+  &.bmh-badge-new {
+    background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+    animation: bmh-pulse 2s infinite;
+  }
 }
 
 @keyframes bmh-pulse {

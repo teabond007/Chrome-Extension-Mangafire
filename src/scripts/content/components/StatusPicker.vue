@@ -57,7 +57,7 @@ const onSelect = (statusName) => {
 };
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .bmh-status-picker {
   position: absolute;
   background: rgba(20, 20, 25, 0.98);
@@ -67,59 +67,58 @@ const onSelect = (statusName) => {
   min-width: 180px;
   z-index: 10000;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(16px);
   animation: bmh-picker-slide 0.2s ease-out;
+
+  .bmh-picker-header {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .bmh-picker-options {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    .bmh-picker-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 10px 12px;
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-align: left;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      &.active {
+        background: rgba(255, 255, 255, 0.15);
+      }
+
+      .bmh-picker-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+    }
+  }
 }
 
 @keyframes bmh-picker-slide {
   from { opacity: 0; transform: scale(0.95) translateY(-8px); }
   to { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-.bmh-picker-header {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  padding-bottom: 8px;
-  margin-bottom: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.bmh-picker-options {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.bmh-picker-option {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 10px 12px;
-  background: transparent;
-  border: none;
-  border-radius: 8px;
-  color: #fff;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  text-align: left;
-}
-
-.bmh-picker-option:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.bmh-picker-option.active {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.bmh-picker-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
 }
 </style>

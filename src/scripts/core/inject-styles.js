@@ -130,7 +130,7 @@ export function injectSharedStyles() {
 
         /* Prevent badge overlap */
         [data-bmh-enhanced] .bmh-badge:not(:only-of-type) {
-            backdrop-filter: blur(4px);
+
         }
 
         /* Responsive adjustments */

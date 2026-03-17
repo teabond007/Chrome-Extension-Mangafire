@@ -31,10 +31,7 @@
                         <div class="theme-swatch neon-swatch"></div>
                         <span class="theme-label">Cyber Neon</span>
                     </div>
-                    <div class="theme-preview-card" :class="{ active: theme === 'glassy' }" @click="setTheme('glassy')">
-                        <div class="theme-swatch glassy-swatch"></div>
-                        <span class="theme-label">Glassy Blue</span>
-                    </div>
+
                 </div>
             </SettingsCard>
 
@@ -226,12 +223,10 @@ const setTheme = (name) => {
     html.style.removeProperty('--text-primary');
     
     // Apply classes to document root for CSS selectors (Cloudy Dark -> dark-mode, etc)
-    html.classList.remove('dark-mode', 'black-mode', 'neon-mode', 'light-mode', 'glassy-mode');
+    html.classList.remove('dark-mode', 'black-mode', 'neon-mode', 'light-mode');
     
     if (name === 'light') {
         html.classList.add('light-mode');
-    } else if (name === 'glassy') {
-        html.classList.add('glassy-mode');
     } else {
         html.classList.add(`${name}-mode`);
     }
@@ -246,7 +241,7 @@ const applyCustomTheme = () => {
     const html = document.documentElement;
     
     // Remove preset theme classes
-    html.classList.remove('dark-mode', 'black-mode', 'neon-mode', 'light-mode', 'glassy-mode');
+    html.classList.remove('dark-mode', 'black-mode', 'neon-mode', 'light-mode');
     html.setAttribute('data-theme', 'custom');
     
     // Apply custom CSS variables
@@ -291,73 +286,68 @@ const updateLibraryThickness = (e) => {
 
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 /* Appearance Tab styles - migrated from _appearance.css */
 .theme-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 1.5rem;
     margin-top: 1rem;
-}
 
-.theme-preview-card {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid var(--glass-border, rgba(255,255,255,0.1));
-    border-radius: 16px;
-    padding: 1.25rem;
-    cursor: pointer;
-    transition: var(--transition, all 0.2s);
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-}
+    .theme-preview-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 1.25rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
 
-.theme-preview-card:hover {
-    transform: translateY(-5px);
-    background: rgba(255, 255, 255, 0.08);
-    border-color: var(--primary, #7551FF);
-}
+        &:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--accent-primary);
+        }
 
-.theme-preview-card.active {
-    border-color: var(--primary, #7551FF);
-    background: rgba(117, 81, 255, 0.1);
-    box-shadow: 0 0 20px rgba(117, 81, 255, 0.2);
-}
+        &.active {
+            border-color: var(--accent-primary);
+            background: rgba(117, 81, 255, 0.1);
+            box-shadow: 0 0 20px rgba(117, 81, 255, 0.2);
+        }
 
-.theme-swatch {
-    width: 100%;
-    height: 80px;
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
+        .theme-swatch {
+            width: 100%;
+            height: 80px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
 
-.dark-swatch {
-    background: linear-gradient(135deg, #0b1437 0%, #111c44 100%);
-}
+            &.dark-swatch {
+                background: linear-gradient(135deg, #0b1437 0%, #111c44 100%);
+            }
 
-.black-swatch {
-    background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
-}
+            &.black-swatch {
+                background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            }
 
-.light-swatch {
-    background: linear-gradient(135deg, #f4f7fe 0%, #ffffff 100%);
-}
+            &.light-swatch {
+                background: linear-gradient(135deg, #f4f7fe 0%, #ffffff 100%);
+            }
 
-.neon-swatch {
-    background: linear-gradient(135deg, #030303 0%, #00ff41 100%);
-}
+            &.neon-swatch {
+                background: linear-gradient(135deg, #030303 0%, #00ff41 100%);
+            }
+        }
 
-.glassy-swatch {
-    background: linear-gradient(135deg, rgba(11, 20, 55, 0.8) 0%, rgba(117, 81, 255, 0.4) 100%);
-    backdrop-filter: blur(8px);
-}
-
-.theme-label {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--text-primary);
+        .theme-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+    }
 }
 
 /* Color Creator Grid */
@@ -366,17 +356,21 @@ const updateLibraryThickness = (e) => {
     grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
     margin-top: 1rem;
-}
 
-.color-creator-grid .input-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
+    .input-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
 
-.color-creator-grid input[type="color"] {
-    width: 100%;
-    height: 45px;
+        input[type="color"] {
+            width: 100%;
+            height: 45px;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            background: transparent;
+        }
+    }
 }
 
 /* Range Display */

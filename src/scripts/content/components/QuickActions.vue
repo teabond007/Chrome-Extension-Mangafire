@@ -112,61 +112,60 @@ const onAction = (action, event) => {
 };
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .bmh-quick-tooltip {
   display: flex;
   gap: 4px;
-}
 
-.bmh-tt-btn {
-  width: 28px;
-  height: 28px;
-  border: none;
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.85);
-  color: #fff;
-  font-size: 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s ease;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-}
+  .bmh-tt-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.85);
+    color: #fff;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
 
-.bmh-tt-btn:hover {
-  transform: scale(1.1);
-  background: rgba(30, 30, 30, 0.95);
-}
+    &:hover {
+      transform: scale(1.1);
+      background: rgba(30, 30, 30, 0.95);
+    }
 
-.bmh-tt-continue {
-  background: linear-gradient(135deg, #4CAF50, #388e3c);
-}
+    &.bmh-tt-continue {
+      background: linear-gradient(135deg, #4CAF50, #388e3c);
 
-.bmh-tt-continue.bmh-btn-disabled {
-  background: rgba(80, 80, 80, 0.8);
-  opacity: 0.7;
-  filter: grayscale(1);
-  box-shadow: none;
-}
+      &.bmh-btn-disabled {
+        background: rgba(80, 80, 80, 0.8);
+        opacity: 0.7;
+        filter: grayscale(1);
+        box-shadow: none;
+      }
 
-.bmh-tt-continue:not(.bmh-btn-disabled):hover {
-  background: linear-gradient(135deg, #66BB6A, #43A047);
-}
+      &:not(.bmh-btn-disabled):hover {
+        background: linear-gradient(135deg, #66BB6A, #43A047);
+      }
+    }
 
-.bmh-tt-status-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-}
+    &.bmh-tt-rating {
+      font-weight: 700;
+      color: #fbbf24;
+    }
 
-.bmh-tt-rating {
-  font-weight: 700;
-  color: #fbbf24;
-}
+    &.bmh-tt-info {
+      font-size: 14px;
+    }
+  }
 
-.bmh-tt-info {
-  font-size: 14px;
+  .bmh-tt-status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
 }
 </style>

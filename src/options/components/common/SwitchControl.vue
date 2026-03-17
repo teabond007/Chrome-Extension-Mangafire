@@ -50,7 +50,7 @@ defineProps({
 defineEmits(['update:modelValue']);
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .mt-10 {
     margin-top: 10px;
 }

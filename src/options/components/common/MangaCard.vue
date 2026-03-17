@@ -194,7 +194,7 @@ const demographic = computed(() => {
 });
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 /* Scoped styles for the pulse color property */
 .reading-pulse {
     position: relative;

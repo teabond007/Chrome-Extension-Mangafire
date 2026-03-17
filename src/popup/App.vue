@@ -123,7 +123,7 @@ const optionsFeaturesUpdate = (changes) => {
 };
 </script>
 
-<style>
+<style lang="scss">
 :root {
   /* Reuse core variables (matching options.css usually) */
   --bg-body: #F4F7FE;
@@ -168,143 +168,137 @@ body {
   height: 100%;
   display: flex;
   flex-direction: column;
-}
 
-/* Header */
-.popup-header {
-  padding: 20px;
-  background-color: var(--bg-sidebar);
-  color: #FFFFFF;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+  /* Header */
+  .popup-header {
+    padding: 20px;
+    background-color: var(--bg-sidebar);
+    color: #FFFFFF;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
 
-.brand-text {
-  font-weight: 700;
-  font-size: 20px;
-  letter-spacing: 0.5px;
-  cursor: default;
-}
+      .brand-text {
+        font-weight: 700;
+        font-size: 20px;
+        letter-spacing: 0.5px;
+        cursor: default;
 
-.header-text-gradient {
-  color: #82BDF5;
-  background-image: linear-gradient(45deg, #82BDF5 27%, #3299D1 44%, #8861FF 83%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  display: inline-block;
-}
+        &.header-text-gradient {
+          color: #82BDF5;
+          background-image: linear-gradient(45deg, #82BDF5 27%, #3299D1 44%, #8861FF 83%);
+          background-clip: text;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          display: inline-block;
+        }
+      }
+    }
 
-.btn-sync {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #FFF;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-}
+    .btn-sync {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #FFF;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
 
-.btn-sync:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: rotate(180deg);
-}
+      &:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: rotate(180deg);
+      }
 
-.icon-sync {
-  font-size: 18px;
-  line-height: 1;
-}
+      .icon-sync {
+        font-size: 18px;
+        line-height: 1;
+      }
+    }
+  }
 
-/* Features List */
-.features-list {
-  padding: 12px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+  /* Features List */
+  .features-list {
+    padding: 12px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 
-.feature-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  background-color: var(--bg-body); /* Using simplistic bg */
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: 1px solid transparent; /* Prepare for border transition */
-}
-
-/* Dark mode override for feature item bg */
-@media (prefers-color-scheme: dark) {
     .feature-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background-color: var(--bg-body);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+
+      @media (prefers-color-scheme: dark) {
         background-color: #1B254B;
+      }
+
+      &:hover {
+        background-color: rgba(67, 24, 255, 0.05);
+        @media (prefers-color-scheme: dark) {
+          background-color: rgba(255, 255, 255, 0.05);
+        }
+      }
+
+      .feature-info {
+        display: flex;
+        flex-direction: column;
+
+        .feature-name {
+          font-weight: 600;
+          font-size: 14px;
+        }
+
+        .feature-sub {
+          font-size: 11px;
+          color: var(--text-secondary);
+          margin-top: 2px;
+        }
+      }
     }
-}
+  }
 
-.feature-item:hover {
-  background-color: rgba(67, 24, 255, 0.05); /* Light primary tint */
-}
+  /* Footer */
+  .popup-footer {
+    padding: 0;
+    background-color: var(--bg-sidebar);
 
-@media (prefers-color-scheme: dark) {
-    .feature-item:hover {
-        background-color: rgba(255, 255, 255, 0.05);
+    .link-btn {
+      background: var(--bg-sidebar);
+      border: none;
+      color: #FFFFFF;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 16px;
+      transition: background 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+
+      &:hover {
+        background-color: #2c3142;
+      }
     }
-}
-
-.feature-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.feature-name {
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.feature-sub {
-  font-size: 11px;
-  color: var(--text-secondary);
-  margin-top: 2px;
-}
-
-/* Footer */
-.popup-footer {
-  padding: 0;
-  background-color: var(--bg-sidebar);
-}
-
-.link-btn {
-  background: var(--bg-sidebar);
-  border: none;
-  color: #FFFFFF;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 16px;
-  transition: background 0.2s;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.link-btn:hover {
-  background-color: #2c3142;
+  }
 }
 </style>

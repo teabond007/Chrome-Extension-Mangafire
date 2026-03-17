@@ -38,7 +38,7 @@ defineEmits(['update:modelValue']);
   </label>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
   .switch {
     /* switch */
     --switch-width: 46px;

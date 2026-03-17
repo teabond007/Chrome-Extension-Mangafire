@@ -48,7 +48,7 @@ const applyTheme = (name) => {
     html.style.removeProperty('--accent-primary');
     html.style.removeProperty('--text-primary');
     
-    html.classList.remove('dark-mode', 'black-mode', 'neon-mode', 'light-mode', 'glassy-mode');
+    html.classList.remove('dark-mode', 'black-mode', 'neon-mode', 'light-mode');
     
     if (name === 'custom' && settingsStore.isCustomTheme) {
         // Apply custom theme CSS variables
@@ -61,9 +61,6 @@ const applyTheme = (name) => {
         html.setAttribute('data-theme', 'custom');
     } else if (name === 'light') {
         html.classList.add('light-mode');
-        html.setAttribute('data-theme', name);
-    } else if (name === 'glassy') {
-        html.classList.add('glassy-mode');
         html.setAttribute('data-theme', name);
     } else {
         html.classList.add(`${name}-mode`);
@@ -89,6 +86,6 @@ onMounted(async () => {
 });
 </script>
 
-<style>
+<style lang="scss">
 @import './options.scss';
 </style>

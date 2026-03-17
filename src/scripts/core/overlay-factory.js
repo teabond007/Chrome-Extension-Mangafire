@@ -49,7 +49,7 @@ export class OverlayFactory {
                 padding: 12px;
                 min-width: 180px;
                 box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
-                backdrop-filter: blur(16px);
+
                 animation: bmh-picker-slide 0.2s ease-out;
                 font-family: sans-serif;
             }
@@ -160,7 +160,7 @@ export class OverlayFactory {
                 padding: 12px;
                 min-width: 180px;
                 box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
-                backdrop-filter: blur(16px);
+
                 animation: bmh-picker-slide 0.2s ease-out;
                 font-family: sans-serif;
             }
@@ -292,7 +292,7 @@ export class OverlayFactory {
             }
             .bmh-badge-progress {
                 background: rgba(0, 0, 0, 0.75);
-                backdrop-filter: blur(4px);
+
                 border: 1px solid rgba(255, 255, 255, 0.1);
             }
             .bmh-badge-new {
@@ -462,7 +462,7 @@ export class OverlayFactory {
                 align-items: center;
                 justify-content: center;
                 transition: all 0.2s ease;
-                backdrop-filter: blur(12px);
+
                 box-shadow: 0 4px 12px rgba(0,0,0,0.5);
                 border: 1px solid rgba(255,255,255,0.1);
                 padding: 0;
@@ -813,7 +813,7 @@ export class OverlayFactory {
                 align-items: center;
                 justify-content: center;
                 transition: all 0.2s ease;
-                backdrop-filter: blur(12px);
+
                 box-shadow: 0 4px 12px rgba(0,0,0,0.5);
                 border: 1px solid rgba(255,255,255,0.1);
             }
@@ -878,7 +878,7 @@ export class OverlayFactory {
                 min-width: 180px;
                 z-index: 10000;
                 box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
-                backdrop-filter: blur(16px);
+
                 animation: bmh-picker-slide 0.2s ease-out;
             }
 

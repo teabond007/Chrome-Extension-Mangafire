@@ -290,7 +290,7 @@
             </div>
 
             <!-- Support Developer Section -->
-            <div class="support-dev-card glass-card">
+            <div class="support-dev-card standard-card">
                 <div class="card-body">
                     <div class="support-header">
                         <div class="support-icon">☕</div>
@@ -319,54 +319,53 @@
 import GuideCard from '../common/GuideCard.vue';
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 /* About Page styles - migrated from _about.css */
 .prose {
     color: var(--text-primary);
     line-height: 1.6;
-}
 
-.prose h2 {
-    font-size: 24px;
-    margin-bottom: 8px;
-    color: var(--accent-primary);
-}
+    h2 {
+        font-size: 24px;
+        margin-bottom: 8px;
+        color: var(--accent-primary);
+    }
 
-.prose h3 {
-    font-size: 18px;
-    margin-top: 24px;
-    margin-bottom: 12px;
-    font-weight: 600;
-}
+    h3 {
+        font-size: 18px;
+        margin-top: 24px;
+        margin-bottom: 12px;
+        font-weight: 600;
+    }
 
-.prose p {
-    margin-bottom: 16px;
-    color: var(--text-secondary);
-}
+    p {
+        margin-bottom: 16px;
+        color: var(--text-secondary);
+    }
 
-.prose a {
-    color: var(--accent-primary);
-    text-decoration: none;
-    font-weight: 500;
-}
+    a {
+        color: var(--accent-primary);
+        text-decoration: none;
+        font-weight: 500;
 
-.prose a:hover {
-    text-decoration: underline;
-}
+        &:hover {
+            text-decoration: underline;
+        }
+    }
 
-.prose ul,
-.prose ol {
-    margin-bottom: 16px;
-    padding-left: 20px;
-    color: var(--text-secondary);
-}
+    ul, ol {
+        margin-bottom: 16px;
+        padding-left: 20px;
+        color: var(--text-secondary);
 
-.prose li {
-    margin-bottom: 8px;
-}
+        li {
+            margin-bottom: 8px;
+        }
+    }
 
-.prose strong {
-    color: var(--text-primary);
+    strong {
+        color: var(--text-primary);
+    }
 }
 
 .divider {
@@ -382,10 +381,10 @@ import GuideCard from '../common/GuideCard.vue';
     padding: 16px;
     border-radius: var(--radius-sm, 6px);
     color: var(--text-secondary);
-}
 
-.alert-box p {
-    margin-bottom: 0;
+    p {
+        margin-bottom: 0;
+    }
 }
 
 .guide-grid {
@@ -393,6 +392,31 @@ import GuideCard from '../common/GuideCard.vue';
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 20px;
     margin-top: 20px;
+
+    @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+    }
+
+    :deep(.guide-card) {
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.2s, box-shadow 0.2s;
+
+        &:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .guide-text {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            margin: 0;
+
+            b { color: var(--text-primary); }
+        }
+    }
 }
 
 .supported-sites-grid {
@@ -400,49 +424,49 @@ import GuideCard from '../common/GuideCard.vue';
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 16px;
     margin-top: 10px;
-}
 
-.site-link-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 16px;
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    text-decoration: none;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
+    .site-link-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        text-decoration: none;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
-.site-link-card:hover {
-    transform: translateY(-2px);
-    border-color: var(--accent-primary);
-    box-shadow: 0 4px 12px rgba(67, 24, 255, 0.1);
-    background: var(--bg-body);
-}
+        &:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-primary);
+            box-shadow: 0 4px 12px rgba(67, 24, 255, 0.1);
+            background: var(--bg-body);
+        }
 
-.site-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    background: white;
-    padding: 2px;
-}
+        .site-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: white;
+            padding: 2px;
+        }
 
-.site-info {
-    display: flex;
-    flex-direction: column;
-}
+        .site-info {
+            display: flex;
+            flex-direction: column;
 
-.site-name {
-    font-weight: 600;
-    color: var(--text-primary);
-    font-size: 14px;
-}
+            .site-name {
+                font-weight: 600;
+                color: var(--text-primary);
+                font-size: 14px;
+            }
 
-.site-url {
-    font-size: 12px;
-    color: var(--text-secondary);
+            .site-url {
+                font-size: 12px;
+                color: var(--text-secondary);
+            }
+        }
+    }
 }
 
 .section-title-full {
@@ -451,87 +475,6 @@ import GuideCard from '../common/GuideCard.vue';
     margin-bottom: 10px;
     padding-bottom: 10px;
     border-bottom: 1px solid var(--border-color);
-}
-
-.guide-card {
-    height: auto;
-    display: flex;
-    flex-direction: column;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.guide-card:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
-}
-
-.guide-text {
-    font-size: 13px;
-    line-height: 1.6;
-    color: var(--text-secondary);
-    margin: 0;
-}
-
-.guide-text b {
-    color: var(--text-primary);
-}
-
-/* Support Dev Card */
-.support-dev-card {
-    margin-top: 40px;
-    background: linear-gradient(135deg, rgba(117, 81, 255, 0.1) 0%, rgba(67, 24, 255, 0.05) 100%);
-    border: 1px solid rgba(117, 81, 255, 0.2);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    border-radius: var(--radius-lg, 16px);
-}
-
-.support-header {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.support-header h2 {
-    margin: 0 !important;
-    font-size: 22px !important;
-    background: linear-gradient(45deg, var(--accent-primary), #6AD2FF);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.support-icon {
-    font-size: 28px;
-    width: 50px;
-    height: 50px;
-    background: rgba(117, 81, 255, 0.15);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.support-links-group {
-    display: flex;
-    gap: 15px;
-    margin-top: 25px;
-}
-
-.support-btn {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    height: 48px;
-    font-weight: 600;
-}
-
-@media (max-width: 768px) {
-    .guide-grid {
-        grid-template-columns: 1fr;
-    }
 }
 
 .guide-section-header {
@@ -543,16 +486,67 @@ import GuideCard from '../common/GuideCard.vue';
     display: flex;
     align-items: center;
     gap: 8px;
+
+    &::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(to right, var(--border-color), transparent);
+        margin-left: 10px;
+        opacity: 0.5;
+    }
 }
 
-.guide-section-header::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(to right, var(--border-color), transparent);
-    margin-left: 10px;
-    opacity: 0.5;
+/* Support Dev Card */
+.support-dev-card {
+    margin-top: 40px;
+    background: linear-gradient(135deg, rgba(117, 81, 255, 0.1) 0%, rgba(67, 24, 255, 0.05) 100%);
+    border: 1px solid rgba(117, 81, 255, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius-lg, 16px);
+
+    .support-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+
+        h2 {
+            margin: 0 !important;
+            font-size: 22px !important;
+            background: linear-gradient(45deg, var(--accent-primary), #6AD2FF);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .support-icon {
+            font-size: 28px;
+            width: 50px;
+            height: 50px;
+            background: rgba(117, 81, 255, 0.15);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    }
+
+    .support-links-group {
+        display: flex;
+        gap: 15px;
+        margin-top: 25px;
+
+        .support-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            height: 48px;
+            font-weight: 600;
+        }
+    }
 }
-
-
 </style>
+```

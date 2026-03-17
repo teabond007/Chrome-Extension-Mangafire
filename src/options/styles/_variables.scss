@@ -1,0 +1,30 @@
+/* SCSS Variables Mapping to CSS Variables for better DX */
+
+$accent: var(--accent-primary);
+$accent-hover: var(--accent-hover);
+$accent-secondary: var(--accent-secondary);
+
+$bg-body: var(--bg-body);
+$bg-sidebar: var(--bg-sidebar);
+$bg-card: var(--bg-card);
+
+$text-primary: var(--text-primary);
+$text-secondary: var(--text-secondary);
+$text-on-dark: var(--text-on-dark);
+$text-muted-on-dark: var(--text-muted-on-dark);
+
+$border-color: var(--border-color);
+$input-bg: var(--input-bg);
+$input-border: var(--input-border);
+
+$success: var(--success);
+$warning: var(--warning);
+$danger: var(--danger);
+
+$radius-sm: var(--radius-sm);
+$radius-md: var(--radius-md);
+$radius-lg: var(--radius-lg);
+
+$nav-width: var(--nav-width);
+
+$transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);

@@ -1,0 +1,60 @@
+@use 'variables' as *;
+
+/* Common Mixins for Premium Aesthetics */
+
+
+
+@mixin flex-row($justify: flex-start, $align: center, $gap: 0) {
+    display: flex;
+    justify-content: $justify;
+    align-items: $align;
+    gap: $gap;
+}
+
+@mixin flex-column($justify: flex-start, $align: stretch, $gap: 0) {
+    display: flex;
+    flex-direction: column;
+    justify-content: $justify;
+    align-items: $align;
+    gap: $gap;
+}
+
+@mixin card-base($padding: 24px, $radius: $radius-md) {
+    background-color: $bg-card;
+    border-radius: $radius;
+    padding: $padding;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    transition: $transition;
+
+    .dark-mode & {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+}
+
+@mixin scrollbar-styled($width: 6px, $thumb-bg: rgba(255, 255, 255, 0.1)) {
+    &::-webkit-scrollbar {
+        width: $width;
+        height: $width;
+
+        &-track {
+            background: transparent;
+        }
+
+        &-thumb {
+            background: $thumb-bg;
+            border-radius: 10px;
+
+            &:hover {
+                background: rgba(255, 255, 255, 0.2);
+            }
+        }
+    }
+}
+
+@mixin text-gradient($gradient: linear-gradient(45deg, #82BDF5 27%, #3299D1 44%, #8861FF 83%)) {
+    background-image: $gradient;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+}

@@ -125,7 +125,7 @@ onUnmounted(() => {
 });
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .bmh-autoscroll-panel {
   display: flex;
   align-items: center;
@@ -140,96 +140,88 @@ onUnmounted(() => {
   pointer-events: auto;
   transition: opacity 0.3s ease;
   opacity: 1;
-}
 
-.bmh-autoscroll-panel.is-idle {
-  opacity: 0.4;
-}
+  &.is-idle {
+    opacity: 0.4;
+    &:hover { opacity: 1; }
+  }
 
-.bmh-autoscroll-panel.is-idle:hover {
-  opacity: 1;
-}
+  .bmh-as-toggle {
+    background: #4f46e5;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    min-width: 70px;
+    transition: background 0.2s;
 
-.bmh-as-toggle {
-  background: #4f46e5;
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  min-width: 70px;
-  transition: background 0.2s;
-}
+    &:hover { background: #4338ca; }
 
-.bmh-as-toggle:hover {
-  background: #4338ca;
-}
+    &.active {
+      background: #dc2626;
+      &:hover { background: #b91c1c; }
+    }
+  }
 
-.bmh-as-toggle.active {
-  background: #dc2626;
-}
+  .bmh-as-speed-control {
+    display: flex;
+    align-items: center;
+    gap: 6px;
 
-.bmh-as-toggle.active:hover {
-  background: #b91c1c;
-}
+    .bmh-as-label {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 11px;
+    }
 
-.bmh-as-speed-control {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
+    .bmh-as-speed {
+      width: 60px;
+      height: 4px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 2px;
 
-.bmh-as-label {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 11px;
-}
+      &::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 12px;
+        height: 12px;
+        background: white;
+        border-radius: 50%;
+      }
+    }
 
-.bmh-as-speed {
-  width: 60px;
-  height: 4px;
-  -webkit-appearance: none;
-  appearance: none;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 2px;
-}
+    .bmh-as-speed-input {
+      width: 42px;
+      padding: 4px 6px;
+      font-size: 11px;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      color: white;
+      text-align: center;
 
-.bmh-as-speed::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 12px;
-  height: 12px;
-  background: white;
-  border-radius: 50%;
-}
+      &:focus {
+        outline: none;
+        border-color: rgba(255, 255, 255, 0.5);
+        background: rgba(255, 255, 255, 0.2);
+      }
 
-.bmh-as-speed-input {
-  width: 42px;
-  padding: 4px 6px;
-  font-size: 11px;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  color: white;
-  text-align: center;
-}
+      &::-webkit-inner-spin-button,
+      &::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
 
-.bmh-as-speed-input:focus {
-  outline: none;
-  border-color: rgba(255, 255, 255, 0.5);
-  background: rgba(255, 255, 255, 0.2);
-}
-
-/* Hide number input spinners */
-.bmh-as-speed-input::-webkit-inner-spin-button,
-.bmh-as-speed-input::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-.bmh-as-speed-input[type=number] {
-  -moz-appearance: textfield;
-  appearance: textfield;
+      &[type=number] {
+        -moz-appearance: textfield;
+        appearance: textfield;
+      }
+    }
+  }
 }
 </style>
 

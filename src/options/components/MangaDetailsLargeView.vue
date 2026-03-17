@@ -124,7 +124,7 @@ const truncatedDescription = computed(() => {
 });
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .manga-detail-card {
     position: relative;
     background: var(--bg-card);

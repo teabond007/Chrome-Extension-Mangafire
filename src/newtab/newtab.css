@@ -2,8 +2,7 @@
     --primary: #4F46E5;
     --primary-hover: #4338CA;
     --bg-dark: #0F172A;
-    --glass-bg: rgba(15, 23, 42, 0.6);
-    --glass-border: rgba(255, 255, 255, 0.1);
+
     --text-white: #F8FAFC;
     --text-muted: #94A3B8;
     --card-bg: rgba(30, 41, 59, 0.4);
@@ -99,11 +98,10 @@ body.loaded {
 .quick-links {
     display: flex;
     gap: 1rem;
-    background: var(--glass-bg);
-    backdrop-filter: blur(12px);
+    background: rgba(15, 23, 42, 0.6);
     padding: 0.5rem;
     border-radius: 12px;
-    border: 1px solid var(--glass-border);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .quick-link-btn {
@@ -132,10 +130,9 @@ body.loaded {
     position: relative;
     width: 100%;
     max-width: 600px;
-    background: var(--glass-bg);
-    backdrop-filter: blur(16px);
+    background: rgba(15, 23, 42, 0.6);
     border-radius: 20px;
-    border: 1px solid var(--glass-border);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     align-items: center;
     padding: 0.5rem 0.5rem 0.5rem 1.5rem;
@@ -209,9 +206,8 @@ body.loaded {
 .shortcut-icon {
     width: 64px;
     height: 64px;
-    background: var(--glass-bg);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--glass-border);
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -294,7 +290,7 @@ body.loaded {
     color: var(--text-muted);
     background: var(--card-bg);
     border-radius: 16px;
-    border: 1px dashed var(--glass-border);
+    border: 1px dashed rgba(255, 255, 255, 0.1);
 }
 
 /* Lightweight Manga Card */
@@ -302,12 +298,12 @@ body.loaded {
     background: var(--card-bg);
     border-radius: 16px;
     overflow: hidden;
-    border: 1px solid var(--glass-border);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     transition: var(--transition);
     cursor: pointer;
     display: flex;
     flex-direction: column;
-    backdrop-filter: blur(8px);
+
 }
 
 .manga-card-sm:hover {
@@ -389,16 +385,9 @@ body.layout-clean .dashboard-container {
     gap: 2rem;
 }
 
-.glass-card {
-    background: var(--glass-bg);
-    backdrop-filter: blur(16px);
-    border-radius: 20px;
-    border: 1px solid var(--glass-border);
-    padding: 1.5rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
 
-.glass-card h3 {
+
+.standard-card h3 {
     font-size: 1.1rem;
     font-weight: 600;
     margin-bottom: 1.25rem;
@@ -449,7 +438,7 @@ body.layout-clean .dashboard-container {
     gap: 1rem;
     padding: 1rem;
     background: var(--card-bg);
-    border: 1px solid var(--glass-border);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     text-decoration: none;
     color: var(--text-white);

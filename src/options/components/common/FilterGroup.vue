@@ -24,6 +24,6 @@ defineProps({
 });
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 /* Essential layout is handled by global _library.css */
 </style>

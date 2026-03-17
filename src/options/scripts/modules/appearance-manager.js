@@ -38,12 +38,10 @@ function initPresetThemes() {
 function applyPresetTheme(theme) {
     currentTheme = theme;
     const html = document.documentElement;
-    html.classList.remove('dark-mode', 'black-mode', 'neon-mode', 'light-mode', 'glassy-mode');
+    html.classList.remove('dark-mode', 'black-mode', 'neon-mode', 'light-mode');
     
     if (theme === 'light') {
         html.classList.add('light-mode');
-    } else if (theme === 'glassy') {
-        html.classList.add('glassy-mode');
     } else {
         html.classList.add(`${theme}-mode`);
     }
@@ -121,8 +119,7 @@ function applyCustomTheme(data) {
     const rgbBg = hexToRgb(data.bg);
     const rgbText = hexToRgb(data.text);
     
-    root.style.setProperty('--glass-bg', `rgba(${rgbBg}, 0.4)`);
-    root.style.setProperty('--glass-border', `rgba(${rgbText}, 0.1)`);
+
     root.style.setProperty('--border-color', `rgba(${rgbText}, 0.1)`);
     root.style.setProperty('--input-bg', `rgba(${rgbBg}, 0.2)`);
     root.style.setProperty('--input-border', `rgba(${rgbText}, 0.1)`);
@@ -138,7 +135,7 @@ function clearCustomThemeStyles() {
         '--bg-body', '--bg-card', '--bg-sidebar', 
         '--accent-primary', '--primary', 
         '--text-primary', '--text-white', 
-        '--glass-bg', '--glass-border',
+
         '--border-color', '--input-bg', '--input-border'
     ];
     vars.forEach(v => root.style.removeProperty(v));

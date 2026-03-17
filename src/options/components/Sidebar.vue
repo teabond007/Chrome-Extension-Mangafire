@@ -144,14 +144,10 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .sidebar {
-    width: var(--nav-width, 260px); 
+    width: var(--nav-width, 260px);
+    height: 100vh;
     background-color: var(--bg-sidebar);
     border-right: 1px solid var(--border-color);
-    
-    /* Premium Glassmorphism */
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    
     color: var(--text-on-dark);
     display: flex;
     flex-direction: column;
@@ -161,51 +157,48 @@ onMounted(() => {
     position: relative;
     z-index: 100;
     overflow: hidden;
+
+    &.collapsed {
+        width: 80px !important;
+        padding: 30px 0 !important;
+
+        .brand {
+            justify-content: center;
+            padding: 0;
+        }
+
+        .nav-item {
+            justify-content: center;
+            padding: 12px 0;
+        }
+
+        .nav-icon {
+            margin-right: 0;
+            font-size: 24px;
+        }
+
+        .nav-text, 
+        .brand-name, 
+        .version-info, 
+        .sidebar-footer .label {
+            display: none !important;
+        }
+
+        .nav-indicator {
+            display: none;
+        }
+
+        .support-sidebar-btn {
+            padding: 12px;
+            justify-content: center;
+
+            .icon {
+                margin: 0;
+            }
+        }
+    }
 }
 
-/* Collapsed State Overrides */
-.sidebar.collapsed {
-    width: 80px !important;
-    padding: 30px 0 !important;
-}
-
-.sidebar.collapsed .brand {
-    justify-content: center;
-    padding: 0;
-}
-
-.sidebar.collapsed .nav-item {
-    justify-content: center;
-    padding: 12px 0; /* Remove horizontal padding */
-}
-
-.sidebar.collapsed .nav-icon {
-    margin-right: 0;
-    font-size: 24px; /* Larger icons when collapsed */
-}
-
-/* Hide text elements aggressively in collapsed state */
-.sidebar.collapsed .nav-text, 
-.sidebar.collapsed .brand-name, 
-.sidebar.collapsed .version-info, 
-.sidebar.collapsed .sidebar-footer .label {
-    display: none !important;
-}
-
-.sidebar.collapsed .nav-indicator {
-    display: none;
-}
-
-.sidebar.collapsed .support-sidebar-btn {
-    padding: 12px;
-    justify-content: center;
-}
-
-.sidebar.collapsed .support-sidebar-btn .icon {
-    margin: 0;
-}
-
-/* Standard Styles */
 .brand {
     display: flex;
     align-items: center;
@@ -214,22 +207,23 @@ onMounted(() => {
     padding: 0 10px;
     white-space: nowrap;
     overflow: hidden;
-}
 
-.brand-icon {
-    cursor: pointer;
-    transition: transform 0.3s ease;
-    flex-shrink: 0;
-}
-.brand-icon:hover {
-    transform: scale(1.1);
-}
+    &-icon {
+        cursor: pointer;
+        transition: transform 0.3s ease;
+        flex-shrink: 0;
 
-.brand-name {
-    font-size: 20px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    display: inline-block;
+        &:hover {
+            transform: scale(1.1);
+        }
+    }
+
+    &-name {
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        display: inline-block;
+    }
 }
 
 .nav-menu {
@@ -252,16 +246,16 @@ onMounted(() => {
     font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
-}
 
-.nav-item:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-    color: var(--text-on-dark);
-}
+    &:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+        color: var(--text-on-dark);
+    }
 
-.nav-item.active {
-    color: var(--text-on-dark);
-    background-color: rgba(255, 255, 255, 0.08);
+    &.active {
+        color: var(--text-on-dark);
+        background-color: rgba(255, 255, 255, 0.08);
+    }
 }
 
 .nav-icon {
@@ -310,12 +304,12 @@ onMounted(() => {
     transition: all 0.2s;
     text-decoration: none;
     font-weight: 500;
-}
 
-.sidebar-btn:hover {
-    background: rgba(255, 255, 255, 0.12);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    &:hover {
+        background: rgba(255, 255, 255, 0.12);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
 }
 
 .version-info {
@@ -335,10 +329,10 @@ onMounted(() => {
     justify-content: center;
     margin-top: 5px;
     transition: color 0.2s;
-}
 
-.collapse-toggle:hover {
-    color: var(--text-on-dark);
+    &:hover {
+        color: var(--text-on-dark);
+    }
 }
 
 .header-text-gradient {

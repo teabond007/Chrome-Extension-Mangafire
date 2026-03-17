@@ -1,3 +1,5 @@
+@use 'styles/_variables.scss' as *;
+@use 'styles/_mixins.scss' as *;
 @use 'styles/_base.scss';
 @use 'styles/_layout.scss';
 @use 'styles/_components.scss';

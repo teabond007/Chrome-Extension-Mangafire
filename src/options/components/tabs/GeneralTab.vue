@@ -241,7 +241,7 @@ bindSetting(dashboardPackedLayout, 'dashboardPackedLayout');
 // User asked for "refactor plan... to pinia". Simplification is good.
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 /* GeneralTab scoped styles */
 .cards-row {
     display: grid;
@@ -275,10 +275,9 @@ bindSetting(dashboardPackedLayout, 'dashboardPackedLayout');
     max-height: 300px;
     overflow-y: auto;
     background: #0a0a0a;
-}
 
-.bg-terminal {
-    background: #0a0a0a;
-    border: 1px solid rgba(0, 255, 0, 0.2);
+    &.bg-terminal {
+        border: 1px solid rgba(0, 255, 0, 0.2);
+    }
 }
 </style>
