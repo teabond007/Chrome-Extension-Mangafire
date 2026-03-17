@@ -34,11 +34,6 @@ export function initFeatureToggles() {
         { id: "SmartAutoComplete", storageKey: "SmartAutoCompletefeatureEnabled" },
         { id: "SmartInactivityFade", storageKey: "SmartInactivityFadefeatureEnabled" },
         { id: "SmartResumeLink", storageKey: "SmartResumeLinkfeatureEnabled" },
-        { id: "MangaDexHighlightEnabled", storageKey: "MangaDexHighlightEnabled", defaultValue: true },
-        { id: "MangaDexShowProgress", storageKey: "MangaDexShowProgress", defaultValue: true },
-        { id: "WebtoonsHighlightEnabled", storageKey: "WebtoonsHighlightfeatureEnabled", defaultValue: true },
-        { id: "WebtoonsShowProgress", storageKey: "WebtoonsShowProgress", defaultValue: true },
-        { id: "WebtoonsBorderSizeEnabled", storageKey: "WebtoonsBorderSizefeatureEnabled", defaultValue: false },
         { id: "NotificationsEnabled", storageKey: "NotificationsfeatureEnabled", defaultValue: false },
         // Reader Enhancements
         { id: "AutoScrollEnabled", storageKey: "autoScrollEnabled", defaultValue: true },

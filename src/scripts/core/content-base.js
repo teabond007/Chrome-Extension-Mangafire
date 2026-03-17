@@ -161,9 +161,7 @@ export class ContentScriptBase {
      */
     getEnabledSettingKey() {
         const keys = {
-            'mangafire': 'MarkHomePagefeatureEnabled',
-            'mangadex': 'MangaDexHighlightEnabled',
-            'webtoons': 'WebtoonsHighlightfeatureEnabled'
+            'mangafire': 'MarkHomePagefeatureEnabled'
         };
         return keys[this.platformId] || `${this.platformName}HighlightEnabled`;
     }

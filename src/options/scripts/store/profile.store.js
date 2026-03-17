@@ -7,6 +7,7 @@ import { defineStore } from 'pinia';
 import { storage } from '../core/storage-adapter.js';
 import * as gdriveAuth from '../../../scripts/core/gdrive-auth.js';
 import * as gdriveSync from '../../../scripts/core/gdrive-sync.js';
+import { EXPORT_CATEGORIES } from '../modules/import-export.js';
 
 export const useProfileStore = defineStore('profile', {
     state: () => ({
@@ -27,7 +28,8 @@ export const useProfileStore = defineStore('profile', {
         syncLibrary: true,
         syncHistory: true,
         syncPersonal: true,
-        syncSettings: false,
+        syncSettings: true,
+        syncCache: false,
         conflictStrategy: 'newerWins', // 'newerWins' | 'localWins' | 'remoteWins'
         
         // Cloud backup info
@@ -68,6 +70,7 @@ export const useProfileStore = defineStore('profile', {
                     'profileSyncHistory',
                     'profileSyncPersonal',
                     'profileSyncSettings',
+                    'profileSyncCache',
                     'profileConflictStrategy',
                     'profileLastSync'
                 ]);
@@ -76,7 +79,8 @@ export const useProfileStore = defineStore('profile', {
                 this.syncLibrary = saved.profileSyncLibrary ?? true;
                 this.syncHistory = saved.profileSyncHistory ?? true;
                 this.syncPersonal = saved.profileSyncPersonal ?? true;
-                this.syncSettings = saved.profileSyncSettings ?? false;
+                this.syncSettings = saved.profileSyncSettings ?? true;
+                this.syncCache = saved.profileSyncCache ?? false;
                 this.conflictStrategy = saved.profileConflictStrategy ?? 'newerWins';
                 this.lastSyncTime = saved.profileLastSync ?? null;
 
@@ -307,12 +311,11 @@ export const useProfileStore = defineStore('profile', {
          */
         async gatherSyncData() {
             const keys = [];
-            if (this.syncLibrary) keys.push('userBookmarks', 'savedEntriesMerged');
-            if (this.syncHistory) keys.push('readingHistory');
-            if (this.syncPersonal) keys.push('personalData');
-            if (this.syncSettings) {
-                keys.push('theme', 'highlightThickness', 'libraryThickness', 'customMarkers');
-            }
+            if (this.syncLibrary) keys.push(...EXPORT_CATEGORIES.library.keys);
+            if (this.syncHistory) keys.push(...EXPORT_CATEGORIES.history.keys);
+            if (this.syncPersonal) keys.push(...EXPORT_CATEGORIES.personalData.keys);
+            if (this.syncSettings) keys.push(...EXPORT_CATEGORIES.settings.keys);
+            if (this.syncCache) keys.push(...EXPORT_CATEGORIES.cache.keys);
 
             return storage.get(keys);
         },
@@ -324,20 +327,19 @@ export const useProfileStore = defineStore('profile', {
             // Only apply fields that were synced
             const toSave = {};
             if (this.syncLibrary) {
-                if (data.userBookmarks) toSave.userBookmarks = data.userBookmarks;
-                if (data.savedEntriesMerged) toSave.savedEntriesMerged = data.savedEntriesMerged;
+                EXPORT_CATEGORIES.library.keys.forEach(k => { if (data[k] !== undefined) toSave[k] = data[k]; });
             }
-            if (this.syncHistory && data.readingHistory) {
-                toSave.readingHistory = data.readingHistory;
+            if (this.syncHistory) {
+                EXPORT_CATEGORIES.history.keys.forEach(k => { if (data[k] !== undefined) toSave[k] = data[k]; });
             }
-            if (this.syncPersonal && data.personalData) {
-                toSave.personalData = data.personalData;
+            if (this.syncPersonal) {
+                EXPORT_CATEGORIES.personalData.keys.forEach(k => { if (data[k] !== undefined) toSave[k] = data[k]; });
             }
             if (this.syncSettings) {
-                if (data.theme) toSave.theme = data.theme;
-                if (data.highlightThickness) toSave.highlightThickness = data.highlightThickness;
-                if (data.libraryThickness) toSave.libraryThickness = data.libraryThickness;
-                if (data.customMarkers) toSave.customMarkers = data.customMarkers;
+                EXPORT_CATEGORIES.settings.keys.forEach(k => { if (data[k] !== undefined) toSave[k] = data[k]; });
+            }
+            if (this.syncCache) {
+                EXPORT_CATEGORIES.cache.keys.forEach(k => { if (data[k] !== undefined) toSave[k] = data[k]; });
             }
 
             await storage.set(toSave);
@@ -360,6 +362,7 @@ export const useProfileStore = defineStore('profile', {
                 profileSyncHistory: this.syncHistory,
                 profileSyncPersonal: this.syncPersonal,
                 profileSyncSettings: this.syncSettings,
+                profileSyncCache: this.syncCache,
                 profileConflictStrategy: this.conflictStrategy
             });
         }

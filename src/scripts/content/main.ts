@@ -3,26 +3,15 @@
  * Detects the current platform and initializes the appropriate adapter.
  */
 
-import { initMangaFire } from './adapters/mangafire';
-
 // Selector tool - auto-initializes when ?bmh-selector-mode=true is in URL
 import './selector-tool';
-
-const ADAPTER_CONFIGS: any = [
-    {
-        hosts: ['mangafire.to'],
-        init: initMangaFire,
-        settingsPrefix: 'MangaFire'
-    }
-];
+import { initCustomSite, GenericAdapter } from '../core/generic-adapter';
+import ReaderEnhancements from '../core/reader-enhancements';
 
 async function bootstrap() {
     if (!chrome.runtime?.id) return;
 
     const currentHost = window.location.hostname;
-    const config = ADAPTER_CONFIGS.find((c: any) =>
-        c.hosts.some((h: string) => currentHost.includes(h))
-    );
 
     // Load ALL settings needed by various adapters
     const settingsKeys = [
@@ -40,50 +29,28 @@ async function bootstrap() {
             chrome.storage.local.get(settingsKeys, resolve);
         });
 
-        if (config) {
-            // Built-in adapter found
-            console.log(`[BMH] Built-in adapter found for ${currentHost}`);
-            const platformSettingsKeys = [
-                `${config.settingsPrefix}HighlightEnabled`,
-                `${config.settingsPrefix}QuickActionsEnabled`,
-                `${config.settingsPrefix}ShowProgress`
-            ];
-            const platformSettings: Record<string, any> = await new Promise(resolve => {
-                chrome.storage.local.get(platformSettingsKeys, resolve);
-            });
-            await config.init({ ...settings, ...platformSettings });
-        } else {
-            // Try to find a matching custom site configuration
-            console.log(`[BMH] No built-in adapter for ${currentHost}, checking custom sites...`);
-            const customSites = settings.customSites || [];
-            console.log('[BMH] Available custom sites:', customSites.map((s: any) => ({
-                hostname: s.hostname,
-                enabled: s.enabled,
-                selectors: s.selectors
-            })));
+        // Try to find a matching custom site configuration
+        console.log(`[BMH] Checking custom sites for ${currentHost}...`);
+        const customSites = settings.customSites || [];
 
-            const customConfig = customSites.find((s: any) =>
-                s.enabled && currentHost.includes(s.hostname)
-            );
+        const customConfig = customSites.find((s: any) =>
+            s.enabled && currentHost.includes(s.hostname)
+        );
 
-            if (customConfig) {
-                console.log('[BMH] Matched custom config:', customConfig);
-                const { initCustomSite, GenericAdapter } = await import('../core/generic-adapter');
+        if (customConfig) {
+            console.log('[BMH] Matched custom config:', customConfig);
+            // Always enhance cards on any page
+            await initCustomSite(customConfig, settings);
 
-                // Always enhance cards on any page
-                await initCustomSite(customConfig, settings);
-
-                // Additionally track progress if reader page is explicitly detected
-                const adapter = new GenericAdapter(customConfig);
-                if (customConfig.readerSelectors?.readerDetect && adapter.isReaderPage()) {
-                    console.log('[BMH] Reader page detected for custom site, initializing progress tracker');
-                    const { default: ProgressTracker } = await import('../core/progress-tracker');
-                    const tracker = new ProgressTracker(adapter);
-                    await tracker.init();
-                }
-            } else {
-                console.warn(`[BMH] No adapter found for host: ${currentHost}`);
+            // Additionally track progress if reader page is explicitly detected
+            const adapter = new GenericAdapter(customConfig);
+            if (customConfig.readerSelectors?.readerDetect && adapter.isReaderPage()) {
+                console.log('[BMH] Reader page detected for custom site, initializing reader enhancements');
+                const enhancements = new ReaderEnhancements(adapter);
+                await enhancements.init();
             }
+        } else {
+            console.warn(`[BMH] No adapter found for host: ${currentHost}`);
         }
     } catch (e) {
         console.error(`[BMH] Failed to initialize adapter:`, e);

@@ -10,7 +10,7 @@ import { fetchMDList } from '../../../scripts/core/mangadex-api.js';
  * Export data category definitions.
  * Each category has a list of storage keys and a description.
  */
-const EXPORT_CATEGORIES = {
+export const EXPORT_CATEGORIES = {
     library: {
         keys: ['savedEntriesMerged', 'userBookmarks'],
         label: 'Library Entries'
@@ -29,12 +29,6 @@ const EXPORT_CATEGORIES = {
             'CustomBorderSizefeatureEnabled',
             'FamilyFriendlyfeatureEnabled',
             'SmartAutoCompletefeatureEnabled',
-            'MangaDexHighlightEnabled',
-            'MangaDexShowProgress',
-            'WebtoonsHighlightfeatureEnabled',
-            'WebtoonsShowProgress',
-            'WebtoonsBorderSizefeatureEnabled',
-            'WebtoonsBorderSize',
             'MangaFireHighlightEnabled',
             'MangaFireShowProgress',
             'MangaFireQuickActionsEnabled',

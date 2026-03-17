@@ -10,6 +10,7 @@ import { storage } from '../core/storage-adapter.js';
  * @typedef {Object} CustomSiteConfig
  * @property {string} id - UUID for the site configuration
  * @property {string} hostname - The site hostname (e.g., "bato.to")
+ * @property {string} [url] - The exact listing URL provided by user
  * @property {string} name - User-friendly display name
  * @property {string} [description] - Optional description
  * @property {Object} selectors - CSS selectors for listing page DOM elements
@@ -91,6 +92,7 @@ export const useCustomSitesStore = defineStore('customSites', {
             const newSite = {
                 id: crypto.randomUUID(),
                 hostname: siteData.hostname || '',
+                url: siteData.url || `https://${siteData.hostname || ''}`,
                 name: siteData.name || 'Untitled Site',
                 description: siteData.description || '',
                 selectors: {

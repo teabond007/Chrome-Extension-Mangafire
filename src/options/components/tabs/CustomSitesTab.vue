@@ -79,7 +79,7 @@
                                     {{ getSelectorStatusText(site) }}
                                 </span>
                             </div>
-                            <span class="site-hostname">{{ site.hostname }}</span>
+                            <span class="site-hostname">{{ site.url || site.hostname }}</span>
                         </div>
                         <div class="site-actions">
                             <button 
@@ -301,6 +301,7 @@ async function startAddSite() {
         // Create the site config (selectors will be set in selector mode)
         const site = await customSitesStore.addSite({
             hostname: hostname,
+            url: newSiteUrl.value,
             name: newSiteName.value || hostname,
             selectors: [{
                 card: '',
@@ -308,8 +309,12 @@ async function startAddSite() {
             }]
         });
 
-        // Open the site with selector mode query param
-        const selectorUrl = `${url.origin}?bmh-selector-mode=true&bmh-site-id=${site.id}`;
+        // Open the site exactly where the user pointed it
+        const selectorUrlObj = new URL(newSiteUrl.value);
+        selectorUrlObj.searchParams.set('bmh-selector-mode', 'true');
+        selectorUrlObj.searchParams.set('bmh-site-id', site.id);
+        const selectorUrl = selectorUrlObj.toString();
+        
         const tab = await chrome.tabs.create({ url: selectorUrl });
 
         // Inject the content script via background (since this host isn't in manifest yet)
@@ -375,8 +380,12 @@ function getSelectorStatusText(site) {
 }
 
 async function editSite(site) {
-    // Open site with selector mode to edit listing page selectors
-    const selectorUrl = `https://${site.hostname}?bmh-selector-mode=true&bmh-site-id=${site.id}`;
+    // Open site exactly where the user originally pointed it to edit listing page selectors
+    const baseUrl = site.url || `https://${site.hostname}`;
+    const urlObj = new URL(baseUrl);
+    urlObj.searchParams.set('bmh-selector-mode', 'true');
+    urlObj.searchParams.set('bmh-site-id', site.id);
+    const selectorUrl = urlObj.toString();
     const tab = await chrome.tabs.create({ url: selectorUrl });
 
     injectSelectorToolOnLoad(tab.id);

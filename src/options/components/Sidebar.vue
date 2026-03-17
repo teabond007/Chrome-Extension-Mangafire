@@ -16,18 +16,11 @@
                 <span class="nav-icon">&#128218;</span>
                 <span class="nav-text">Saved Entries</span>
             </a>
-            <a href="#" class="nav-item" :class="{ active: activeTab === 'import-export' }" @click="setActiveTab('import-export')" data-tab="import-export">
-                <span class="nav-icon">&#128194;</span>
-                <span class="nav-text">Import & Export</span>
-            </a>
             <a href="#" class="nav-item" :class="{ active: activeTab === 'appearance' }" @click="setActiveTab('appearance')" data-tab="appearance">
                 <span class="nav-icon">🎨</span>
                 <span class="nav-text">Appearance</span>
             </a>
-            <a href="#" class="nav-item" :class="{ active: activeTab === 'about' }" @click="setActiveTab('about')" data-tab="about">
-                <span class="nav-icon">ℹ️</span>
-                <span class="nav-text">About</span>
-            </a>
+            
             <a href="#" class="nav-item" :class="{ active: activeTab === 'custom-sites' }" @click="setActiveTab('custom-sites')" data-tab="custom-sites">
                 <span class="nav-icon">🌐</span>
                 <span class="nav-text">Custom Sites</span>
@@ -36,9 +29,9 @@
                 <span class="nav-icon">☁️</span>
                 <span class="nav-text">Profile & Sync</span>
             </a>
-            <a href="#" class="nav-item nav-item-dev" :class="{ active: activeTab === 'dev-only' }" @click="setActiveTab('dev-only')" data-tab="dev-only">
-                <span class="nav-icon">🛠️</span>
-                <span class="nav-text">Dev Only</span>
+            <a href="#" class="nav-item" :class="{ active: activeTab === 'about' }" @click="setActiveTab('about')" data-tab="about">
+                <span class="nav-icon">ℹ️</span>
+                <span class="nav-text">About</span>
             </a>
             <div class="nav-indicator" ref="indicatorRef"></div>
         </nav>

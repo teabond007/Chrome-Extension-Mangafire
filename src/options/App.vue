@@ -8,11 +8,9 @@
             <GeneralTab />
             <AppearanceTab />
             <SavedEntriesTab />
-            <ImportExportTab />
             <AboutTab />
             <CustomSitesTab />
             <ProfileTab />
-            <DevOnlyTab />
         </main>
     </div>
 
@@ -33,11 +31,9 @@ import Sidebar from './components/Sidebar.vue';
 import GeneralTab from './components/tabs/GeneralTab.vue';
 import AppearanceTab from './components/tabs/AppearanceTab.vue';
 import SavedEntriesTab from './components/tabs/SavedEntriesTab.vue';
-import ImportExportTab from './components/tabs/ImportExportTab.vue';
 import AboutTab from './components/tabs/AboutTab.vue';
 import CustomSitesTab from './components/tabs/CustomSitesTab.vue';
 import ProfileTab from './components/tabs/ProfileTab.vue';
-import DevOnlyTab from './components/tabs/DevOnlyTab.vue';
 import MangaDetailsModal from './components/MangaDetailsModal.vue';
 
 const settingsStore = useSettingsStore();

@@ -32,7 +32,6 @@
     ]
   },
   "host_permissions": [
-    "https://mangafire.to/user/bookmark",
     "https://graphql.anilist.co/*",
     "https://api.mangadex.org/*",
     "https://mangadex.org/*"
@@ -48,10 +47,10 @@
   "content_scripts": [
     {
       "js": [
-        "assets/main.ts-loader-f35e4501.js"
+        "assets/main.ts-loader-8f1ba52a.js"
       ],
       "matches": [
-        "*://mangafire.to/*"
+        "*://fallback.custom-sites.local/*"
       ],
       "run_at": "document_idle",
       "css": [
@@ -73,14 +72,13 @@
     },
     {
       "matches": [
-        "*://mangafire.to/*"
+        "*://fallback.custom-sites.local/*"
       ],
       "resources": [
-        "assets/preload-helper-cf010ec4.js",
-        "assets/runtime-dom.esm-bundler-1d81061f.js",
+        "assets/runtime-dom.esm-bundler-a09c9a5c.js",
         "assets/_plugin-vue_export-helper-c27b6911.js",
-        "assets/generic-adapter-8e7c826c.js",
-        "assets/main.ts-a3a8e121.js"
+        "assets/preload-helper-cf010ec4.js",
+        "assets/main.ts-ff9ff16f.js"
       ],
       "use_dynamic_url": false
     }
