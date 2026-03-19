@@ -29,8 +29,6 @@ export function initFeatureToggles() {
         { id: "AutoSync", storageKey: "AutoSyncfeatureEnabled" },
         { id: "CustomBorderSize", storageKey: "CustomBorderSizefeatureEnabled" },
         { id: "FamilyFriendly", storageKey: "FamilyFriendlyfeatureEnabled" },
-        { id: "NewTabDashboard", storageKey: "NewTabDashboardfeatureEnabled" },
-        { id: "DashboardLayoutStyle", storageKey: "DashboardLayoutStylePacked" },
         { id: "SmartAutoComplete", storageKey: "SmartAutoCompletefeatureEnabled" },
         { id: "SmartInactivityFade", storageKey: "SmartInactivityFadefeatureEnabled" },
         { id: "SmartResumeLink", storageKey: "SmartResumeLinkfeatureEnabled" },

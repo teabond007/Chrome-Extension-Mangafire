@@ -10,9 +10,6 @@
   "icons": {
     "128": "icons/favicon128.png"
   },
-  "chrome_url_overrides": {
-    "newtab": "src/newtab/newtab.html"
-  },
   "action": {
     "default_icon": "icons/favicon128.png",
     "default_popup": "src/popup/popup.html"

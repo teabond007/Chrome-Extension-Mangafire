@@ -2,7 +2,6 @@ import { initTabs, initInfoRedirects, initScrollToTop, initUrlParams, initMessag
 import { initFeatureToggles } from './modules/feature-toggles.js';
 import { initMarkerManager } from './modules/marker-manager.js';
 import { initImportExport } from './modules/import-export.js';
-import { initQuickAccessManager } from './modules/quick-access-manager.js';
 import { CrystalSelect } from './ui/custom-select.js';
 import { Log } from './ui/logger.js';
 
@@ -39,7 +38,6 @@ export async function init() {
     initMarkerManager();
     initImportExport();
     // initLibrary(); // REPLACED BY PINIA
-    initQuickAccessManager();
     // initAppearanceManager(); // REPLACED BY PINIA (mostly) but keeping for now for DOM manipulation
 
     // Setup Storage Listener for Cross-Context Sync

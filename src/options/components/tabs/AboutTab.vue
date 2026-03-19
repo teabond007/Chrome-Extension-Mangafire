@@ -3,156 +3,74 @@
         <header class="header">
             <div class="header-text">
                 <h1>About</h1>
-                <p class="subtitle">Information, usage guide, and credits.</p>
+                <p class="subtitle">Information, usage guide, and extension architecture.</p>
             </div>
         </header>
 
         <div class="content-grid">
-            <!-- Project Info Card (Restored) -->
+            <!-- Project Info Card -->
             <div class="card">
                 <div class="card-body prose">
-                    <h2>MangaFire & Multi-Site Content Manager</h2>
-                    <p>A powerful Chrome Extension designed for <strong>MangaFire.to</strong>, <strong>MangaDex</strong>, <strong>Asura Scans</strong>, and <strong>Webtoons</strong>. It enhances your browsing experience by automatically highlighting manga based on your bookmarks, tracking your reading history across platforms, and syncing your library between devices.</p>
+                    <h2>Universal Content Highlighter & Tracker</h2>
+                    <p>A sophisticated Chrome Extension designed to unify your reading and viewing experience across the web. Rather than relying on hardcoded support for specific sites, it uses a powerful <strong>Custom Sites</strong> engine that allows you to track progress, save history, and visualize bookmarks on <em>any</em> website through user-defined DOM selectors.</p>
 
                     <h3>🚀 Why Use This?</h3>
-                    <p>Reading across multiple sites can be disjointed. You lose track of chapters, and bookmarks are scattered. 
-                    <strong>Content Manager</strong> solves this by:</p>
+                    <p>Managing content across dozens of different platforms leads to fragmented history and forgotten bookmarks. 
+                    <strong>Universal Content Manager</strong> solves this by:</p>
                     <ul>
-                        <li><strong>Unifying your library</strong>: A single dashboard for all your manga, regardless of the source.</li>
-                        <li><strong>Visual Tags</strong>: Injecting colored status borders (e.g., "Reading", "Plan to Read") directly onto the websites you browse.</li>
-                        <li><strong>Cloud Sync</strong>: Seamless cross-device synchronization using your own <strong>Google Drive</strong>.</li>
+                        <li><strong>Standardizing your library</strong>: A single, persistent database for all your entries, regardless of which site they come from.</li>
+                        <li><strong>Visual Context</strong>: Injecting custom UI elements (like status borders or reading badges) directly into the websites you browse.</li>
+                        <li><strong>Zero-Lock-in Sync</strong>: Seamless cross-device synchronization using your own <strong>Google Drive</strong>, keeping you in full control of your data.</li>
                     </ul>
 
                     <hr class="divider">
 
                     <h3>✨ Key Features</h3>
                     
-                    <h4>🌍 Cross-Platform Support</h4>
+                    <h4>🌍 Universal Site Support</h4>
                     <ul class="feature-list">
-                        <li><strong>Supported Sites</strong>: MangaFire, MangaDex, Asura Scans, Webtoons, Manganato, MangaPlus.</li>
-                        <li><strong>Universal Tracking</strong>: Reading progress is saved automatically no matter which site you use.</li>
+                        <li><strong>Custom Sites Engine</strong>: Add support for any site in seconds using the visual selector tool.</li>
+                        <li><strong>DOM-Based Tracking</strong>: Automatically detects when you move between listing pages and reader pages based on element presence.</li>
                     </ul>
 
-                    <h4>☁️ Cloud Sync & Backup</h4>
+                    <h4>☁️ Cloud Sync & Privacy</h4>
                     <ul class="feature-list">
-                        <li><strong>Google Drive Integration</strong>: Connect your Google Account to sync your library, history, and settings across all your computers.</li>
-                        <li><strong>Private Data</strong>: Your data is stored in a private "App Data" folder in your Drive—secure and invisible to others.</li>
-                        <li><strong>Conflict Resolution</strong>: Smart handling of data conflicts (Newer wins/Local wins/Cloud wins).</li>
+                        <li><strong>Google Drive Integration</strong>: Securely sync your library and settings across all your devices using your private App Data folder.</li>
+                        <li><strong>Local-First Architecture</strong>: All data is stored and processed on your machine. No external servers track your behavior.</li>
                     </ul>
 
-                    <h4>🎨 Visual & Reader Enhancements</h4>
+                    <h4>🎨 Enhancement Suite</h4>
                     <ul class="feature-list">
-                        <li><strong>Smart Highlighting</strong>: Instantly spot your saved manga with custom colored borders while browsing.</li>
-                        <li><strong>Quick Actions Overlay</strong>: Hover over covers on supported sites to update status or rating without leaving the page.</li>
-                        <li><strong>Auto-Scroll</strong>: Hands-free reading with adjustable speed controls.</li>
-                        <li><strong>Progress Tracking</strong>: Remembers your exact scroll position within chapters.</li>
+                        <li><strong>Smart Highlighting</strong>: Visualize your saved entries with custom colored borders and interactive markers.</li>
+                        <li><strong>Auto-Scroll & Reader Tools</strong>: Floating controls for hands-free reading on any page identified as a "Reader Page".</li>
+                        <li><strong>Progress Persistence</strong>: Remembers your exact scroll position and chapter history across different domains.</li>
                     </ul>
 
-                    <h4>📊 Advanced Library Dashboard</h4>
+                    <h4>📊 Library Management</h4>
                     <ul class="feature-list">
-                        <li><strong>New Tab Dashboard</strong>: Optionally replaces your new tab page with a rich library overview and "Next Up" recommendations.</li>
-                        <li><strong>Statistics</strong>: Visualize your reading habits with detailed charts (Format distribution, Status breakdown).</li>
-                        <li><strong>Bulk Operations</strong>: Mass-update manga statuses or clean duplicates with one click.</li>
-                        <li><strong>Smart Filters</strong>: Filter by Status, Format, Genre, Demographic, or "Binge-worthy" length.</li>
-                    </ul>
-
-                    <h4>🤖 Smart Automation</h4>
-                    <ul class="feature-list">
-                        <li><strong>Sync & Mark Read</strong>: Automatically detects when you read a chapter and updates your local library.</li>
-                        <li><strong>Smart Resume</strong>: Predicts the next chapter you want to read and puts it one click away.</li>
-                        <li><strong>Inactivity Fade</strong>: Visually dims entries you haven't touched in 30+ days.</li>
+                        <li><strong>Advanced Statistics</strong>: Visualize your library trends with detailed breakdown charts and consumption metrics.</li>
+                        <li><strong>Mass Actions</strong>: Bulk-update statuses, merge duplicates, or export specific subsets of your data.</li>
                     </ul>
 
                     <hr class="divider">
 
                     <h3>📖 Getting Started</h3>
                     <ol class="usage-list">
-                        <li><strong>Import Data</strong>: If you have a list on MangaDex or AniList, use the <strong>Import</strong> tab to populate your library immediately.</li>
-                        <li><strong>Browse</strong>: Go to any supported site (e.g., MangaFire). You'll see status markers on manga you've imported.</li>
-                        <li><strong>Read</strong>: Open a chapter. The extension will automatically track your progress.</li>
-                        <li><strong>Sync</strong>: Enable Google Drive sync in the <strong>Profile</strong> tab to keep your other devices in loop.</li>
+                        <li><strong>Initialize Your Library</strong>: Import existing data via the <strong>Profile</strong> tab (JSON/MangaDex) to get started quickly.</li>
+                        <li><strong>Configure Your Sites</strong>: Navigate to the <strong>Custom Sites</strong> tab to add tracking support for your favorite websites.</li>
+                        <li><strong>Browse & Interact</strong>: Once a site is configured, the extension will automatically highlight your entries and track your progress as you read.</li>
+                        <li><strong>Enable Sync</strong>: Sign in with Google in the <strong>Profile</strong> tab to ensure your data is backed up and available on other machines.</li>
                     </ol>
                     
                     <hr class="divider">
 
-                    <h3>⚠️ Disclaimer</h3>
+                    <h3>⚖️ Terms & Privacy</h3>
+                    <p>This extension is built with a <strong>Privacy-First</strong> philosophy. We do not collect analytics, track your browsing history, or store your data on our own servers. Your data belongs to you.</p>
                     <ul>
-                        <li>This is an <strong>unofficial</strong> tool and is not affiliated with any of the supported manga websites.</li>
-                        <li>Use responsibly.</li>
-                    </ul>
-
-                    <hr class="divider">
-
-                    <h3>🔒 Privacy & Security</h3>
-                    <p>This extension is built with a <strong>Privacy-First</strong> approach:</p>
-                    <ul class="feature-list">
-                        <li><strong>Local-First</strong>: Primary database is stored in <code>chrome.storage.local</code>.</li>
-                        <li><strong>User-Owned Cloud</strong>: Cloud sync uses <em>your</em> Google Drive. We assume no improved liability for external servers.</li>
-                        <li><strong>No Tracking</strong>: No analytics, no behavioral tracking, no third-party data collection.</li>
-                    </ul>
-
-                    <hr class="divider">
-
-                    <h3 id="guide-tos">⚖️ Terms of Service</h3>
-                    <p>By using this extension, you agree to the following terms:</p>
-                    <ul class="feature-list">
-                        <li><strong>License & Usage</strong>: This software is free for personal use. You are strictly <strong>prohibited from selling, reselling, or commercially exploiting</strong> this extension or its source code. You may not repackage or redistribute this software claiming it as your own work.</li>
-                        <li><strong>Data Ownership</strong>: You retain full ownership of your data. We do not access, collect, or sell your reading history or personal information.</li>
-                        <li><strong>Liability</strong>: The software is provided "as is". We are not responsible for any data loss or issues arising from its use.</li>
-                        <li><strong>Governing Law</strong>: These terms are governed by the laws of <strong>Slovenia</strong>.</li>
+                        <li><strong>Governing Law</strong>: Terms are governed by the laws of <strong>Slovenia</strong>.</li>
+                        <li><strong>License</strong>: Free for personal use. Commercial redistribution or reselling is strictly prohibited.</li>
                     </ul>
                 </div>
-            </div>
-
-            <!-- Supported pages Header -->
-            <div class="section-title-full">
-                <h2 class="section-label">Supported pages</h2>
-            </div>
-
-            <!-- Supported pages -->
-            <div class="supported-sites-grid">
-                <a href="https://mangafire.to" target="_blank" class="site-link-card">
-                    <img src="https://www.google.com/s2/favicons?domain=mangafire.to&sz=32" alt="MangaFire" class="site-icon">
-                    <div class="site-info">
-                        <span class="site-name">MangaFire</span>
-                        <span class="site-url">mangafire.to</span>
-                    </div>
-                </a>
-                <a href="https://mangadex.org" target="_blank" class="site-link-card">
-                    <img src="https://www.google.com/s2/favicons?domain=mangadex.org&sz=32" alt="MangaDex" class="site-icon">
-                    <div class="site-info">
-                        <span class="site-name">MangaDex</span>
-                        <span class="site-url">mangadex.org</span>
-                    </div>
-                </a>
-                <a href="https://asuracomic.net" target="_blank" class="site-link-card">
-                    <img src="https://www.google.com/s2/favicons?domain=asuracomic.net&sz=32" alt="Asura Scans" class="site-icon">
-                    <div class="site-info">
-                        <span class="site-name">Asura Scans</span>
-                        <span class="site-url">asuracomic.net</span>
-                    </div>
-                </a>
-                <a href="https://webtoon.com" target="_blank" class="site-link-card">
-                    <img src="https://www.google.com/s2/favicons?domain=webtoon.com&sz=32" alt="Webtoons" class="site-icon">
-                    <div class="site-info">
-                        <span class="site-name">Webtoons</span>
-                        <span class="site-url">webtoon.com</span>
-                    </div>
-                </a>
-                <a href="https://manganato.com" target="_blank" class="site-link-card">
-                    <img src="https://www.google.com/s2/favicons?domain=manganato.com&sz=32" alt="Manganato" class="site-icon">
-                    <div class="site-info">
-                        <span class="site-name">Manganato</span>
-                        <span class="site-url">manganato.com</span>
-                    </div>
-                </a>
-                <a href="https://mangaplus.com" target="_blank" class="site-link-card">
-                    <img src="https://www.google.com/s2/favicons?domain=mangaplus.com&sz=32" alt="MangaPlus" class="site-icon">
-                    <div class="site-info">
-                        <span class="site-name">MangaPlus</span>
-                        <span class="site-url">mangadex.org</span>
-                    </div>
-                </a>
             </div>
 
             <!-- User Guide Header -->
@@ -160,132 +78,87 @@
                 <h2 class="section-label">User Guide & Feature Help</h2>
             </div>
 
-            <!-- Guide Section: General & Reading -->
-            <h3 class="guide-section-header">General & Reading</h3>
+            <!-- Guide Section: Core Functionality -->
+            <h3 class="guide-section-header">Core Functionality</h3>
             <div class="guide-grid">
                 <GuideCard id="guide-general" title="General Preferences" icon="⚙️">
-                    Global controls for how the extension interacts with content. <b>Mark Homepage</b> is Mangafire specific and just applys colored borders to the homepage. 
-                    <b>Family friendly</b> is a feature that will hide any manga that is 18+ but it is not perfect and may not hide all of them.
-                    <b>Quick actions</b> will add on manga hower button on extrernal sites.
+                    Global controls for how the extension interacts with web content. Enable <b>Quick Actions</b> to add interactive hover buttons on external sites, or toggle <b>Reading Badges</b> to see your progress directly on thumbnails.
                 </GuideCard>
 
                 <GuideCard id="guide-smart-automation" title="Smart Automation" icon="⚡">
-                   Reduces manual tracking. <b>Sync & Mark Read</b> updates your history based on the URL you visit. 
-                   <b>Smart Resume</b> predicts your next chapter on the dashboard so you can jump back in with one click.
+                   Reduces manual work by automating metadata updates. <b>Sync & Mark Read</b> uses your browsing history to automatically update your library when you visit a chapter page. <b>Inactivity Fade</b> visually dims entries you haven't interacted with recently.
                 </GuideCard>
 
                 <GuideCard id="guide-reader" title="Reader Enhancements" icon="📚">
-                    Enhances the reading experience on supported sites. <b>Auto-Scroll</b> adds a floating control for hands-free reading. 
-                    <b>Progress Tracking</b> saves your position within a chapter, allowing you to resume exactly where you left off even if you close the tab.
+                    Specialized tools for reading pages. <b>Auto-Scroll</b> provides hands-free navigation with precise speed control, while <b>Progress Tracking</b> saves your exact vertical position, allowing you to resume reading instantly on any device.
                 </GuideCard>
 
                 <GuideCard id="guide-markers" title="Custom Markers" icon="🎨">
-                   Use markers when you need more than the standard statuses. They act as "virtual folders" or tags (e.g., "Favorite", "Top Tier"), allowing you to categorize entries 
-                   and visualize them with unique border styles on supported websites without adhering to the site's own restrictions.
+                   Create virtual categories (e.g., "Favorites", "To-Buy") that go beyond standard site statuses. Markers allow you to apply unique visual styles (different border colors or patterns) to specific groups of entries across all your configured sites.
                 </GuideCard>
 
-                <GuideCard id="guide-websites" title="Website Specifics" icon="🌐">
-                     Configurations here apply logic specific to individual platforms. For example, adjusting <b>Highlight Thickness</b> per site ensures borders look good 
-                     regardless of the site's native thumbnail scaling or layout density.
+                <GuideCard id="guide-websites" title="Site Customization" icon="🌐">
+                     Fine-tune how the extension looks on specific domains. Adjust <b>Highlight Thickness</b> to match the visual density of different sites, ensuring your status borders are clearly visible without obstructing the site's original UI.
                 </GuideCard>
             </div>
 
-          
+            <!-- Guide Section: Custom Sites System -->
+            <h3 class="guide-section-header">Custom Sites System</h3>
+            <div class="guide-grid">
+                <GuideCard id="guide-custom-add" title="Adding a New Site" icon="➕">
+                    Use the <b>Visual Selector Tool</b> to teach the extension how to recognize content on any site. You'll select the main "Card" container and the "Title" element to enable highlighting and tracking.
+                </GuideCard>
 
-            <!-- Guide Section: Appearance & Dashboard -->
-            <h3 class="guide-section-header">Appearance & Dashboard</h3>
+                <GuideCard id="guide-selector-tool" title="The Selector Tool" icon="🎯">
+                    Our path-based selector uses absolute DOM paths for stability. If a site has multiple designs (e.g., Grid vs. List), you can create <b>Variant Groups</b> to ensure the extension works perfectly in all view modes.
+                </GuideCard>
+
+                <GuideCard id="guide-reader-selectors" title="Reader Tracking" icon="📖">
+                    Configure <b>Reader Selectors</b> to enable progress tracking. By identifying a unique element on chapter pages, the extension can automatically detect when you are reading and save your position.
+                </GuideCard>
+
+                <GuideCard id="guide-custom-share" title="Portability" icon="📤">
+                    Configurations are fully portable. You can <b>Export</b> your site settings as JSON to share with others or <b>Import</b> configurations from the community to instantly support new platforms.
+                </GuideCard>
+            </div>
+
+            <!-- Guide Section: Appearance & Data -->
+            <h3 class="guide-section-header">Appearance & Data</h3>
             <div class="guide-grid">
                 <GuideCard id="guide-personalization" title="Extension Appearance" icon="🌙">
-                    These settings modify the extension's own interface (Popup, Options, Dashboard). Changes here are purely cosmetic and local, 
-                    ensuring a consistent look across the extension without altering the visual appearance of the third-party manga sites you visit.
-                </GuideCard>
-
-                <GuideCard id="guide-quick-access" title="Quick Access Shortcuts" icon="🔗">
-                    Customizes the 5 shortcut circles on your Dashboard. Map them to your most-visited URLs (like specific manga list pages, profiles, or external sites) 
-                    to create a personalized navigation hub that stays consistent on every new tab.
-                </GuideCard>
-
-                <GuideCard id="guide-dashboard" title="Dashboard" icon="📊">
-                    Replaces your browser's new tab page with a rich library overview. The <b>Packed Layout</b> aggregates your reading stats and "Next Up" recommendations 
-                    into a dense view, perfect for users with large libraries who want immediate access to their next read.
+                    Customize the extension's own interface (Popup and Options page). These settings are purely cosmetic and ensure the extension fits your aesthetic preferences without altering the appearance of the websites you visit.
                 </GuideCard>
 
                 <GuideCard id="guide-styles" title="Highlight Styles" icon="🖼️">
-                    Global visual settings for the status borders injected into websites. Choosing distinct styles like <b>Dashed</b> or <b>Dotted</b> helps distinguish 
-                    your statuses even for colorblind users or on displays with poor color accuracy.
-                </GuideCard>
-            </div>
-
-       
-
-            <!-- Guide Section: Library & Data Management -->
-            <h3 class="guide-section-header">Library & Data Management</h3>
-            <div class="guide-grid">
-                <GuideCard id="guide-entries" title="Saved Entries" icon="📚">
-                    Your central hub for all tracked content. It aggregates data from local history and cloud syncs. Use this to manually fix metadata, 
-                    apply bulk status updates, or audit what the extension is tracking independent of the source websites.
+                    Global visual settings for injected borders. Choose between <b>Solid, Dashed, Dotted,</b> or <b>Double</b> styles to distinguish your statuses and markers, even on sites with complex or busy backgrounds.
                 </GuideCard>
 
                 <GuideCard id="guide-stats" title="Library Statistics" icon="📊">
-                    Access detailed breakdowns of your reading habits via the <b>Stats</b> button. It calculates total read time, chapter counts, and visualizes 
-                    distribution by Format (Manga/Manhwa) and Status, helping you understand your consumption patterns at a glance.
-                </GuideCard>
-
-                <GuideCard id="guide-fresh-sync" title="Fresh Sync Entries" icon="⚡">
-                   A maintenance tool for your library metadata. When triggered, it wipes the local cache for <i>all</i> entries and forces a fetch from the original providers (AniList/MangaDex).
-                   Use this if you encounter broken images, missing titles, or if data seems "stuck" despite a normal sync.
+                    Track your consumption patterns over time. This section provides detailed metrics on your most-read formats, status distribution, and total chapter counts, helping you stay on top of your library growth.
                 </GuideCard>
 
                 <GuideCard id="guide-backup" title="Backup & Restore" icon="💾">
-                    Creates a portable JSON snapshot of your entire state. Essential for manual backups or migrating to a browser/machine where Google Drive sync isn't an option.
-                    Both your library database and specific extension settings are preserved.
-                </GuideCard>
-
-                <GuideCard id="guide-mangadex-import" title="MangaDex Import" icon="⬇️">
-                   Fetches a public MDList to populate your library. Since MangaDex doesn't have a public API for private lists without OAuth, 
-                   we temporarily redirect you to their site to securely read the list data locally before redirecting back.
+                    Your data is your own. Use the backup tools to create local JSON snapshots of your entire library and configuration. This is ideal for manual migrations or as a secondary safeguard alongside cloud sync.
                 </GuideCard>
             </div>
 
-            
-
-            <!-- Guide Section: Custom Sites -->
-            <h3 class="guide-section-header">Custom Sites</h3>
+            <!-- Guide Section: Profile & Cloud Sync -->
+            <h3 class="guide-section-header">Profile & Cloud Sync</h3>
             <div class="guide-grid">
-                <GuideCard id="guide-custom-add" title="Adding a New Site" icon="➕">
-                    Add unsupported manga sites to the extension by selecting key DOM elements like the manga card container and title. Open the site, launch the selector, and click on elements to teach the extension where to look.
-                </GuideCard>
-
-                <GuideCard id="guide-custom-list" title="Managing Your Sites" icon="📋">
-                    Manage your custom added sites. You can edit the selected elements by re-opening the selector tool, temporarily disable tracking for a particular site, or delete it entirely. For advanced users, custom Javascript extraction can be written.
-                </GuideCard>
-
-                <GuideCard id="guide-custom-share" title="Sharing Configurations" icon="📤">
-                    Export your custom site configurations as a JSON file to share with the community, or import configurations that others have made to instantly support new platforms without having to manually select elements.
-                </GuideCard>
-            </div>
-
-            <!-- Guide Section: Profile & Sync -->
-            <h3 class="guide-section-header">Reference: Profile & Cloud Sync</h3>
-            <div class="guide-grid">
-                <GuideCard id="guide-profile-account" title="Google Drive Connection" icon="👤">
-                    We use your personal Google Drive 'App Data' folder to store your library. This ensures your data remains <b>private</b> and under your control—we never see your files. 
-                    Signing in grants this extension access <i>only</i> to its own created config files, not your photos or documents.
+                <GuideCard id="guide-profile-account" title="Google Drive Sync" icon="👤">
+                    Cross-device sync uses your personal Google Drive <b>App Data</b> folder. This is a private space that only the extension can access—your photos and other documents remain entirely invisible to us.
                 </GuideCard>
 
                 <GuideCard id="guide-profile-sync" title="Selective Sync" icon="☁️">
-                    Auto-sync runs silently in the background. You can fine-tune performance by selectively syncing only what you need—for example, 
-                    disabling <b>Reading History</b> sync can significantly speed up the process if you have thousands of entries and only care about titles/statuses.
-                </GuideCard>
-
-                <GuideCard id="guide-profile-sync-auto" title="Auto Sync" icon="🔄">
-                   Background process that keeps your local state up to date. Set the interval (in days) to balance freshness with performance. 
-                   Requires a valid session (being logged in to the extension).
+                    Optimize performance by choosing exactly what gets synced. You can toggle sync for <b>Library Entries</b>, <b>Reading History</b>, or <b>Custom Site Configs</b> independently to suit your needs.
                 </GuideCard>
 
                 <GuideCard id="guide-profile-advanced" title="Conflict Resolution" icon="🔧">
-                    Determines priority when local and cloud data differ. <b>Newer wins</b> compares timestamps to keep the most recent change. 
-                    <b>Local/Cloud wins</b> strictly overwrites the other side without checking time, useful if one source is known to be corrupted or outdated.
+                    Control how the extension handles differences between local and cloud data. Use <b>Newer Wins</b> for automatic merging, or force <b>Cloud/Local Wins</b> if you need to perform a full overwrite.
+                </GuideCard>
+                
+                <GuideCard id="guide-mangadex-import" title="MangaDex Import" icon="⬇️">
+                   A specialized import tool for MangaDex users. It temporarily navigates to the MangaDex site to securely read your public lists and add them to your local library with one click.
                 </GuideCard>
             </div>
 
@@ -320,7 +193,7 @@ import GuideCard from '../common/GuideCard.vue';
 </script>
 
 <style scoped lang="scss">
-/* About Page styles - migrated from _about.css */
+/* About Page styles */
 .prose {
     color: var(--text-primary);
     line-height: 1.6;
@@ -375,18 +248,6 @@ import GuideCard from '../common/GuideCard.vue';
     margin: 30px 0;
 }
 
-.alert-box {
-    background-color: rgba(255, 181, 71, 0.1);
-    border-left: 4px solid var(--warning, #FFB547);
-    padding: 16px;
-    border-radius: var(--radius-sm, 6px);
-    color: var(--text-secondary);
-
-    p {
-        margin-bottom: 0;
-    }
-}
-
 .guide-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -415,56 +276,6 @@ import GuideCard from '../common/GuideCard.vue';
             margin: 0;
 
             b { color: var(--text-primary); }
-        }
-    }
-}
-
-.supported-sites-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 16px;
-    margin-top: 10px;
-
-    .site-link-card {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 16px;
-        background: var(--bg-card);
-        border: 1px solid var(--border-color);
-        border-radius: var(--radius-md);
-        text-decoration: none;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-
-        &:hover {
-            transform: translateY(-2px);
-            border-color: var(--accent-primary);
-            box-shadow: 0 4px 12px rgba(67, 24, 255, 0.1);
-            background: var(--bg-body);
-        }
-
-        .site-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            background: white;
-            padding: 2px;
-        }
-
-        .site-info {
-            display: flex;
-            flex-direction: column;
-
-            .site-name {
-                font-weight: 600;
-                color: var(--text-primary);
-                font-size: 14px;
-            }
-
-            .site-url {
-                font-size: 12px;
-                color: var(--text-secondary);
-            }
         }
     }
 }
@@ -549,4 +360,3 @@ import GuideCard from '../common/GuideCard.vue';
     }
 }
 </style>
-```

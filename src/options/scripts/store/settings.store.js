@@ -35,10 +35,6 @@ export const useSettingsStore = defineStore('settings', {
         keybinds: false,          // KeybindsEnabled
         progressTracking: true,   // ProgressTrackingEnabled
 
-        // Dashboard
-        dashboardEnabled: true,       // NewTabDashboard
-        dashboardPackedLayout: false, // DashboardLayoutStyle
-
         // Initial load state
         isLoaded: false
     }),
@@ -59,8 +55,6 @@ export const useSettingsStore = defineStore('settings', {
                 'AutoScrollEnabled',
                 'KeybindsEnabled',
                 'ProgressTrackingEnabled',
-                'NewTabDashboard',
-                'DashboardLayoutStyle',
                 'libraryViewMode',
                 'libraryHideNoHistory'
             ]);
@@ -82,9 +76,6 @@ export const useSettingsStore = defineStore('settings', {
             this.autoScroll = !!data.AutoScrollEnabled;
             this.keybinds = !!data.KeybindsEnabled;
             this.progressTracking = data.ProgressTrackingEnabled !== false;
-            
-            this.dashboardEnabled = data.NewTabDashboard !== false;
-            this.dashboardPackedLayout = !!data.DashboardLayoutStyle;
             
             this.libraryViewMode = data.libraryViewMode || 'large';
             this.libraryHideNoHistory = !!data.libraryHideNoHistory;
@@ -114,8 +105,6 @@ export const useSettingsStore = defineStore('settings', {
                 case 'autoScroll': storagePayload.AutoScrollEnabled = value; break;
                 case 'keybinds': storagePayload.KeybindsEnabled = value; break;
                 case 'progressTracking': storagePayload.ProgressTrackingEnabled = value; break;
-                case 'dashboardEnabled': storagePayload.NewTabDashboard = value; break;
-                case 'dashboardPackedLayout': storagePayload.DashboardLayoutStyle = value; break;
                 
                 // Library specific defaults (can be expanded)
                 case 'libraryBordersEnabled': storagePayload.LibraryBordersEnabled = value; break;
@@ -139,7 +128,6 @@ export const useSettingsStore = defineStore('settings', {
             if (changes.SyncEverySetDate) this.syncInterval = parseInt(changes.SyncEverySetDate.newValue);
             if (changes.GlobalQuickActions) this.quickActions = changes.GlobalQuickActions.newValue;
             // ... (Add others for full coverage)
-             if (changes.NewTabDashboard) this.dashboardEnabled = changes.NewTabDashboard.newValue;
         }
     }
 });

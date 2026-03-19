@@ -10,9 +10,6 @@
   "icons": {
     "128": "icons/favicon128.png"
   },
-  "chrome_url_overrides": {
-    "newtab": "src/newtab/newtab.html"
-  },
   "action": {
     "default_icon": "icons/favicon128.png",
     "default_popup": "src/popup/popup.html"
@@ -47,7 +44,7 @@
   "content_scripts": [
     {
       "js": [
-        "assets/main.ts-loader-43702f9a.js"
+        "assets/main.ts-loader-3f92dddd.js"
       ],
       "matches": [
         "*://fallback.custom-sites.local/*"
@@ -75,10 +72,9 @@
         "*://fallback.custom-sites.local/*"
       ],
       "resources": [
-        "assets/runtime-dom.esm-bundler-a09c9a5c.js",
-        "assets/_plugin-vue_export-helper-c27b6911.js",
+        "assets/_plugin-vue_export-helper-ae23e591.js",
         "assets/preload-helper-cf010ec4.js",
-        "assets/main.ts-2e2a6e10.js"
+        "assets/main.ts-2dcaa09f.js"
       ],
       "use_dynamic_url": false
     }
