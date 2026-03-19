@@ -153,10 +153,6 @@
                     Optimize performance by choosing exactly what gets synced. You can toggle sync for <b>Library Entries</b>, <b>Reading History</b>, or <b>Custom Site Configs</b> independently to suit your needs.
                 </GuideCard>
 
-                <GuideCard id="guide-profile-advanced" title="Conflict Resolution" icon="🔧">
-                    Control how the extension handles differences between local and cloud data. Use <b>Newer Wins</b> for automatic merging, or force <b>Cloud/Local Wins</b> if you need to perform a full overwrite.
-                </GuideCard>
-                
                 <GuideCard id="guide-mangadex-import" title="MangaDex Import" icon="⬇️">
                    A specialized import tool for MangaDex users. It temporarily navigates to the MangaDex site to securely read your public lists and add them to your local library with one click.
                 </GuideCard>

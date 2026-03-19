@@ -189,26 +189,6 @@
                         </div>
                     </div>
 
-                    <div class="section">
-                        <h3>⚡ Custom JavaScript <span class="badge-advanced">Advanced</span></h3>
-                        <p class="section-hint">Optional: Custom extraction logic. Function receives card element, must return { id, title, url }.</p>
-                        <textarea 
-                            v-model="customJsCode"
-                            class="code-editor"
-                            placeholder="// Example:
-function extract(cardEl) {
-  return {
-    id: cardEl.dataset.mangaId,
-    title: cardEl.querySelector('.title')?.textContent,
-    url: cardEl.querySelector('a')?.href
-  };
-}"
-                            rows="8"
-                        ></textarea>
-                        <button class="btn btn-secondary btn-sm" @click="saveCustomJs">
-                            💾 Save Custom JS
-                        </button>
-                    </div>
                 </div>
 
                 <div class="modal-footer">
@@ -242,7 +222,6 @@ const importFileInput = ref(null);
 
 // Modal state
 const selectedSite = ref(null);
-const customJsCode = ref('');
 
 /**
  * Opens the site detail modal.
@@ -250,18 +229,6 @@ const customJsCode = ref('');
  */
 function openSite(site) {
     selectedSite.value = site;
-    customJsCode.value = site.customFunction || '';
-}
-
-/**
- * Saves the custom JS code to the site config.
- */
-async function saveCustomJs() {
-    if (!selectedSite.value) return;
-    await customSitesStore.updateSite(selectedSite.value.id, {
-        customFunction: customJsCode.value
-    });
-    alert('Custom JS saved!');
 }
 
 /** Validate URL format */
@@ -834,29 +801,6 @@ onMounted(async () => {
                 }
             }
 
-            .code-editor {
-                width: 100%;
-                padding: 12px;
-                font-family: 'Fira Code', 'Consolas', monospace;
-                font-size: 12px;
-                background: var(--bg-card);
-                border: 1px solid var(--border-color);
-                border-radius: var(--radius-md);
-                color: #a5d6ff;
-                resize: vertical;
-                line-height: 1.5;
-
-                &:focus {
-                    outline: none;
-                    border-color: var(--accent-primary);
-                }
-            }
-
-            .btn-sm {
-                padding: 8px 12px;
-                font-size: 12px;
-                margin-top: 12px;
-            }
         }
 
         .modal-footer {

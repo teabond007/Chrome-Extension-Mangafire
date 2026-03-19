@@ -7,7 +7,7 @@ import { defineStore } from 'pinia';
 import { storage } from '../core/storage-adapter.js';
 import * as gdriveAuth from '../../../scripts/core/gdrive-auth.js';
 import * as gdriveSync from '../../../scripts/core/gdrive-sync.js';
-import { EXPORT_CATEGORIES } from '../modules/import-export.js';
+import { gatherStorageData, applyStorageData } from '../modules/storage-io.js';
 
 export const useProfileStore = defineStore('profile', {
     state: () => ({
@@ -30,7 +30,6 @@ export const useProfileStore = defineStore('profile', {
         syncPersonal: true,
         syncSettings: true,
         syncCache: false,
-        conflictStrategy: 'newerWins', // 'newerWins' | 'localWins' | 'remoteWins'
         
         // Cloud backup info
         cloudBackupInfo: null,
@@ -71,7 +70,7 @@ export const useProfileStore = defineStore('profile', {
                     'profileSyncPersonal',
                     'profileSyncSettings',
                     'profileSyncCache',
-                    'profileConflictStrategy',
+                    'profileSyncIntervalDays',
                     'profileLastSync'
                 ]);
 
@@ -81,7 +80,6 @@ export const useProfileStore = defineStore('profile', {
                 this.syncPersonal = saved.profileSyncPersonal ?? true;
                 this.syncSettings = saved.profileSyncSettings ?? true;
                 this.syncCache = saved.profileSyncCache ?? false;
-                this.conflictStrategy = saved.profileConflictStrategy ?? 'newerWins';
                 this.lastSyncTime = saved.profileLastSync ?? null;
 
                 // Check OAuth configuration
@@ -106,34 +104,20 @@ export const useProfileStore = defineStore('profile', {
             try {
                 // Check if chrome.identity API is available
                 if (!chrome?.identity?.getAuthToken) {
-                    console.log('[ProfileStore] chrome.identity not available');
                     return false;
                 }
                 
                 // Check manifest for oauth2 config
                 const manifest = chrome.runtime?.getManifest?.();
                 if (!manifest) {
-                    console.log('[ProfileStore] Could not get manifest');
                     return false;
                 }
                 
                 const clientId = manifest?.oauth2?.client_id;
                 const hasIdentity = manifest?.permissions?.includes('identity');
                 
-                if (!clientId || clientId.includes('YOUR_CLIENT_ID')) {
-                    console.log('[ProfileStore] OAuth client_id not configured');
-                    return false;
-                }
-                
-                if (!hasIdentity) {
-                    console.log('[ProfileStore] identity permission missing');
-                    return false;
-                }
-                
-                console.log('[ProfileStore] OAuth configured correctly');
-                return true;
+                return !!(clientId && !clientId.includes('YOUR_CLIENT_ID') && hasIdentity);
             } catch (error) {
-                console.error('[ProfileStore] checkOAuthConfig error:', error);
                 return false;
             }
         },
@@ -192,9 +176,17 @@ export const useProfileStore = defineStore('profile', {
             this.syncStatusMessage = 'Preparing data...';
 
             try {
-                // Gather data to sync
+                // Gather data based on user preferences
                 this.syncProgress = 20;
-                const data = await this.gatherSyncData();
+                const categories = {
+                    library: this.syncLibrary,
+                    history: this.syncHistory,
+                    personalData: this.syncPersonal,
+                    settings: this.syncSettings,
+                    cache: this.syncCache,
+                    customSites: true
+                };
+                const data = await gatherStorageData(categories);
 
                 // Upload to Drive
                 this.syncProgress = 40;
@@ -204,13 +196,12 @@ export const useProfileStore = defineStore('profile', {
                 // Update state
                 this.syncProgress = 100;
                 this.lastSyncTime = result.syncTime;
-                await this.persistPreference('profileLastSync', result.syncTime);
+                await storage.set({ profileLastSync: result.syncTime });
 
                 this.syncStatus = 'success';
-                const entryCount = data.userBookmarks ? Object.keys(data.userBookmarks).length : 0;
                 this.lastSyncResult = {
                     type: 'success',
-                    message: `Backed up ${entryCount} entries successfully`
+                    message: `Backed up successfully`
                 };
 
                 // Refresh cloud info
@@ -243,25 +234,19 @@ export const useProfileStore = defineStore('profile', {
                     throw new Error('No backup found in cloud');
                 }
 
-                // Get local data and merge
+                // Merge and apply data (Always use MERGE for cloud restore)
                 this.syncProgress = 60;
                 this.syncStatusMessage = 'Merging data...';
-                const local = await this.gatherSyncData();
-                const merged = gdriveSync.mergeData(local, remote, this.conflictStrategy);
-
-                // Apply merged data
-                this.syncProgress = 80;
-                this.syncStatusMessage = 'Saving...';
-                await this.applySyncData(merged);
+                await applyStorageData(remote, true);
 
                 this.syncProgress = 100;
                 this.lastSyncTime = Date.now();
-                await this.persistPreference('profileLastSync', this.lastSyncTime);
+                await storage.set({ profileLastSync: this.lastSyncTime });
 
                 this.syncStatus = 'success';
                 this.lastSyncResult = {
                     type: 'success',
-                    message: 'Restored from cloud successfully'
+                    message: 'Synced from cloud successfully'
                 };
 
                 // Trigger UI refresh
@@ -307,52 +292,6 @@ export const useProfileStore = defineStore('profile', {
         },
 
         /**
-         * Gathers data based on sync preferences.
-         */
-        async gatherSyncData() {
-            const keys = [];
-            if (this.syncLibrary) keys.push(...EXPORT_CATEGORIES.library.keys);
-            if (this.syncHistory) keys.push(...EXPORT_CATEGORIES.history.keys);
-            if (this.syncPersonal) keys.push(...EXPORT_CATEGORIES.personalData.keys);
-            if (this.syncSettings) keys.push(...EXPORT_CATEGORIES.settings.keys);
-            if (this.syncCache) keys.push(...EXPORT_CATEGORIES.cache.keys);
-
-            return storage.get(keys);
-        },
-
-        /**
-         * Applies synced data to local storage.
-         */
-        async applySyncData(data) {
-            // Only apply fields that were synced
-            const toSave = {};
-            if (this.syncLibrary) {
-                EXPORT_CATEGORIES.library.keys.forEach(k => { if (data[k] !== undefined) toSave[k] = data[k]; });
-            }
-            if (this.syncHistory) {
-                EXPORT_CATEGORIES.history.keys.forEach(k => { if (data[k] !== undefined) toSave[k] = data[k]; });
-            }
-            if (this.syncPersonal) {
-                EXPORT_CATEGORIES.personalData.keys.forEach(k => { if (data[k] !== undefined) toSave[k] = data[k]; });
-            }
-            if (this.syncSettings) {
-                EXPORT_CATEGORIES.settings.keys.forEach(k => { if (data[k] !== undefined) toSave[k] = data[k]; });
-            }
-            if (this.syncCache) {
-                EXPORT_CATEGORIES.cache.keys.forEach(k => { if (data[k] !== undefined) toSave[k] = data[k]; });
-            }
-
-            await storage.set(toSave);
-        },
-
-        /**
-         * Persists a single preference to storage.
-         */
-        async persistPreference(key, value) {
-            await storage.set({ [key]: value });
-        },
-
-        /**
          * Persists sync preferences when they change.
          */
         async savePreferences() {
@@ -362,8 +301,7 @@ export const useProfileStore = defineStore('profile', {
                 profileSyncHistory: this.syncHistory,
                 profileSyncPersonal: this.syncPersonal,
                 profileSyncSettings: this.syncSettings,
-                profileSyncCache: this.syncCache,
-                profileConflictStrategy: this.conflictStrategy
+                profileSyncCache: this.syncCache
             });
         }
     }

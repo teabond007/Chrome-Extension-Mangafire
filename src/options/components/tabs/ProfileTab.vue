@@ -140,7 +140,7 @@
                 </div>
             </SettingsCard>
 
-            <!-- Card 3: Cloud Sync Actions (Full Width) -->
+            <!-- Card 3: Cloud Sync Actions -->
             <SettingsCard 
                 title="Cloud Sync" 
                 icon="☁️"
@@ -230,38 +230,6 @@
                 </div>
             </SettingsCard>
 
-            <!-- Card 4: Advanced Options -->
-            <SettingsCard 
-                title="Advanced Options" 
-                icon="🔧"
-                icon-bg="rgba(255, 171, 0, 0.15)"
-                icon-color="#FFAB00"
-                guide-target="guide-profile-advanced"
-            >
-                <div class="advanced-options">
-                    <div class="option-row">
-                        <div class="option-info">
-                            <label>Conflict Resolution</label>
-                            <span class="option-description">How to handle sync conflicts</span>
-                        </div>
-                        <select v-model="conflictStrategy" class="input-select" :disabled="!isSignedIn">
-                            <option value="newerWins">Newer entry wins</option>
-                            <option value="localWins">Local always wins</option>
-                            <option value="remoteWins">Cloud always wins</option>
-                        </select>
-                    </div>
-
-                    <div class="divider-line"></div>
-
-                    <div class="danger-zone">
-                        <button class="btn btn-danger-ghost" @click="clearCloudData" :disabled="!isSignedIn">
-                            🗑️ Clear All Cloud Data
-                        </button>
-                        <span class="danger-warning">This cannot be undone</span>
-                    </div>
-                </div>
-            </SettingsCard>
-
             <!-- Local Backup: Export -->
             <SettingsCard 
                 title="Local Backup (Export)" 
@@ -270,24 +238,20 @@
                 icon-color="var(--accent-primary)"
                 guide-target="guide-profile-export"
             >
-                <!-- Export Options -->
                 <div class="export-options">
                     <p class="section-label">Include in export:</p>
                     <div class="export-checkboxes">
                         <label class="export-option checkbox-option">
                             <input type="checkbox" id="exportLibrary" checked>
                             <span class="checkbox-label">📚 Library Entries</span>
-                            <span class="export-count" id="exportLibraryCount">(0)</span>
                         </label>
                         <label class="export-option checkbox-option">
                             <input type="checkbox" id="exportHistory" checked>
                             <span class="checkbox-label">📖 Reading History</span>
-                            <span class="export-count" id="exportHistoryCount">(0)</span>
                         </label>
                         <label class="export-option checkbox-option">
                             <input type="checkbox" id="exportPersonalData" checked>
                             <span class="checkbox-label">🏷️ Tags, Notes & Ratings</span>
-                            <span class="export-count" id="exportPersonalCount">(0)</span>
                         </label>
                         <label class="export-option checkbox-option">
                             <input type="checkbox" id="exportSettings" checked>
@@ -296,7 +260,6 @@
                         <label class="export-option checkbox-option">
                             <input type="checkbox" id="exportCache">
                             <span class="checkbox-label">💾 API Cache</span>
-                            <span class="export-count" id="exportCacheCount">(0 KB)</span>
                         </label>
                     </div>
                 </div>
@@ -391,7 +354,7 @@
                 </div>
             </SettingsCard>
 
-            <!-- Setup Required Banner (shown when OAuth not configured) -->
+            <!-- Setup Required Banner -->
             <div v-if="!isOAuthConfigured" class="setup-banner">
                 <div class="banner-icon">🔧</div>
                 <div class="banner-content">
@@ -405,7 +368,7 @@
 
 <script setup>
 /**
- * @fileoverview Profile & Sync tab component for Google Drive cross-platform sync.
+ * @fileoverview Profile & Sync tab component for Google Drive sync.
  * Provides UI for authentication, sync configuration, and cloud backup management.
  */
 import { ref, onMounted, watch } from 'vue';
@@ -431,7 +394,6 @@ const {
     syncPersonal,
     syncSettings,
     syncCache,
-    conflictStrategy,
     cloudBackupInfo,
     isOAuthConfigured,
     lastSyncFormatted
@@ -487,16 +449,6 @@ async function refreshCloudStatus() {
 }
 
 /**
- * Clears all cloud backup data.
- */
-async function clearCloudData() {
-    if (!confirm('Are you sure you want to delete all cloud backup data? This cannot be undone.')) {
-        return;
-    }
-    await profileStore.clearCloudData();
-}
-
-/**
  * Saves the sync interval preference.
  */
 async function saveSyncInterval() {
@@ -520,7 +472,7 @@ function dismissResult() {
 }
 
 // Watch preference changes and persist to storage
-watch([autoSyncEnabled, syncLibrary, syncHistory, syncPersonal, syncSettings, syncCache, conflictStrategy], 
+watch([autoSyncEnabled, syncLibrary, syncHistory, syncPersonal, syncSettings, syncCache], 
     () => profileStore.savePreferences(),
     { deep: true }
 );
@@ -921,92 +873,6 @@ onMounted(async () => {
     100% { opacity: 1; }
 }
 
-/* Advanced Options */
-.advanced-options {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-
-    .option-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 16px;
-
-        .option-info {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-
-            label {
-                font-weight: 600;
-                color: var(--text-primary);
-                font-size: 14px;
-            }
-
-            .option-description {
-                font-size: 12px;
-                color: var(--text-secondary);
-            }
-        }
-
-        .input-select {
-            padding: 8px 12px;
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--border-color);
-            background: var(--bg-body);
-            color: var(--text-primary);
-            font-size: 13px;
-            min-width: 180px;
-
-            &:focus {
-                outline: none;
-                border-color: var(--accent-primary);
-            }
-        }
-    }
-
-    .divider-line {
-        height: 1px;
-        background: var(--border-color);
-        margin: 16px 0;
-    }
-
-    .danger-zone {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding-top: 8px;
-
-        .btn-danger-ghost {
-            background: transparent;
-            border: 1px solid rgba(239, 68, 68, 0.4);
-            color: #ef4444;
-            padding: 8px 16px;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s;
-
-            &:hover:not(:disabled) {
-                background: rgba(239, 68, 68, 0.1);
-                border-color: #ef4444;
-            }
-
-            &:disabled {
-                opacity: 0.5;
-                cursor: not-allowed;
-            }
-        }
-
-        .danger-warning {
-            font-size: 12px;
-            color: var(--text-secondary);
-            font-style: italic;
-        }
-    }
-}
-
 /* Setup Banner */
 .setup-banner {
     grid-column: 1 / -1;
@@ -1258,4 +1124,3 @@ onMounted(async () => {
     }
 }
 </style>
-```

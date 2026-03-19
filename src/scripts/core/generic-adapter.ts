@@ -83,29 +83,10 @@ export class GenericAdapter {
 
     /**
      * Extracts manga data from a card element using configured selectors.
-     * Supports optional custom JS extraction function.
      * @param {HTMLElement} cardElement - The manga card DOM element
      * @returns {Object} Extracted card data
      */
     extractCardData(cardElement: HTMLElement) {
-        // Try custom extraction function first
-        if (this.config.customFunction) {
-            try {
-                const result = this.executeCustomFunction(cardElement);
-                if (result && result.id) {
-                    return {
-                        id: result.id,
-                        title: result.title || '',
-                        slug: this.slugify(result.title || ''),
-                        url: result.url || ''
-                    };
-                }
-            } catch (err) {
-                console.warn(`[GenericAdapter] Custom function error:`, err);
-                // Fall through to selector-based extraction
-            }
-        }
-
         let title = '';
         let url = '';
         let id = '';
@@ -171,27 +152,6 @@ export class GenericAdapter {
         };
     }
 
-    /**
-     * Executes a user-defined custom extraction function.
-     * @param {HTMLElement} cardElement - Card element to extract from
-     * @returns {Object|null} Extraction result or null
-     */
-    private executeCustomFunction(cardElement: HTMLElement): { id?: string; title?: string; url?: string } | null {
-        if (!this.config.customFunction) return null;
-
-        try {
-            // Create a sandboxed function from the stored code
-            // The code should return an object with { id, title, url }
-            const fn = new Function('card', `
-                ${this.config.customFunction}
-                return typeof extract === 'function' ? extract(card) : null;
-            `);
-            return fn(cardElement);
-        } catch (err) {
-            console.error('[GenericAdapter] Failed to execute custom function:', err);
-            return null;
-        }
-    }
 
     /**
      * Extracts a manga ID from a URL.

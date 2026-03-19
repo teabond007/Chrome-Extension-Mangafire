@@ -162,60 +162,6 @@ export async function deleteBackup() {
     return response.ok || response.status === 404;
 }
 
-/**
- * Merges remote and local data with conflict resolution.
- * Per-entry comparison using lastModified timestamps.
- * 
- * @param {Object} local - Local storage data
- * @param {Object} remote - Remote Drive data
- * @param {'newerWins'|'localWins'|'remoteWins'} strategy - Conflict resolution strategy
- * @returns {Object} Merged data
- */
-export function mergeData(local, remote, strategy = 'newerWins') {
-    const merged = { ...local };
-
-    // Merge userBookmarks (main library)
-    if (remote.userBookmarks) {
-        merged.userBookmarks = mergeByKey(
-            local.userBookmarks || {},
-            remote.userBookmarks,
-            strategy,
-            'lastModified'
-        );
-    }
-
-    // Merge readingHistory
-    if (remote.readingHistory) {
-        merged.readingHistory = mergeByKey(
-            local.readingHistory || {},
-            remote.readingHistory,
-            strategy,
-            'lastRead'
-        );
-    }
-
-    // Merge personalData (tags, notes, ratings)
-    if (remote.personalData) {
-        merged.personalData = mergeByKey(
-            local.personalData || {},
-            remote.personalData,
-            strategy,
-            'updatedAt'
-        );
-    }
-
-    // Merge customMarkers
-    if (remote.customMarkers) {
-        merged.customMarkers = remote.customMarkers;
-    }
-
-    // Preserve sync metadata from remote
-    merged.syncTimestamp = remote.syncTimestamp;
-    merged.syncVersion = remote.syncVersion;
-
-    return merged;
-}
-
 // ============ Private Helper Functions ============
 
 /**
@@ -257,34 +203,6 @@ function createMultipartBody(boundary, metadata, content) {
         JSON.stringify(content, null, 2),
         closeDelimiter
     ].join('\r\n');
-}
-
-/**
- * Merges two objects by key using specified strategy.
- * @private
- */
-function mergeByKey(local, remote, strategy, timestampField) {
-    const merged = { ...local };
-
-    for (const [key, remoteEntry] of Object.entries(remote)) {
-        if (!merged[key]) {
-            // New entry from remote
-            merged[key] = remoteEntry;
-        } else if (strategy === 'remoteWins') {
-            merged[key] = remoteEntry;
-        } else if (strategy === 'localWins') {
-            // Keep local, do nothing
-        } else {
-            // newerWins - compare timestamps
-            const localTime = merged[key][timestampField] || 0;
-            const remoteTime = remoteEntry[timestampField] || 0;
-            if (remoteTime > localTime) {
-                merged[key] = remoteEntry;
-            }
-        }
-    }
-
-    return merged;
 }
 
 /**

@@ -24,7 +24,6 @@ import { storage } from '../core/storage-adapter.js';
  * @property {string} [readerSelectors.readerDetect] - Element whose presence identifies a reader page
  * @property {string} [readerSelectors.readerTitle] - Manga title on reader page
  * @property {string} [readerSelectors.readerChapter] - Chapter number/name on reader page
- * @property {string} [customFunction] - Advanced: custom JS for complex extraction
  * @property {boolean} enabled - Whether this site config is active
  * @property {number} createdAt - Timestamp of creation
  * @property {number} updatedAt - Timestamp of last update
@@ -108,7 +107,6 @@ export const useCustomSitesStore = defineStore('customSites', {
                     readerTitle: '',
                     readerChapter: ''
                 },
-                customFunction: siteData.customFunction || '',
                 enabled: true,
                 createdAt: Date.now(),
                 updatedAt: Date.now()
