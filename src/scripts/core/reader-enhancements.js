@@ -43,17 +43,12 @@ class ReaderEnhancements {
             return this.adapter.isReaderPage();
         }
 
-        // Fallback detection based on common URL patterns
-        const url = window.location.href;
-        const readerPatterns = [
-            /\/read\//i,           // MangaFire
-            /\/chapter\//i,        // MangaDex
-            /episode_no=/i,        // Webtoons
-            /\/viewer/i,           // Various readers
-            /chapter-\d+/i         // Common pattern
-        ];
-
-        return readerPatterns.some(pattern => pattern.test(url));
+        // Fallback detection based on common reader URL patterns
+        const path = window.location.pathname.toLowerCase();
+        return path.includes('/read') || 
+               path.includes('/chapter') || 
+               path.includes('/viewer') ||
+               /chapter-\d+/i.test(path);
     }
 
     /**

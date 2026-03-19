@@ -391,12 +391,10 @@ export class OverlayFactory {
 
         const app = createApp(ReaderControls, {
             initialSpeed: props.speed,
-            isRunning: props.isRunning
+            isRunning: props.isRunning,
+            onToggle: handlers.onToggle,
+            onSpeedChange: handlers.onSpeedChange
         });
-
-        // Set up events
-        app.config.globalProperties.$onToggle = handlers.onToggle;
-        app.config.globalProperties.$onSpeedChange = handlers.onSpeedChange;
         
         // Better to use props for PoC simplicity
         // But for this one we'll use props + emits

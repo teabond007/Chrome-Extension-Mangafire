@@ -43,8 +43,8 @@
                     <div class="card-description" v-html="truncatedDescription"></div>
                     
                     <div class="card-actions" @click.stop>
-                        <a v-if="entry.lastMangafireUrl" :href="entry.lastMangafireUrl" target="_blank" class="btn btn-primary btn-sm">
-                            ▶ Continue Ch.{{ entry.lastChapterRead || '?' }}
+                        <a v-if="entry.lastReaderUrl" :href="entry.lastReaderUrl" target="_blank" class="btn btn-primary btn-sm">
+                            Continue Reading
                         </a>
                         <a v-if="ani?.siteUrl" :href="ani.siteUrl" target="_blank" class="btn btn-ghost btn-sm">
                             AniList

@@ -25,8 +25,8 @@
 
             <div class="manga-card-actions">
                 <a 
-                    v-if="entry.lastMangafireUrl && (entry.lastChapterRead || entry.lastChapterRead === 0)" 
-                    :href="entry.lastMangafireUrl" 
+                    v-if="entry.lastReaderUrl && (entry.lastChapterRead || entry.lastChapterRead === 0)" 
+                    :href="entry.lastReaderUrl" 
                     target="_blank" 
                     class="card-action-btn card-action-continue"
                     @click.stop

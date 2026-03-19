@@ -205,32 +205,11 @@ export class GenericAdapter {
     /**
      * Applies highlight border to a manga card element.
      * Applies directly to the card rather than inner elements for reliability.
-     * @param {HTMLElement} element - Card element
-     * @param {string} color - Border color
-     * @param {number} size - Border width in pixels
-     * @param {string} style - Border style (solid, dashed, etc.)
-     */
-    applyBorder(element: HTMLElement, color: string, size: number, style: string) {
-        element.style.setProperty('border', `${size}px ${style} ${color}`, 'important');
-        element.style.setProperty('border-radius', '8px', 'important');
-        element.style.setProperty('box-sizing', 'border-box', 'important');
-    }
 
-    /**
-     * Returns badge position configuration.
-     * @returns {Object} Position offsets for status badges
-     */
-    getBadgePosition() {
-        return { bottom: '4px', left: '4px' };
-    }
-
-    /**
+     /**
      * Attempts to build a chapter URL. 
-     * Returns null as custom sites have unpredictable URL structures.
+     * Returns null by default as custom sites have unpredictable URL structures.
      */
-    buildChapterUrl(entry: any, chapter: number): string | null {
-        return null;
-    }
 
     /**
      * Checks if current page is a reader page.

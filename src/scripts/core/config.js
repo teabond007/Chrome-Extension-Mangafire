@@ -30,19 +30,6 @@ export const BORDER_DEFAULTS = {
     radius: '8px'
 };
 
-/**
- * Default badge styling configuration.
- * @type {Object}
- */
-export const BADGE_STYLES = {
-    background: 'rgba(0, 0, 0, 0.85)',
-    color: '#fff',
-    fontSize: '11px',
-    fontWeight: '600',
-    padding: '3px 6px',
-    borderRadius: '4px',
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
-};
 
 /**
  * Feature flags with defaults.

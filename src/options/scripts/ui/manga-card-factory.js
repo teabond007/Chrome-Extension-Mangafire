@@ -145,12 +145,12 @@ function createCardCover(entry, aniData, statusInfo, onMarkerClick, visualOption
     actions.className = "manga-card-actions";
 
     // "Continue" button - resumes reading at last chapter (only if history exists)
-    if (entry.lastMangafireUrl) {
+    if (entry.lastReaderUrl) {
         const continueBtn = document.createElement("a");
         continueBtn.className = "card-action-btn card-action-continue";
         continueBtn.textContent = `▶ Ch.${entry.lastChapterRead || '?'}`;
         continueBtn.title = "Continue reading";
-        continueBtn.href = entry.lastMangafireUrl;
+        continueBtn.href = entry.lastReaderUrl;
         continueBtn.target = "_blank";
         continueBtn.onclick = (e) => e.stopPropagation();
         actions.appendChild(continueBtn);

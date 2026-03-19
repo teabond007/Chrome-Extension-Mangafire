@@ -67,35 +67,8 @@ class ProgressTracker {
             return this.adapter.parseUrl(window.location.href);
         }
 
-        // Fallback: try to extract from common URL patterns
-        const url = window.location.href;
-        
-        // MangaFire: /read/manga-slug.id/en/chapter-X
-        const mangafireMatch = url.match(/\/read\/([^/]+)\.(\d+)\/\w+\/chapter-(\d+(?:\.\d+)?)/);
-        if (mangafireMatch) {
-            return {
-                slug: mangafireMatch[1],
-                id: mangafireMatch[2],
-                chapterNo: parseFloat(mangafireMatch[3])
-            };
-        }
-
-        // MangaDex: /chapter/uuid
-        const mangadexMatch = url.match(/mangadex\.org\/chapter\/([a-f0-9-]+)/i);
-        if (mangadexMatch) {
-            // MangaDex requires API call to get chapter number
-            return { chapterId: mangadexMatch[1], chapterNo: null };
-        }
-
-        // Webtoons: /viewer?episode_no=X
-        const webtoonsMatch = url.match(/webtoons\.com.*episode_no=(\d+)/i);
-        if (webtoonsMatch) {
-            const titleMatch = url.match(/\/([^/]+)\/list\?/);
-            return {
-                slug: titleMatch?.[1] || 'unknown',
-                chapterNo: parseInt(webtoonsMatch[1])
-            };
-        }
+        // Rely entirely on adapter parsing for custom sites
+        return null;
 
         return null;
     }
@@ -167,7 +140,7 @@ class ProgressTracker {
                 if (chapterNum > currentLast) {
                     entry.lastReadChapter = chapter;
                     entry.lastChapterRead = chapter;
-                    entry.lastMangafireUrl = url;
+                    entry.lastReaderUrl = url;
                 }
                 
                 entry.lastReadDate = Date.now();
@@ -187,7 +160,7 @@ class ProgressTracker {
                     status: 'Reading',
                     lastReadChapter: chapter,
                     lastChapterRead: chapter,
-                    lastMangafireUrl: url,
+                    lastReaderUrl: url,
                     lastReadDate: Date.now(),
                     lastRead: Date.now(),
                     readChapters: history[storageKey].length,
