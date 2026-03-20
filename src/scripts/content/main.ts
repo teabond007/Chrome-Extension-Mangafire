@@ -6,7 +6,7 @@
 // Selector tool - auto-initializes when ?bmh-selector-mode=true is in URL
 import './selector-tool';
 import { initCustomSite, GenericAdapter } from '../core/generic-adapter';
-import ReaderEnhancements from '../core/reader-enhancements';
+import ReaderEnhancements from '../core/reader/reader-enhancements';
 
 async function bootstrap() {
     if (!chrome.runtime?.id) return;

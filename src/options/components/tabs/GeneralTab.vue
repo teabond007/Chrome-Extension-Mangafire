@@ -70,25 +70,25 @@
                 </SettingsCard>
             </div>
 
-            <!-- Card 1: Custom Markers -->
+            <!-- Card 1: Custom Statuses -->
             <SettingsCard 
-                title="Custom Markers" 
+                title="Custom Statuses" 
                 icon="🎨" 
-                guide-target="guide-markers"
+                guide-target="guide-statuses"
             >
                 <div class="feature-toggle-header">
                     <span class="description" style="margin:0;">Add custom statuses beyond the
                         defaults.</span>
                     <ToggleSwitch 
                         id="CustomBookmarks" 
-                        title="Enable Custom Markers"
+                        title="Enable Custom Statuses"
                     />
                 </div>
                 <div style="margin-top: 15px;"></div>
 
                 <div class="input-group-row">
                     <div class="input-wrapper flex-grow">
-                        <label for="bookmarkName">Marker Name</label>
+                        <label for="bookmarkName">Status Name</label>
                         <input type="text" id="bookmarkName" placeholder="e.g. Re-reading"
                             class="input-field">
                     </div>
@@ -119,7 +119,7 @@
                 </div>
 
                 <div class="active-markers-header">
-                    <label class="section-label">ACTIVE MARKERS</label>
+                    <label class="section-label">ACTIVE STATUSES</label>
                     <button id="resetBookmarkButton" class="btn btn-ghost btn-sm">
                         Remove All
                     </button>

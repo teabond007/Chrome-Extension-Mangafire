@@ -129,7 +129,7 @@ export async function getBackupInfo() {
 
     // Get entry count by downloading just the structure
     const data = await downloadBackup();
-    const entryCount = data?.userBookmarks ? Object.keys(data.userBookmarks).length : 0;
+    const entryCount = Array.isArray(data?.savedEntriesMerged) ? data.savedEntriesMerged.length : 0;
 
     return {
         id: metadata.id,

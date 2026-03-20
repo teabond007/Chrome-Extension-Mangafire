@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia';
-import { storage } from '../core/storage-adapter.js';
-import { fetchMangaFromAnilist } from '../../../scripts/core/anilist-api';
-import { fetchMangaFromMangadex, wipeMangadexCache } from '../../../scripts/core/mangadex-api.js';
+import { fetchMangaFromAnilist } from '../../../scripts/core/api/anilist-api';
+import { fetchMangaFromMangadex, wipeMangadexCache } from '../../../scripts/core/api/mangadex-api.js';
 
 export const useLibraryStore = defineStore('library', {
     state: () => ({
@@ -24,10 +23,10 @@ export const useLibraryStore = defineStore('library', {
         async loadLibrary() {
             this.isLoading = true;
             try {
-                const data = await storage.get(['savedEntriesMerged', 'userbookmarkshistory', 'lastSyncTime']);
+                const data = await chrome.storage.local.get(['savedEntriesMerged', 'savedReadChapters', 'lastSyncTime']);
                 
                 this.entries = data.savedEntriesMerged || [];
-                this.history = data.userbookmarkshistory || {};
+                this.history = data.savedReadChapters || {};
                 this.lastSync = data.lastSyncTime || null;
             } catch (err) {
                 console.error('Failed to load library:', err);
@@ -44,59 +43,34 @@ export const useLibraryStore = defineStore('library', {
             if (changes.savedEntriesMerged) {
                 this.entries = changes.savedEntriesMerged.newValue || [];
             }
-            if (changes.userbookmarkshistory) {
-                this.history = changes.userbookmarkshistory.newValue || {};
+            if (changes.savedReadChapters) {
+                this.history = changes.savedReadChapters.newValue || {};
             }
             if (changes.lastSyncTime) {
                 this.lastSync = changes.lastSyncTime.newValue;
             }
         },
 
-        async removeEntry(entryUrl) {
-            // Optimistic update
-            this.entries = this.entries.filter(e => e.mangafireUrl !== entryUrl);
-            
-            // Persist
-            await storage.set({ savedEntriesMerged: JSON.parse(JSON.stringify(this.entries)) });
-        },
-
         /**
-         * Removes duplicate manga entries based on title.
-         * Keeps the entry with the most data (read chapters, anilist info).
+         * Removes a manga entry matching by anilist ID, slug, or title fallback.
+         * @param {Object} entry - The entry object to remove
          */
-        async cleanDuplicates() {
-            const unique = new Map();
-            let removedCount = 0;
-            const entries = [...this.entries];
+        async removeEntry(entry) {
+            const aniId = entry.anilistData?.id;
+            const slug = entry.mangaSlug;
+            const title = entry.title?.toLowerCase();
 
-            entries.forEach(entry => {
-                const title = entry.title.toLowerCase().trim();
-                const existing = unique.get(title);
-
-                if (!existing) {
-                    unique.set(title, entry);
-                } else {
-                    // Keep the one with more progress or anilist data
-                    const existingProgress = parseInt(String(existing.readChapters || 0));
-                    const currentProgress = parseInt(String(entry.readChapters || 0));
-
-                    if (currentProgress > existingProgress || (!existing.anilistData && entry.anilistData)) {
-                        unique.set(title, entry);
-                    }
-                    removedCount++;
-                }
+            this.entries = this.entries.filter(e => {
+                if (aniId && e.anilistData?.id === aniId) return false;
+                if (slug && e.mangaSlug === slug) return false;
+                if (title && e.title?.toLowerCase() === title) return false;
+                return true;
             });
 
-            if (removedCount > 0) {
-                const cleaned = Array.from(unique.values());
-                this.entries = cleaned; // Optimistic
-                await storage.set({ savedEntriesMerged: cleaned });
-                console.log(`Library cleaned: removed ${removedCount} duplicates.`);
-                return removedCount;
-            }
-            return 0;
+            await chrome.storage.local.set({ savedEntriesMerged: JSON.parse(JSON.stringify(this.entries)) });
         },
 
+        
         /**
          * Forces a re-fetch of metadata for ALL entries in the library.
          * Clears existing AniList match data to force a fresh lookup.
@@ -187,7 +161,7 @@ export const useLibraryStore = defineStore('library', {
                     liveEntry.lastChecked = Date.now();
 
                     // Save periodically
-                    await storage.set({ savedEntriesMerged: JSON.parse(JSON.stringify(entriesList)) });
+                    await chrome.storage.local.set({ savedEntriesMerged: JSON.parse(JSON.stringify(entriesList)) });
                     
                     // Throttle
                     await new Promise(r => setTimeout(r, 500));

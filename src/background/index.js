@@ -3,8 +3,8 @@
  * Acts as central message router and orchestrates site-specific scrapers.
  */
 
-import { fetchMangaFromAnilist } from '../scripts/core/anilist-api';
-import { fetchMangaFromMangadex } from '../scripts/core/mangadex-api.js';
+import { fetchMangaFromAnilist } from '../scripts/core/api/anilist-api';
+import { fetchMangaFromMangadex } from '../scripts/core/api/mangadex-api.js';
 
 // Open options page when extension icon clicked
 chrome.action.onClicked.addListener(() => {
@@ -93,7 +93,7 @@ function safeSendMessage(message) {
  */
 async function handleGDriveSignIn(sendResponse) {
   try {
-    const { getAuthToken, getUserProfile } = await import('../scripts/core/gdrive-auth.js');
+    const { getAuthToken, getUserProfile } = await import('../scripts/core/cloud/gdrive-auth.js');
     await getAuthToken(true);
     const profile = await getUserProfile();
     sendResponse({ success: true, profile });
@@ -107,7 +107,7 @@ async function handleGDriveSignIn(sendResponse) {
  */
 async function handleGDriveSignOut(sendResponse) {
   try {
-    const { revokeToken } = await import('../scripts/core/gdrive-auth.js');
+    const { revokeToken } = await import('../scripts/core/cloud/gdrive-auth.js');
     await revokeToken();
     sendResponse({ success: true });
   } catch (error) {
@@ -120,7 +120,7 @@ async function handleGDriveSignOut(sendResponse) {
  */
 async function handleGDriveUpload(data, sendResponse) {
   try {
-    const { uploadBackup } = await import('../scripts/core/gdrive-sync.js');
+    const { uploadBackup } = await import('../scripts/core/cloud/gdrive-sync.js');
     const result = await uploadBackup(data);
     sendResponse({ success: true, result });
   } catch (error) {
@@ -133,7 +133,7 @@ async function handleGDriveUpload(data, sendResponse) {
  */
 async function handleGDriveDownload(sendResponse) {
   try {
-    const { downloadBackup } = await import('../scripts/core/gdrive-sync.js');
+    const { downloadBackup } = await import('../scripts/core/cloud/gdrive-sync.js');
     const data = await downloadBackup();
     sendResponse({ success: true, data });
   } catch (error) {
@@ -146,7 +146,7 @@ async function handleGDriveDownload(sendResponse) {
  */
 async function handleGDriveBackupInfo(sendResponse) {
   try {
-    const { getBackupInfo } = await import('../scripts/core/gdrive-sync.js');
+    const { getBackupInfo } = await import('../scripts/core/cloud/gdrive-sync.js');
     const info = await getBackupInfo();
     sendResponse({ success: true, info });
   } catch (error) {
@@ -159,7 +159,7 @@ async function handleGDriveBackupInfo(sendResponse) {
  */
 async function handleGDriveDeleteBackup(sendResponse) {
   try {
-    const { deleteBackup } = await import('../scripts/core/gdrive-sync.js');
+    const { deleteBackup } = await import('../scripts/core/cloud/gdrive-sync.js');
     await deleteBackup();
     sendResponse({ success: true });
   } catch (error) {
@@ -295,9 +295,9 @@ chrome.runtime.onStartup.addListener(async () => {
   handleCustomSitesUpdate(() => {});
 });
 
-// Also register on install/update
+
 chrome.runtime.onInstalled.addListener(async () => {
   Log('Extension installed/updated - checking custom sites...');
   handleCustomSitesUpdate(() => {});
+  
 });
-

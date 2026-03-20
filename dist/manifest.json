@@ -44,14 +44,14 @@
   "content_scripts": [
     {
       "js": [
-        "assets/main.ts-loader-ee6b6d7a.js"
+        "assets/main.ts-loader-c11f0169.js"
       ],
       "matches": [
         "*://fallback.custom-sites.local/*"
       ],
       "run_at": "document_idle",
       "css": [
-        "assets/main-a6bf623a.css"
+        "assets/main-5f09d376.css"
       ]
     }
   ],
@@ -72,9 +72,10 @@
         "*://fallback.custom-sites.local/*"
       ],
       "resources": [
-        "assets/_plugin-vue_export-helper-ae23e591.js",
+        "assets/config-d309b8e4.js",
+        "assets/_plugin-vue_export-helper-87d40812.js",
         "assets/preload-helper-cf010ec4.js",
-        "assets/main.ts-7b43dc6b.js"
+        "assets/main.ts-712baecd.js"
       ],
       "use_dynamic_url": false
     }

@@ -1,5 +1,3 @@
-import { storage } from '../core/storage-adapter.js';
-
 /**
  * @fileoverview Shared utility for gathering and merging extension data.
  * Used by both local Import/Export and Google Drive Sync.
@@ -7,7 +5,7 @@ import { storage } from '../core/storage-adapter.js';
 
 export const EXPORT_CATEGORIES = {
     library: {
-        keys: ['savedEntriesMerged', 'userBookmarks'],
+        keys: ['savedEntriesMerged'],
         label: 'Library Entries'
     },
     history: {
@@ -65,7 +63,7 @@ export async function gatherStorageData(categoryFlags) {
 
     if (keysToExport.length === 0) return {};
 
-    const data = await storage.get(keysToExport);
+    const data = await chrome.storage.local.get(keysToExport);
     
     // Add metadata
     data._exportMeta = {
@@ -89,13 +87,6 @@ export function mergeStorageData(currentData, remoteData) {
     // Remove metadata
     delete mergedData._exportMeta;
 
-    // Special handling for legacy bookmarks to avoid duplicates
-    if (remoteData.userBookmarks && currentData.userBookmarks) {
-        const bookmarkMap = new Map();
-        currentData.userBookmarks.forEach(b => { if (b.title) bookmarkMap.set(b.title.toLowerCase(), b); });
-        remoteData.userBookmarks.forEach(b => { if (b.title) bookmarkMap.set(b.title.toLowerCase(), b); });
-        mergedData.userBookmarks = Array.from(bookmarkMap.values());
-    }
 
     // Merge savedEntriesMerged (modern library)
     if (remoteData.savedEntriesMerged && currentData.savedEntriesMerged) {
@@ -105,7 +96,7 @@ export function mergeStorageData(currentData, remoteData) {
         mergedData.savedEntriesMerged = Array.from(entryMap.values());
     }
 
-    // Merge custom markers
+    // Merge custom statuses
     if (remoteData.customBookmarks && currentData.customBookmarks) {
         const markerMap = new Map();
         currentData.customBookmarks.forEach(m => { if (m.name) markerMap.set(m.name.toLowerCase(), m); });
@@ -150,13 +141,13 @@ export function mergeStorageData(currentData, remoteData) {
  */
 export async function applyStorageData(data, isMerge) {
     if (isMerge) {
-        const currentData = await storage.get(null);
+        const currentData = await chrome.storage.local.get(null);
         const merged = mergeStorageData(currentData, data);
-        await storage.set(merged);
+        await chrome.storage.local.set(merged);
     } else {
         // Overwrite: clear and set
         delete data._exportMeta;
-        await storage.clear();
-        await storage.set(data);
+        await chrome.storage.local.clear();
+        await chrome.storage.local.set(data);
     }
 }

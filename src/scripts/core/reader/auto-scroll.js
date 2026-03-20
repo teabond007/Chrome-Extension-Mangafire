@@ -12,7 +12,6 @@ class AutoScrollController {
         this.isRunning = false;
         this.intervalId = null;
         this.showPanel = options.showPanel !== false;
-        this.panel = null;
         this.vueApp = null;
         this.adapter = options.adapter || null;
         this.scrollTarget = null;
@@ -113,7 +112,7 @@ class AutoScrollController {
         this.lastScrollPos = this.getScrollPos();
         this.stuckCount = 0;
         
-        const scrollAmount = this.speed / 60;
+        this.scrollAmount = this.speed / 60;
         
         this.intervalId = setInterval(() => {
             if (!this.isRunning) {
@@ -121,7 +120,7 @@ class AutoScrollController {
                 return;
             }
 
-            this.doScroll(scrollAmount);
+            this.doScroll(this.scrollAmount);
             
             // Check if stuck (scroll position not changing)
             const currentPos = this.getScrollPos();
@@ -170,57 +169,50 @@ class AutoScrollController {
     setSpeed(speed) {
         this.speed = Math.max(10, Math.min(400, speed));
         
-        // Update the Vue app VM if it exists
-        if (this.vueApp && this.vueApp.vm) {
-            this.vueApp.vm.initialSpeed = this.speed;
+        // Update live scroll amount if running
+        if (this.isRunning) {
+            this.scrollAmount = this.speed / 60;
         }
 
-        // If running, we don't need to restart the interval, just update speed.
-        // The next interval tick will use the updated speed value.
+        this.updatePanelState();
     }
 
     /**
-     * Updates panel UI state.
+     * Updates Vue panel UI state.
      */
     updatePanelState() {
         if (this.vueApp && this.vueApp.vm) {
             this.vueApp.vm.isRunning = this.isRunning;
-            return;
-        }
-
-        if (!this.panel) return;
-        const btn = this.panel.querySelector('.bmh-as-toggle');
-        if (btn) {
-            btn.textContent = this.isRunning ? '⏸ Stop' : '▶ Start';
-            btn.className = 'bmh-as-toggle' + (this.isRunning ? ' active' : '');
+            this.vueApp.vm.speed = this.speed;
         }
     }
 
+    /**
+     * Creates and mounts the Vue control panel.
+     */
     createControlPanel() {
-        // Use Vue mounting for all custom sites with an adapter
-        if (this.adapter) {
-            const props = {
-                speed: this.speed,
-                isRunning: this.isRunning
-            };
-            const handlers = {
-                onToggle: () => this.toggle(),
-                onSpeedChange: (val) => this.setSpeed(val)
-            };
-
-            import('./overlay-factory.js').then(module => {
-                this.vueApp = module.OverlayFactory.mountReaderControls(props, handlers);
-            });
+        if (!this.adapter) {
+            console.warn('[AutoScroll] Navigation adapter missing, cannot mount reader controls.');
             return;
         }
 
-        console.warn('[AutoScroll] Navigation adapter missing, cannot mount reader controls.');
+        const props = {
+            speed: this.speed,
+            isRunning: this.isRunning
+        };
+        const handlers = {
+            onToggle: () => this.toggle(),
+            onSpeedChange: (val) => this.setSpeed(val)
+        };
+
+        import('../overlay-factory.js').then(module => {
+            this.vueApp = module.OverlayFactory.mountReaderControls(props, handlers);
+        });
     }
 
     /**
      * Initializes the auto-scroll controller.
      */
-
     init() {
         if (this.showPanel) {
             this.createControlPanel();
@@ -230,9 +222,9 @@ class AutoScrollController {
 
     destroy() {
         this.stop();
-        if (this.panel) {
-            this.panel.remove();
-            this.panel = null;
+        if (this.vueApp && this.vueApp.app) {
+            this.vueApp.app.unmount();
+            this.vueApp.container.remove();
         }
         delete window.bmhAutoScroll;
     }

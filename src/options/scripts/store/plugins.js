@@ -1,4 +1,4 @@
-import { storage } from '../core/storage-adapter.js';
+
 
 /**
  * Pinia plugin to persist state changes to the storage adapter.

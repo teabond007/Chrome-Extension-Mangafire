@@ -11,8 +11,6 @@
                     class="btn btn-ghost btn-sm"
                     @click="toggleStats"
                 >📊 Stats</button>
-                <button @click="cleanLibrary" class="btn btn-ghost btn-sm" title="Remove Duplicates">🧹
-                    Clean</button>
                 <button @click="freshSync" class="btn btn-warning-large">⚡Fresh Sync
                     Entries</button>
             </div>
@@ -22,7 +20,7 @@
             <!-- Stats Section (Vue Component) -->
             <LibraryStatistics 
                 :entries="savedEntries" 
-                :custom-markers="customMarkers"
+                :custom-statuses="customStatuses"
                 :is-visible="showStats" 
             />
 
@@ -94,9 +92,9 @@
                         <option value="Plan to Read">Plan to Read</option>
                         <option value="Dropped">Dropped</option>
                         <option value="HasHistory">Has History</option>
-                        <template v-if="customMarkers.length > 0">
-                            <option disabled>── Custom Markers ──</option>
-                            <option v-for="m in customMarkers" :key="m.name" :value="'marker:' + m.name">
+                        <template v-if="customStatuses.length > 0">
+                            <option disabled>── Custom Statuses ──</option>
+                            <option v-for="m in customStatuses" :key="m.name" :value="'marker:' + m.name">
                                 📌 {{ m.name }}
                             </option>
                         </template>
@@ -206,10 +204,10 @@
                     v-for="entry in sortedEntries" 
                     :key="entry.title + (entry.anilistData?.id || '')"
                     :entry="entry"
-                    :custom-markers="customMarkers"
+                    :custom-statuses="customStatuses"
                     :library-settings="librarySettings"
                     @click="showDetails"
-                    @marker-click="showMarkerPicker"
+                    @status-click="showStatusPicker"
                 />
                 <div v-if="sortedEntries.length === 0" class="empty-library">
                     No matches found.
@@ -276,8 +274,7 @@ const librarySettings = computed(() => ({
 const showStats = ref(false);
 const isBulkMode = ref(false);
 const bulkStatus = ref('Reading');
-// const customMarkers = ref([]); // TODO: Add to store if markers are needed globally
-const customMarkers = ref([]); // Keeping local for now or need a MarkerStore
+const customStatuses = ref([]); // Loaded from storage
 const personalData = ref({});
 const cardViewSize = ref('large');
 const listVisibleCount = ref(5); // Number of entries visible in list view
@@ -329,8 +326,8 @@ const filteredEntries = computed(() => {
             const filterStatus = filters.status.toLowerCase().trim().replace(/[-\s]/g, '');
 
             if (filters.status.startsWith("marker:")) {
-                const markerName = filters.status.substring(7);
-                if (entry.customMarker !== markerName && entry.status !== markerName) return false;
+                const statusName = filters.status.substring(7);
+                if (entry.customStatus !== statusName && entry.status !== statusName) return false;
             } else if (filters.status === "HasHistory") {
                 if (!(entry.lastRead || entry.lastChapterRead || (entry.readChapters > 0))) return false;
             } else {
@@ -474,17 +471,10 @@ const toggleBingeworthy = () => {
     filters.chapterMin = filters.chapterMin >= 100 ? null : 100;
 };
 
-const showMarkerPicker = (entry) => {
+const showStatusPicker = (entry) => {
     // This is still partially in vanilla, calling the prompt logic for now 
     // but eventually this could be a Vue modal too.
-    if (window.showMarkerPicker) window.showMarkerPicker(entry);
-};
-
-const cleanLibrary = async () => {
-    if (confirm("Remove duplicate entries?")) {
-        const count = await libraryStore.cleanDuplicates();
-        if (count === 0) alert("No duplicates found.");
-    }
+    if (window.showStatusPicker) window.showStatusPicker(entry);
 };
 
 const freshSync = async () => {
@@ -502,8 +492,8 @@ const applyBulkUpdate = async () => {
         const updated = savedEntries.value.map(e => {
             const isMatch = sortedEntries.value.some(match => match.title === e.title);
             if (isMatch) {
-                // Remove marker if generic status set
-                return { ...e, status: bulkStatus.value, customMarker: null };
+                // Remove custom status if generic status set
+                return { ...e, status: bulkStatus.value, customStatus: null };
             }
             return e;
         });
@@ -528,7 +518,7 @@ const loadData = () => {
         'cardViewSize',
         'FamilyFriendlyfeatureEnabled',
     ], async (data) => {
-        customMarkers.value = data.customBookmarks || [];
+        customStatuses.value = data.customBookmarks || [];
         cardViewSize.value = data.cardViewSize || 'large';
         familyFriendlyEnabled.value = data.FamilyFriendlyfeatureEnabled || false;
 
@@ -545,7 +535,7 @@ onMounted(() => {
     chrome.storage.onChanged.addListener((changes, area) => {
         if (area === 'local') {
             // Only listen for things NOT in the store yet
-            if (changes.customBookmarks) customMarkers.value = changes.customBookmarks.newValue || [];
+            if (changes.customBookmarks) customStatuses.value = changes.customBookmarks.newValue || [];
             if (changes.FamilyFriendlyfeatureEnabled) familyFriendlyEnabled.value = changes.FamilyFriendlyfeatureEnabled.newValue;
         }
     });

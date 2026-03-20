@@ -2,6 +2,7 @@
  * @fileoverview Component factory for generating Manga Card DOM elements.
  * Handles layout, dynamic status coloring, and AniList metadata display.
  */
+import { STATUS_COLORS } from '../../../config.js';
 
 /**
  * Creates a complete manga card element ready to be appended to the library grid.
@@ -10,13 +11,13 @@
  * @param {Object} [librarySettings] - Optional settings for library view (borders, display modes).
  * @returns {HTMLElement} The fully constructed manga card container.
  */
-export function createMangaCard(entry, customMarkers, onMarkerClick, librarySettings = null) {
+export function createMangaCard(entry, customStatuses, onStatusClick, librarySettings = null) {
     const card = document.createElement("div");
     card.className = "manga-card";
     card.dataset.title = entry.title;
 
     const aniData = entry.anilistData;
-    const statusInfo = getStatusInfo(entry.status, entry.customMarker, customMarkers);
+    const statusInfo = getStatusInfo(entry.status, entry.customStatus, customStatuses);
     
     // Border Styling Logic
     let showBorder = true;
@@ -60,8 +61,8 @@ export function createMangaCard(entry, customMarkers, onMarkerClick, librarySett
         card.style.setProperty('--pulse-color', statusInfo.borderColor);
     }
     
-    if (entry.customMarker) {
-        card.classList.add("has-custom-marker");
+    if (entry.customStatus) {
+        card.classList.add("has-custom-status");
     }
 
     // Smart Inactivity Check
@@ -75,7 +76,7 @@ export function createMangaCard(entry, customMarkers, onMarkerClick, librarySett
     }
 
     // Create cover section (includes image and hover actions)
-    const cover = createCardCover(entry, aniData, statusInfo, onMarkerClick, { showStatusIcon, showProgressBar });
+    const cover = createCardCover(entry, aniData, statusInfo, onStatusClick, { showStatusIcon, showProgressBar });
     card.appendChild(cover);
 
     // Create body section (includes title and badges)
@@ -167,15 +168,15 @@ function createCardCover(entry, aniData, statusInfo, onMarkerClick, visualOption
         actions.appendChild(viewBtn);
     }
 
-    // "Marker" button - opens marker assignment dialog
-    const markerBtn = document.createElement("button");
-    markerBtn.className = "card-action-btn";
-    markerBtn.textContent = entry.customMarker ? `✓ ${entry.customMarker}` : "+ Marker";
-    markerBtn.onclick = (e) => {
+    // "Status" button - opens custom status assignment dialog
+    const statusBtn = document.createElement("button");
+    statusBtn.className = "card-action-btn";
+    statusBtn.textContent = entry.customStatus ? `✓ ${entry.customStatus}` : "+ Status";
+    statusBtn.onclick = (e) => {
         e.stopPropagation();
-        onMarkerClick(entry);
+        onStatusClick(entry);
     };
-    actions.appendChild(markerBtn);
+    actions.appendChild(statusBtn);
 
     cover.appendChild(actions);
     return cover;
@@ -282,43 +283,32 @@ function createCardBody(entry, aniData, statusInfo) {
 
 /**
  * Resolves the visual styling (colors, borders) for a manga entry.
- * Prioritizes custom markers over default status colors.
+ * Prioritizes custom statuses over default status colors.
  * 
  * @param {string} status - The current reading status string.
- * @param {string|null} customMarkerName - The name of any manually assigned custom marker.
- * @param {Array<Object>} customMarkers - The list of all defined custom markers.
+ * @param {string|null} customStatusName - The name of any manually assigned custom status.
+ * @param {Array<Object>} customStatuses - The list of all defined custom statuses.
  * @returns {Object} An object containing borderColor, borderStyle, badgeBg, and badgeText keys.
  */
-export function getStatusInfo(status, customMarkerName, customMarkers) {
+export function getStatusInfo(status, customStatusName, customStatuses) {
     const statusLower = status.toLowerCase();
     
-    // Check if the status matches a marker name directly (legacy/auto mapping)
-    let marker = customMarkers.find(m => m.name.toLowerCase() === statusLower);
+    // Check if the status matches a custom status name directly
+    let matched = customStatuses.find(m => m.name.toLowerCase() === statusLower);
     
-    // Check if an explicit marker is assigned
-    if (!marker && customMarkerName) {
-        marker = customMarkers.find(m => m.name === customMarkerName);
+    // Check if an explicit custom status is assigned
+    if (!matched && customStatusName) {
+        matched = customStatuses.find(m => m.name === customStatusName);
     }
 
-    if (marker) {
+    if (matched) {
         return {
-            borderColor: marker.color,
-            borderStyle: marker.style || "solid",
-            badgeBg: `${marker.color}26`,
-            badgeText: marker.color
+            borderColor: matched.color,
+            borderStyle: matched.style || "solid",
+            badgeBg: `${matched.color}26`,
+            badgeText: matched.color
         };
     }
-
-    /** @type {Object} Map of default reading status colors and styles */
-    const DEFAULT_STATUS_COLORS = {
-        reading: { color: "#4CAF50", bg: "rgba(76, 175, 80, 0.15)" },
-        read: { color: "#9f9f9f", bg: "rgba(159, 159, 159, 0.15)" },
-        completed: { color: "#2196F3", bg: "rgba(33, 150, 243, 0.15)" },
-        dropped: { color: "#F44336", bg: "rgba(244, 67, 54, 0.15)" },
-        onhold: { color: "#FFC107", bg: "rgba(255, 193, 7, 0.15)" },
-        planning: { color: "#9C27B0", bg: "rgba(156, 39, 176, 0.15)" },
-        default: { color: "#8B95A5", bg: "rgba(139, 149, 165, 0.15)" }
-    };
 
     // Keyword matching for status categorization
     let type = "default";
@@ -328,8 +318,12 @@ export function getStatusInfo(status, customMarkerName, customMarkers) {
     else if (statusLower.includes("dropped")) type = "dropped";
     else if (statusLower.includes("hold")) type = "onhold";
     else if (statusLower.includes("plan")) type = "planning";
-    
-    const config = DEFAULT_STATUS_COLORS[type];
+
+    const config = {
+        color: STATUS_COLORS[type] || STATUS_COLORS.default,
+        bg: `${STATUS_COLORS[type] || STATUS_COLORS.default}26`
+    };
+
     return {
         borderColor: config.color,
         borderStyle: "solid",

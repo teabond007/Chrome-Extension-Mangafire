@@ -82,7 +82,7 @@ const formatName = computed(() => {
 
 const statusStyle = computed(() => {
     if (!props.entry.status) return {};
-    const info = getStatusInfo(props.entry.status, props.entry.customMarker, []);
+    const info = getStatusInfo(props.entry.status, props.entry.customStatus, []);
     return {
         backgroundColor: info.badgeBg,
         color: info.badgeText

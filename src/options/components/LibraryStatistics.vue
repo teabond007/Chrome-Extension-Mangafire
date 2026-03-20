@@ -42,15 +42,15 @@
                     <span class="stat-label-small">Dropped</span>
                 </div>
 
-                <!-- Merged Custom Markers -->
+                <!-- Merged Custom Statuses -->
                 <div 
-                    v-for="marker in markerStats" 
-                    :key="marker.name"
+                    v-for="status in statusStats" 
+                    :key="status.name"
                     class="stat-item-compact marker-stat" 
-                    :style="{ '--stat-color': marker.color }"
+                    :style="{ '--stat-color': status.color }"
                 >
-                    <span class="stat-value-large">{{ marker.count }}</span>
-                    <span class="stat-label-small">{{ marker.name }}</span>
+                    <span class="stat-value-large">{{ status.count }}</span>
+                    <span class="stat-label-small">{{ status.name }}</span>
                 </div>
             </div>
 
@@ -171,7 +171,7 @@ const props = defineProps({
         type: Boolean,
         default: false
     },
-    customMarkers: {
+    customStatuses: {
         type: Array,
         default: () => []
     }
@@ -221,17 +221,17 @@ const stats = computed(() => {
     return { total, totalChapters, reading, completed, planning, onhold, dropped, avgScore, completionRate };
 });
 
-const markerStats = computed(() => {
-    if (!props.customMarkers || props.customMarkers.length === 0) return [];
+const statusStats = computed(() => {
+    if (!props.customStatuses || props.customStatuses.length === 0) return [];
     
-    return props.customMarkers.map(marker => {
+    return props.customStatuses.map(s => {
         const count = props.entries.filter(e => 
-            e.customMarker === marker.name || 
-            (e.status && e.status.toLowerCase() === marker.name.toLowerCase())
+            e.customStatus === s.name || 
+            (e.status && e.status.toLowerCase() === s.name.toLowerCase())
         ).length;
         return {
-            name: marker.name,
-            color: marker.color,
+            name: s.name,
+            color: s.color,
             count
         };
     }).filter(m => m.count > 0);
@@ -245,7 +245,7 @@ const statusDistribution = computed(() => {
         { label: 'Planning', value: stats.value.planning, color: '#9C27B0' },
         { label: 'On Hold', value: stats.value.onhold, color: '#FFC107' },
         { label: 'Dropped', value: stats.value.dropped, color: '#F44336' },
-        ...markerStats.value.map(m => ({ label: m.name, value: m.count, color: m.color }))
+        ...statusStats.value.map(m => ({ label: m.name, value: m.count, color: m.color }))
     ].filter(d => d.value > 0);
 
     let offset = 0;

@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia';
-import { storage } from '../core/storage-adapter.js';
 
 export const useSettingsStore = defineStore('settings', {
     state: () => ({
@@ -41,7 +40,7 @@ export const useSettingsStore = defineStore('settings', {
 
     actions: {
         async loadSettings() {
-            const data = await storage.get([
+            const data = await chrome.storage.local.get([
                 'theme', 
                 'isCustomTheme',
                 'customThemeData',
@@ -115,7 +114,7 @@ export const useSettingsStore = defineStore('settings', {
             }
 
             if (Object.keys(storagePayload).length > 0) {
-                await storage.set(storagePayload);
+                await chrome.storage.local.set(storagePayload);
             }
         },
 

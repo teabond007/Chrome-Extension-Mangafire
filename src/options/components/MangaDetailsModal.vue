@@ -57,6 +57,10 @@
                                 </span>
                             </div>
                         </div>
+                        <!-- Remove Manga -->
+                        <button class="btn btn-danger btn-sm btn-remove-manga" @click="handleRemoveManga">
+                            🗑️ Remove Manga
+                        </button>
                     </div>
                     <div class="modal-main">
                         <h2 id="modalTitle">{{ ani?.title?.english || ani?.title?.romaji || currentEntry.title }}</h2>
@@ -171,6 +175,9 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { getFormatName, getStatusInfo } from '../scripts/ui/manga-card-factory.js';
 import * as LibFeatures from '../../scripts/core/library-features.js';
 import { animateModalEntry, playSuccessAnimation } from '../scripts/ui/anime-utils.js';
+import { useLibraryStore } from '../scripts/store/library.store.js';
+
+const libraryStore = useLibraryStore();
 
 // State
 const isOpen = ref(false);
@@ -197,9 +204,9 @@ const formatName = computed(() => {
  */
 const statusStyle = computed(() => {
     if (!currentEntry.value.status) return {};
-    // Mocking customMarkers and global state for getStatusInfo
+    // TODO: customStatuses should ideally come from a store
     // In a real app, this should probably come from a store
-    const info = getStatusInfo(currentEntry.value.status, currentEntry.value.customMarker, []);
+    const info = getStatusInfo(currentEntry.value.status, currentEntry.value.customStatus, []);
     return {
         backgroundColor: info.badgeBg,
         color: info.badgeText
@@ -436,7 +443,16 @@ const removeTag = async (tag) => {
     await LibFeatures.removeTagFromManga(currentEntry.value, tag);
 };
 
-// Rating display helpers (now simplified for 10-star direct system)
+/**
+ * Confirms and removes the current manga entry from the library
+ */
+const handleRemoveManga = async () => {
+    const title = ani.value?.title?.english || ani.value?.title?.romaji || currentEntry.value.title;
+    if (!confirm(`Remove "${title}" from your library?`)) return;
+
+    await libraryStore.removeEntry(currentEntry.value);
+    closeModal();
+};
 
 // Exposure for backward compatibility
 onMounted(() => {
@@ -557,7 +573,24 @@ onMounted(() => {
                                 }
                             }
                         }
+                    }
 
+                    .btn-remove-manga {
+                        width: 100%;
+                        margin-top: 12px;
+                        justify-content: center;
+                        background: rgba(220, 53, 69, 0.1);
+                        color: #dc3545;
+                        border: 1px solid rgba(220, 53, 69, 0.25);
+                        transition: all 0.2s ease;
+
+                        &:hover {
+                            background: rgba(220, 53, 69, 0.2);
+                            border-color: #dc3545;
+                        }
+                    }
+
+                    .modal-sidebar-info {
                         .modal-meta-row {
                             display: flex;
                             flex-direction: column;

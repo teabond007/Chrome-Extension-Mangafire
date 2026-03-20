@@ -143,17 +143,6 @@ class KeybindManager {
             
             // Auto-scroll
             toggleAutoScroll: () => window.bmhAutoScroll?.toggle(),
-            speedUp: () => {
-                if (window.bmhAutoScroll) {
-                    window.bmhAutoScroll.setSpeed(window.bmhAutoScroll.speed + 20);
-                }
-            },
-            speedDown: () => {
-                if (window.bmhAutoScroll) {
-                    window.bmhAutoScroll.setSpeed(window.bmhAutoScroll.speed - 20);
-                }
-            },
-            
             // Reader controls
             toggleFullscreen: () => {
                 if (document.fullscreenElement) {

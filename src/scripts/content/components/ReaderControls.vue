@@ -12,37 +12,40 @@
       type="button"
       @click="toggle"
     >
-      {{ isRunning ? '⏸ Stop' : '▶ Start' }}
+      <span class="bmh-as-icon">{{ isRunning ? '⏸' : '▶' }}</span>
+      {{ isRunning ? 'Stop' : 'Start' }}
     </button>
     
     <div class="bmh-as-speed-control">
-      <span class="bmh-as-label">Speed:</span>
+      <span class="bmh-as-label">Speed</span>
       <input 
         type="range" 
-        class="bmh-as-speed" 
+        class="bmh-as-speed-slider" 
         min="20" 
         max="400" 
         :value="speed"
-        @input="updateSpeed"
+        @input="onSpeedInput"
       >
-      <input 
-        type="number" 
-        class="bmh-as-speed-input" 
-        min="20" 
-        max="400" 
-        :value="speed"
-        @input="updateSpeedFromInput"
-        @blur="clampSpeed"
-      >
+      <div class="bmh-as-speed-value-wrapper">
+        <input 
+          type="number" 
+          class="bmh-as-speed-input" 
+          min="20" 
+          max="400" 
+          :value="speed"
+          @input="onSpeedInput"
+          @blur="onBlur"
+        >
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 
 const props = defineProps({
-  initialSpeed: {
+  speed: {
     type: Number,
     default: 50
   },
@@ -54,9 +57,14 @@ const props = defineProps({
 
 const emit = defineEmits(['toggle', 'speed-change']);
 
-const speed = ref(props.initialSpeed);
-const isIdle = ref(true);
+const speed = ref(props.speed);
+const isIdle = ref(false);
 let idleTimeout = null;
+
+// Keep local speed in sync with prop
+watch(() => props.speed, (newVal) => {
+  speed.value = newVal;
+});
 
 /**
  * Toggles autoscroll on/off
@@ -66,18 +74,9 @@ const toggle = () => {
 };
 
 /**
- * Updates speed from slider input
+ * Handles speed changes from both inputs
  */
-const updateSpeed = (event) => {
-  const newVal = parseInt(event.target.value);
-  speed.value = newVal;
-  emit('speed-change', newVal);
-};
-
-/**
- * Updates speed from number input
- */
-const updateSpeedFromInput = (event) => {
+const onSpeedInput = (event) => {
   const newVal = parseInt(event.target.value) || 20;
   speed.value = newVal;
   emit('speed-change', newVal);
@@ -86,9 +85,12 @@ const updateSpeedFromInput = (event) => {
 /**
  * Clamps speed value within valid range on blur
  */
-const clampSpeed = () => {
-  speed.value = Math.max(20, Math.min(400, speed.value));
-  emit('speed-change', speed.value);
+const onBlur = () => {
+  const clamped = Math.max(20, Math.min(400, speed.value));
+  if (clamped !== speed.value) {
+    speed.value = clamped;
+    emit('speed-change', clamped);
+  }
 };
 
 /**
@@ -96,132 +98,28 @@ const clampSpeed = () => {
  */
 const handleMouseEnter = () => {
   isIdle.value = false;
-  if (idleTimeout) {
-    clearTimeout(idleTimeout);
-    idleTimeout = null;
-  }
+  resetIdleTimer();
 };
 
 /**
  * Handles mouse leaving the panel
  */
 const handleMouseLeave = () => {
-  idleTimeout = setTimeout(() => {
-    isIdle.value = true;
-  }, 2000);
+  resetIdleTimer();
 };
 
-onMounted(() => {
-  // Start in idle state after 3 seconds
+const resetIdleTimer = () => {
+  if (idleTimeout) clearTimeout(idleTimeout);
   idleTimeout = setTimeout(() => {
     isIdle.value = true;
   }, 3000);
+};
+
+onMounted(() => {
+  resetIdleTimer();
 });
 
 onUnmounted(() => {
-  if (idleTimeout) {
-    clearTimeout(idleTimeout);
-  }
+  if (idleTimeout) clearTimeout(idleTimeout);
 });
 </script>
-
-<style scoped lang="scss">
-.bmh-autoscroll-panel {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: rgba(0, 0, 0, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-  padding: 10px 14px;
-  color: white;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  pointer-events: auto;
-  transition: opacity 0.3s ease;
-  opacity: 1;
-
-  &.is-idle {
-    opacity: 0.4;
-    &:hover { opacity: 1; }
-  }
-
-  .bmh-as-toggle {
-    background: #4f46e5;
-    color: white;
-    border: none;
-    padding: 8px 14px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    min-width: 70px;
-    transition: background 0.2s;
-
-    &:hover { background: #4338ca; }
-
-    &.active {
-      background: #dc2626;
-      &:hover { background: #b91c1c; }
-    }
-  }
-
-  .bmh-as-speed-control {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-
-    .bmh-as-label {
-      color: rgba(255, 255, 255, 0.7);
-      font-size: 11px;
-    }
-
-    .bmh-as-speed {
-      width: 60px;
-      height: 4px;
-      -webkit-appearance: none;
-      appearance: none;
-      background: rgba(255, 255, 255, 0.3);
-      border-radius: 2px;
-
-      &::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 12px;
-        height: 12px;
-        background: white;
-        border-radius: 50%;
-      }
-    }
-
-    .bmh-as-speed-input {
-      width: 42px;
-      padding: 4px 6px;
-      font-size: 11px;
-      background: rgba(255, 255, 255, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 4px;
-      color: white;
-      text-align: center;
-
-      &:focus {
-        outline: none;
-        border-color: rgba(255, 255, 255, 0.5);
-        background: rgba(255, 255, 255, 0.2);
-      }
-
-      &::-webkit-inner-spin-button,
-      &::-webkit-outer-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-      }
-
-      &[type=number] {
-        -moz-appearance: textfield;
-        appearance: textfield;
-      }
-    }
-  }
-}
-</style>
-

@@ -93,8 +93,8 @@
                     Specialized tools for reading pages. <b>Auto-Scroll</b> provides hands-free navigation with precise speed control, while <b>Progress Tracking</b> saves your exact vertical position, allowing you to resume reading instantly on any device.
                 </GuideCard>
 
-                <GuideCard id="guide-markers" title="Custom Markers" icon="🎨">
-                   Create virtual categories (e.g., "Favorites", "To-Buy") that go beyond standard site statuses. Markers allow you to apply unique visual styles (different border colors or patterns) to specific groups of entries across all your configured sites.
+                <GuideCard id="guide-statuses" title="Custom Statuses" icon="🎨">
+                   Create virtual categories (e.g., "Favorites", "To-Buy") that go beyond standard site statuses. Custom statuses allow you to apply unique visual styles (different border colors or patterns) to specific groups of entries across all your configured sites.
                 </GuideCard>
 
                 <GuideCard id="guide-websites" title="Site Customization" icon="🌐">

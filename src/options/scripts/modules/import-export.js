@@ -1,5 +1,5 @@
 import { Log, decodeHTMLEntities } from '../ui/logger.js';
-import { fetchMDList } from '../../../scripts/core/mangadex-api.js';
+import { fetchMDList } from '../../../scripts/core/api/mangadex-api.js';
 import { EXPORT_CATEGORIES, gatherStorageData, applyStorageData } from './storage-io.js';
 
 export { EXPORT_CATEGORIES };
@@ -114,7 +114,7 @@ export function initImportExport() {
         const stats = {
             libraryEntries: Array.isArray(data.savedEntriesMerged)
                 ? data.savedEntriesMerged.length
-                : (Array.isArray(data.userBookmarks) ? data.userBookmarks.length : 0),
+                : 0,
             historyTitles: data.savedReadChapters ? Object.keys(data.savedReadChapters).length : 0,
             personalData: data.libraryPersonalData ? Object.keys(data.libraryPersonalData).length : 0,
             hasSettings: Object.keys(data).some(k => EXPORT_CATEGORIES.settings.keys.includes(k)),
@@ -229,7 +229,7 @@ export function initImportExport() {
                             status: 'Plan to Read',
                             readChapters: 0,
                             anilistData: manga,
-                            customMarker: null,
+                            customStatus: null,
                             lastUpdated: Date.now(),
                             importedFrom: 'MDList'
                         });

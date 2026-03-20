@@ -51,7 +51,7 @@ import ToggleSwitch from '../options/components/common/ToggleSwitch.vue';
 
 // State
 const features = ref([
-    { id: "CustomBookmarks", storageKey: "CustomBookmarksfeatureEnabled", label: "Custom Markers", value: false },
+    { id: "CustomBookmarks", storageKey: "CustomBookmarksfeatureEnabled", label: "Custom Statuses", value: false },
     { id: "CustomBorderSize", storageKey: "CustomBorderSizefeatureEnabled", label: "Custom Borders", value: false },
     { id: "SyncandMarkRead", storageKey: "SyncandMarkReadfeatureEnabled", label: "Sync History", subLabel: "Sync & Mark Read", value: false }
 ]);

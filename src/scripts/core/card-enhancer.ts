@@ -8,7 +8,7 @@
  * @version 3.8.0
  */
 
-import { Config, STATUS_COLORS } from './config.js';
+import { STATUS_COLORS } from '../../config.js';
 import { OverlayFactory } from './overlay-factory.js';
 
 interface PlatformAdapter {
@@ -62,7 +62,7 @@ interface LibraryEntry {
     personalData?: {
         rating?: number;
     };
-    customMarker?: string;
+    customStatus?: string;
 }
 
 interface EnhancerSettings {
@@ -75,11 +75,11 @@ interface EnhancerSettings {
         style: string;
         radius: string;
     };
-    customBookmarks: CustomBookmark[];
-    customBookmarksEnabled: boolean;
+    customStatuses: CustomStatus[];
+    customStatusesEnabled: boolean;
 }
 
-interface CustomBookmark {
+interface CustomStatus {
     name: string;
     color: string;
     style?: string;
@@ -114,8 +114,8 @@ export class CardEnhancer {
                 style: settings.borderStyle || 'solid',
                 radius: '8px'
             },
-            customBookmarks: settings.customBookmarks || [],
-            customBookmarksEnabled: settings.CustomBookmarksfeatureEnabled || false
+            customStatuses: settings.customBookmarks || [],
+            customStatusesEnabled: settings.CustomBookmarksfeatureEnabled || false
         };
     }
 
@@ -185,31 +185,26 @@ export class CardEnhancer {
      */
     async loadLibrary(): Promise<LibraryEntry[]> {
         return new Promise((resolve) => {
-            chrome.storage.local.get(['savedEntriesMerged', 'userBookmarks', 'savedReadChapters'], (data) => {
+            chrome.storage.local.get(['savedEntriesMerged', 'savedReadChapters'], (data) => {
                 if (chrome.runtime.lastError) {
                     resolve([]);
                     return;
                 }
 
-                const savedEntries = Array.isArray(data.savedEntriesMerged) ? data.savedEntriesMerged : [];
-                const userBookmarks = Array.isArray(data.userBookmarks) ? data.userBookmarks : [];
+                const entries = Array.isArray(data.savedEntriesMerged) ? data.savedEntriesMerged : [];
                 const readChapters = data.savedReadChapters || {};
 
-                // Merge and deduplicate
-                const merged = new Map<string, LibraryEntry>();
-                [...userBookmarks, ...savedEntries].forEach((entry: LibraryEntry) => {
+                // Attach read chapter data to each entry
+                entries.forEach((entry: LibraryEntry) => {
                     if (entry?.title) {
-                        // Attach read chapters
                         const historyKey = this.findHistoryKey(entry.title, entry.slug, readChapters);
                         const chaptersForEntry = historyKey ? (readChapters as Record<string, (string | number)[]>)[historyKey] : [];
                         entry.readChapters = chaptersForEntry;
                         entry.lastReadChapter = this.getHighestChapter(chaptersForEntry);
-
-                        merged.set(entry.title, entry);
                     }
                 });
 
-                resolve(Array.from(merged.values()));
+                resolve(entries);
             });
         });
     }
@@ -316,9 +311,9 @@ export class CardEnhancer {
             }
         }
 
-        // Custom bookmark overrides
-        if (this.settings.customBookmarksEnabled && this.settings.customBookmarks) {
-            this.settings.customBookmarks.forEach(custom => {
+        // Custom status overrides
+        if (this.settings.customStatusesEnabled && this.settings.customStatuses) {
+            this.settings.customStatuses.forEach(custom => {
                 if (custom.name && status.includes(custom.name.toLowerCase())) {
                     color = custom.color;
                     style = custom.style || 'solid';
@@ -412,7 +407,7 @@ export class CardEnhancer {
         OverlayFactory.mountStatusPicker(
             btn,
             entry,
-            this.settings.customBookmarks,
+            this.settings.customStatuses,
             (newStatus: string, entry: LibraryEntry) => this.saveStatusChange(entry, newStatus)
         );
     }
@@ -463,50 +458,38 @@ export class CardEnhancer {
     async saveStatusChange(entry: LibraryEntry, newStatus: string) {
         try {
             const data: any = await new Promise(resolve => {
-                chrome.storage.local.get(['savedEntriesMerged', 'userBookmarks'], resolve);
+                chrome.storage.local.get(['savedEntriesMerged'], resolve);
             });
 
             const entries = data.savedEntriesMerged || [];
-            const bookmarks = data.userBookmarks || [];
 
-            // Update in savedEntriesMerged
             const idx = entries.findIndex((e: LibraryEntry) =>
                 this.normalizeTitle(e.title) === this.normalizeTitle(entry.title)
             );
+
             if (idx !== -1) {
                 entries[idx].status = newStatus;
-            }
-
-            // Update in userBookmarks
-            const bidx = bookmarks.findIndex((b: LibraryEntry) =>
-                this.normalizeTitle(b.title) === this.normalizeTitle(entry.title)
-            );
-
-            if (bidx !== -1) {
-                bookmarks[bidx].status = newStatus;
-            } else if (idx === -1) {
-                // If not found in either, add it as a new bookmark
+            } else {
+                // Not found — add as a new entry
                 const newEntry: LibraryEntry = {
                     ...entry,
                     status: newStatus,
                     lastUpdated: Date.now()
                 };
-                bookmarks.push(newEntry);
+                entries.push(newEntry);
                 console.log(`[CardEnhancer] Added new entry to library: ${entry.title}`);
             }
 
             await new Promise(resolve => {
-                chrome.storage.local.set({ savedEntriesMerged: entries, userBookmarks: bookmarks }, resolve as () => void);
+                chrome.storage.local.set({ savedEntriesMerged: entries }, resolve as () => void);
             });
 
             console.log(`[CardEnhancer] Status updated: ${entry.title} → ${newStatus}`);
 
-            // Clear enhanced flags to force refresh on next scan or just trigger it
-            // Actually, we should probably set a small timeout to let storage settle
+            // Allow storage to settle before refreshing card overlays
             setTimeout(() => {
                 document.querySelectorAll('[data-bmh-enhanced]').forEach(el => {
                     (el as HTMLElement).removeAttribute('data-bmh-enhanced');
-                    // Also remove injected containers
                     el.querySelectorAll('.bmh-vue-container, .bmh-vue-badge-container').forEach(c => c.remove());
                 });
                 this.enhanceAll();

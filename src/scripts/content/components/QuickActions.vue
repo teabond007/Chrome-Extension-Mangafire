@@ -49,6 +49,7 @@
 
 <script setup>
 import { computed } from 'vue';
+import { STATUS_COLORS } from '../../../config.js';
 
 const props = defineProps({
   entry: {
@@ -88,20 +89,14 @@ const continueTitle = computed(() => {
 const currentRating = computed(() => props.entry.personalData?.rating || 0);
 
 const statusColor = computed(() => {
-  const statusColors = {
-    'reading': '#4ade80',
-    'completed': '#60a5fa',
-    'plan to read': '#fbbf24',
-    'planning': '#fbbf24',
-    'on-hold': '#f97316',
-    'on hold': '#f97316',
-    'dropped': '#ef4444',
-    're-reading': '#a855f7',
-    'rereading': '#a855f7'
-  };
-
   const normalized = (props.entry.status || '').toLowerCase().trim();
-  return statusColors[normalized] || 'rgba(255,255,255,0.3)';
+  
+  for (const [key, color] of Object.entries(STATUS_COLORS)) {
+    if (normalized === key.toLowerCase() || normalized.includes(key.toLowerCase())) {
+      return color;
+    }
+  }
+  return 'rgba(255,255,255,0.3)';
 });
 
 const onAction = (action, event) => {

@@ -4,9 +4,8 @@
  */
 
 import { defineStore } from 'pinia';
-import { storage } from '../core/storage-adapter.js';
-import * as gdriveAuth from '../../../scripts/core/gdrive-auth.js';
-import * as gdriveSync from '../../../scripts/core/gdrive-sync.js';
+import * as gdriveAuth from '../../../scripts/core/cloud/gdrive-auth.js';
+import * as gdriveSync from '../../../scripts/core/cloud/gdrive-sync.js';
 import { gatherStorageData, applyStorageData } from '../modules/storage-io.js';
 
 export const useProfileStore = defineStore('profile', {
@@ -63,7 +62,7 @@ export const useProfileStore = defineStore('profile', {
         async initialize() {
             try {
                 // Load persisted preferences
-                const saved = await storage.get([
+                const saved = await chrome.storage.local.get([
                     'profileAutoSync',
                     'profileSyncLibrary',
                     'profileSyncHistory',
@@ -196,7 +195,7 @@ export const useProfileStore = defineStore('profile', {
                 // Update state
                 this.syncProgress = 100;
                 this.lastSyncTime = result.syncTime;
-                await storage.set({ profileLastSync: result.syncTime });
+                await chrome.storage.local.set({ profileLastSync: result.syncTime });
 
                 this.syncStatus = 'success';
                 this.lastSyncResult = {
@@ -241,7 +240,7 @@ export const useProfileStore = defineStore('profile', {
 
                 this.syncProgress = 100;
                 this.lastSyncTime = Date.now();
-                await storage.set({ profileLastSync: this.lastSyncTime });
+                await chrome.storage.local.set({ profileLastSync: this.lastSyncTime });
 
                 this.syncStatus = 'success';
                 this.lastSyncResult = {
@@ -295,7 +294,7 @@ export const useProfileStore = defineStore('profile', {
          * Persists sync preferences when they change.
          */
         async savePreferences() {
-            await storage.set({
+            await chrome.storage.local.set({
                 profileAutoSync: this.autoSyncEnabled,
                 profileSyncLibrary: this.syncLibrary,
                 profileSyncHistory: this.syncHistory,

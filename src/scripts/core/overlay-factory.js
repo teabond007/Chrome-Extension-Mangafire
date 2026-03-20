@@ -9,6 +9,7 @@
  */
 
 import { createApp } from 'vue';
+import { STATUS_COLORS } from '../../config.js';
 import QuickActions from '../content/components/QuickActions.vue';
 import StatusPicker from '../content/components/StatusPicker.vue';
 import RatingPicker from '../content/components/RatingPicker.vue';
@@ -327,81 +328,152 @@ export class OverlayFactory {
         const mountPoint = document.createElement('div');
         shadow.appendChild(mountPoint);
 
-        // Inject Reader Controls styles
+        // Inject premium styles directly into Shadow DOM (fixes isolation issues)
         const style = document.createElement('style');
         style.textContent = `
             .bmh-autoscroll-panel {
                 display: flex;
                 align-items: center;
-                gap: 10px;
-                background: rgba(0, 0, 0, 0.95);
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                border-radius: 10px;
-                padding: 10px 14px;
+                gap: 12px;
+                background: rgba(15, 15, 20, 0.85);
+                backdrop-filter: blur(12px) saturate(180%);
+                -webkit-backdrop-filter: blur(12px) saturate(180%);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 14px;
+                padding: 8px 16px;
                 color: white;
-                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-                font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
                 pointer-events: auto;
             }
+
+            .bmh-autoscroll-panel.is-idle {
+                opacity: 0.3;
+                transform: translateY(4px);
+            }
+
+            .bmh-autoscroll-panel.is-idle:hover {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
             .bmh-as-toggle {
-                background: #4f46e5;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                background: linear-gradient(135deg, #6366f1, #4f46e5);
                 color: white;
                 border: none;
-                padding: 8px 14px;
-                border-radius: 6px;
-                font-size: 12px;
+                padding: 8px 16px;
+                border-radius: 10px;
+                font-size: 13px;
                 font-weight: 600;
                 cursor: pointer;
-                min-width: 70px;
-                transition: background 0.2s;
+                min-width: 85px;
+                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
             }
-            .bmh-as-toggle:hover { background: #4338ca; }
-            .bmh-as-toggle.active { background: #dc2626; }
-            .bmh-as-toggle.active:hover { background: #b91c1c; }
+
+            .bmh-as-toggle:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
+                background: linear-gradient(135deg, #818cf8, #6366f1);
+            }
+
+            .bmh-as-toggle.active {
+                background: linear-gradient(135deg, #ef4444, #dc2626);
+                box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+            }
+
+            .bmh-as-toggle.active:hover {
+                background: linear-gradient(135deg, #f87171, #ef4444);
+                box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
+            }
+
+            .bmh-as-icon { font-size: 14px; line-height: 1; }
+
             .bmh-as-speed-control {
                 display: flex;
                 align-items: center;
-                gap: 6px;
+                gap: 8px;
+                padding-left: 8px;
+                border-left: 1px solid rgba(255, 255, 255, 0.1);
             }
-            .bmh-as-label { color: rgba(255, 255, 255, 0.7); font-size: 11px; }
-            .bmh-as-speed {
-                width: 60px;
+
+            .bmh-as-label {
+                color: rgba(255, 255, 255, 0.5);
+                font-size: 11px;
+                font-weight: 500;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .bmh-as-speed-slider {
+                width: 70px;
                 height: 4px;
                 -webkit-appearance: none;
                 appearance: none;
-                background: rgba(255, 255, 255, 0.3);
+                background: rgba(255, 255, 255, 0.1);
                 border-radius: 2px;
+                cursor: pointer;
+                outline: none;
             }
-            .bmh-as-speed::-webkit-slider-thumb {
+
+            .bmh-as-speed-slider::-webkit-slider-thumb {
                 -webkit-appearance: none;
                 appearance: none;
-                width: 12px;
-                height: 12px;
-                background: white;
+                width: 14px;
+                height: 14px;
+                background: #fff;
                 border-radius: 50%;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
             }
-            .bmh-as-speed-value { color: rgba(255, 255, 255, 0.9); font-size: 11px; min-width: 24px; }
+
+            .bmh-as-speed-input {
+                width: 44px;
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 8px;
+                color: #fff;
+                font-size: 12px;
+                font-weight: 600;
+                padding: 4px 6px;
+                text-align: center;
+                transition: all 0.2s;
+            }
+
+            .bmh-as-speed-input:focus {
+                outline: none;
+                border-color: rgba(99, 102, 241, 0.5);
+                background: rgba(255, 255, 255, 0.1);
+            }
+
+            .bmh-as-speed-input::-webkit-inner-spin-button,
+            .bmh-as-speed-input::-webkit-outer-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+            }
         `;
         shadow.appendChild(style);
 
         container.style.position = 'fixed';
-        container.style.bottom = '20px';
-        container.style.right = '20px';
+        container.style.bottom = '24px';
+        container.style.right = '24px';
         container.style.zIndex = '2147483647';
 
         const app = createApp(ReaderControls, {
-            initialSpeed: props.speed,
+            speed: props.speed,
             isRunning: props.isRunning,
             onToggle: handlers.onToggle,
             onSpeedChange: handlers.onSpeedChange
         });
         
-        // Better to use props for PoC simplicity
-        // But for this one we'll use props + emits
+        const vm = app.mount(mountPoint);
         
         return {
             app,
-            vm: app.mount(mountPoint),
+            vm,
             container
         };
     }
@@ -643,20 +715,16 @@ export class OverlayFactory {
      * Get color for a reading status.
      */
     static getStatusColor(status) {
-        const statusColors = {
-            'reading': '#4ade80',
-            'completed': '#60a5fa',
-            'plan to read': '#fbbf24',
-            'planning': '#fbbf24',
-            'on-hold': '#f97316',
-            'on hold': '#f97316',
-            'dropped': '#ef4444',
-            're-reading': '#a855f7',
-            'rereading': '#a855f7'
-        };
+        const statusLower = (status || '').toLowerCase();
+        
+        // Try to match from centralized config
+        for (const [key, color] of Object.entries(STATUS_COLORS)) {
+            if (statusLower === key.toLowerCase() || statusLower.includes(key.toLowerCase())) {
+                return color;
+            }
+        }
 
-        const normalized = (status || '').toLowerCase().trim();
-        return statusColors[normalized] || 'rgba(255,255,255,0.3)';
+        return 'transparent';
     }
 
     /**

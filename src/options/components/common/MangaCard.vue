@@ -4,7 +4,7 @@
         :class="{ 
             'glow-effect': useGlow, 
             'reading-pulse': useAnimatedPulse,
-            'has-custom-marker': !!entry.customMarker,
+            'has-custom-status': !!entry.customStatus,
             'stale-entry': isStale
         }"
         :style="cardStyle"
@@ -91,7 +91,7 @@ const props = defineProps({
         type: Object,
         required: true
     },
-    customMarkers: {
+    customStatuses: {
         type: Array,
         default: () => []
     },
@@ -109,10 +109,10 @@ const props = defineProps({
     }
 });
 
-defineEmits(['click', 'marker-click']);
+defineEmits(['click', 'status-click']);
 
 const statusInfo = computed(() => {
-    return getStatusInfo(props.entry.status, props.entry.customMarker, props.customMarkers);
+    return getStatusInfo(props.entry.status, props.entry.customStatus, props.customStatuses);
 });
 
 const useGlow = computed(() => props.librarySettings.bordersEnabled && props.librarySettings.useGlowEffect);
