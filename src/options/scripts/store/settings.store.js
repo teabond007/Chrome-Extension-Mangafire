@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { STORAGE_KEYS } from '../../../config.js';
 
 export const useSettingsStore = defineStore('settings', {
     state: () => ({
@@ -44,7 +45,7 @@ export const useSettingsStore = defineStore('settings', {
                 'theme', 
                 'isCustomTheme',
                 'customThemeData',
-                'CustomBorderSize', 
+                STORAGE_KEYS.SETTINGS_HIGHLIGHT_THICKNESS, 
                 'LibraryBorderSize',
                 'GlobalBorderStyle',
                 'SyncEverySetDate',
@@ -63,7 +64,7 @@ export const useSettingsStore = defineStore('settings', {
             if (data.customThemeData) {
                 this.customTheme = data.customThemeData;
             }
-            this.highlightThickness = parseInt(data.CustomBorderSize) || 4;
+            this.highlightThickness = parseInt(data[STORAGE_KEYS.SETTINGS_HIGHLIGHT_THICKNESS]) || 4;
             this.libraryThickness = parseInt(data.LibraryBorderSize) || 4;
             this.borderStyle = data.GlobalBorderStyle || 'solid';
             this.syncInterval = parseInt(data.SyncEverySetDate) || 30;
@@ -92,7 +93,7 @@ export const useSettingsStore = defineStore('settings', {
             const storagePayload = {};
             switch (key) {
                 case 'theme': storagePayload.theme = value; break;
-                case 'highlightThickness': storagePayload.CustomBorderSize = value; break;
+                case 'highlightThickness': storagePayload[STORAGE_KEYS.SETTINGS_HIGHLIGHT_THICKNESS] = value; break;
                 case 'libraryThickness': storagePayload.LibraryBorderSize = value; break;
                 case 'borderStyle': storagePayload.GlobalBorderStyle = value; break;
                 case 'syncInterval': storagePayload.SyncEverySetDate = value; break;
@@ -121,7 +122,7 @@ export const useSettingsStore = defineStore('settings', {
         // Called by the persistence plugin or onChange listener
         syncFromStorage(changes) {
             if (changes.theme) this.theme = changes.theme.newValue;
-            if (changes.CustomBorderSize) this.highlightThickness = parseInt(changes.CustomBorderSize.newValue);
+            if (changes[STORAGE_KEYS.SETTINGS_HIGHLIGHT_THICKNESS]) this.highlightThickness = parseInt(changes[STORAGE_KEYS.SETTINGS_HIGHLIGHT_THICKNESS].newValue);
             if (changes.LibraryBorderSize) this.libraryThickness = parseInt(changes.LibraryBorderSize.newValue);
             if (changes.GlobalBorderStyle) this.borderStyle = changes.GlobalBorderStyle.newValue;
             if (changes.SyncEverySetDate) this.syncInterval = parseInt(changes.SyncEverySetDate.newValue);

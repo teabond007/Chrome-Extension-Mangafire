@@ -57,7 +57,6 @@ interface LibraryEntry {
         chapters?: number;
     };
     hasNewChapters?: boolean;
-    mangafireUrl?: string;
     sourceUrl?: string;
     personalData?: {
         rating?: number;
@@ -110,12 +109,12 @@ export class CardEnhancer {
             quickActions: settings.quickActions === true,
             newChapterBadges: settings.newChapterBadges === true,
             border: {
-                size: settings.CustomBorderSize || 4,
+                size: settings[STORAGE_KEYS.SETTINGS_HIGHLIGHT_THICKNESS] || 4,
                 style: settings.borderStyle || 'solid',
                 radius: '8px'
             },
-            customStatuses: settings.customBookmarks || [],
-            customStatusesEnabled: settings.CustomBookmarksfeatureEnabled || false
+            customStatuses: settings[STORAGE_KEYS.CUSTOM_BOOKMARKS] || [],
+            customStatusesEnabled: settings[STORAGE_KEYS.SETTINGS_CUSTOM_STATUS_ENABLED] || false
         };
     }
 
@@ -388,8 +387,8 @@ export class CardEnhancer {
 
         if (url) {
             window.location.href = url;
-        } else if (entry.mangafireUrl || entry.sourceUrl) {
-            window.location.href = entry.mangafireUrl || entry.sourceUrl || '';
+        } else if (entry.sourceUrl) {
+            window.location.href = entry.sourceUrl || '';
         } else if (card.data.url) {
             window.location.href = card.data.url;
         } else {

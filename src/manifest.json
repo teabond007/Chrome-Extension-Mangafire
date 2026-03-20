@@ -1,6 +1,6 @@
 {
   "name": "Bookmarks Marker/Higlighter",
-  "description": "for MangFire v2. It colors the border of saved Mangas. Doesn't work on MangaFire homepage yet",
+  "description": "Colors the border of saved mangas and adds progress badges across different sites using a generic Custom Sites architecture.",
   "version": "5.0.0",
   "manifest_version": 3,
   "options_ui": {

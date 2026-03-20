@@ -5,6 +5,8 @@
  * toggle class is toggle-main-label
  */
 
+import { STORAGE_KEYS } from '../../../config.js';
+
 /**
  * Initializes all feature toggle switches on the page.
  * Loads their saved state from storage and attaches change listeners to update storage.
@@ -21,18 +23,11 @@ export function initFeatureToggles() {
 
     /** @type {FeatureDefinition[]} List of managed toggle features */
     const features = [
-        { id: "MarkHomePage", storageKey: "MangaFireHighlightEnabled" },
-        { id: "MangaFireQuickActions", storageKey: "MangaFireQuickActionsEnabled", defaultValue: true },
-        { id: "MangaFireShowProgress", storageKey: "MangaFireShowProgress", defaultValue: true },
-        { id: "SyncandMarkRead", storageKey: "SyncandMarkReadfeatureEnabled" },
-        { id: "CustomBookmarks", storageKey: "CustomBookmarksfeatureEnabled" },
-        { id: "AutoSync", storageKey: "AutoSyncfeatureEnabled" },
-        { id: "CustomBorderSize", storageKey: "CustomBorderSizefeatureEnabled" },
-        { id: "FamilyFriendly", storageKey: "FamilyFriendlyfeatureEnabled" },
-        { id: "SmartAutoComplete", storageKey: "SmartAutoCompletefeatureEnabled" },
-        { id: "SmartInactivityFade", storageKey: "SmartInactivityFadefeatureEnabled" },
-        { id: "SmartResumeLink", storageKey: "SmartResumeLinkfeatureEnabled" },
-        { id: "NotificationsEnabled", storageKey: "NotificationsfeatureEnabled", defaultValue: false },
+        { id: "SyncandMarkRead", storageKey: STORAGE_KEYS.SETTINGS_SYNC_HISTORY },
+        { id: "CustomBookmarks", storageKey: STORAGE_KEYS.SETTINGS_CUSTOM_STATUS_ENABLED },
+        { id: "AutoSync", storageKey: STORAGE_KEYS.SETTINGS_AUTO_SYNC },
+        { id: "CustomBorderSize", storageKey: STORAGE_KEYS.SETTINGS_CUSTOM_BORDER_SIZE_ENABLED },
+        { id: "NotificationsEnabled", storageKey: STORAGE_KEYS.SETTINGS_NOTIFICATIONS, defaultValue: false },
         // Reader Enhancements
         { id: "AutoScrollEnabled", storageKey: "autoScrollEnabled", defaultValue: true },
         { id: "KeybindsEnabled", storageKey: "keybindsEnabled", defaultValue: true },

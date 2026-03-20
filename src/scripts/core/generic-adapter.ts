@@ -8,6 +8,7 @@
 
 import { CardEnhancer } from './card-enhancer';
 import { OverlayFactory } from './overlay-factory.js';
+import { STORAGE_KEYS } from '../../config.js';
 
 /**
  * @typedef {Object} CustomSiteConfig
@@ -360,10 +361,10 @@ export async function initCustomSite(config: any, settings: any) {
     const enhancer = new CardEnhancer(adapter, {
         highlighting: true,
         progressBadges: true,
-        quickActions: settings.CustomSiteQuickActionsEnabled !== false,
-        CustomBorderSize: settings.CustomBorderSizefeatureEnabled ? settings.CustomBorderSize : 4,
-        CustomBookmarksfeatureEnabled: settings.CustomBookmarksfeatureEnabled,
-        customBookmarks: settings.customBookmarks
+        quickActions: settings[STORAGE_KEYS.SETTINGS_CUSTOM_SITE_QUICK_ACTIONS] !== false,
+        CustomBorderSize: settings[STORAGE_KEYS.SETTINGS_CUSTOM_BORDER_SIZE_ENABLED] ? settings[STORAGE_KEYS.SETTINGS_HIGHLIGHT_THICKNESS] : 4,
+        CustomBookmarksfeatureEnabled: settings[STORAGE_KEYS.SETTINGS_CUSTOM_STATUS_ENABLED],
+        customBookmarks: settings[STORAGE_KEYS.CUSTOM_BOOKMARKS]
     });
 
     const count = await enhancer.enhanceAll();

@@ -115,9 +115,20 @@ export const STORAGE_KEYS = {
     SETTINGS_KEYBINDS: 'keybindsEnabled',
     SETTINGS_PROGRESS: 'progressTrackingEnabled',
     SETTINGS_CARD_SIZE: 'cardViewSize',
-    SETTINGS_HIGHLIGHT_THICKNESS: 'highlightThickness',
+    SETTINGS_HIGHLIGHT_THICKNESS: 'CustomBorderSize',
     SETTINGS_QUICK_ACTIONS: 'quickActions',
     SETTINGS_SHOW_BADGES: 'showReadingBadges',
+    
+    // Core Feature Toggles
+    SETTINGS_SYNC_HISTORY: 'SyncandMarkReadfeatureEnabled',
+    SETTINGS_AUTO_SYNC: 'AutoSyncfeatureEnabled',
+    SETTINGS_NOTIFICATIONS: 'NotificationsfeatureEnabled',
+    
+    // Custom Site Feature Toggles
+    SETTINGS_CUSTOM_SITE_HIGHLIGHT: 'CustomSiteHighlightEnabled',
+    SETTINGS_CUSTOM_SITE_QUICK_ACTIONS: 'CustomSiteQuickActionsEnabled',
+    SETTINGS_CUSTOM_BORDER_SIZE_ENABLED: 'CustomBorderSizefeatureEnabled',
+    SETTINGS_CUSTOM_STATUS_ENABLED: 'CustomBookmarksfeatureEnabled',
     
     // Appearance
     THEME: 'theme',
@@ -140,7 +151,6 @@ export const STORAGE_KEYS = {
 
 /**
  * Configuration for remote API integrations.
- * @type {Object}
  */
 export const API_CONFIG = {
     MANGADEX: {
