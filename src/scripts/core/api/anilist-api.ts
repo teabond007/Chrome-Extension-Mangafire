@@ -3,8 +3,10 @@
  * Provides functions for fetching manga metadata, title cleaning, and rate-limited API calls.
  */
 
+import { API_CONFIG } from '../../../config.js';
+
 /** @type {string} Base URL for AniList GraphQL API */
-const ANILIST_API_URL = 'https://graphql.anilist.co';
+const ANILIST_API_URL = API_CONFIG.ANILIST.BASE_URL;
 
 interface AniListDate {
   year: number | null;
@@ -127,7 +129,7 @@ function getQuery(): string {
 let lastRequestTime = 0;
 
 /** @const {number} Minimum interval between requests in milliseconds to avoid rate limits */
-const MIN_REQUEST_INTERVAL = 2000;
+const MIN_REQUEST_INTERVAL = API_CONFIG.ANILIST.MIN_REQUEST_INTERVAL;
 
 /** @const {number} Maximum number of retry attempts for failed or rate-limited requests */
 const MAX_RETRIES = 3;

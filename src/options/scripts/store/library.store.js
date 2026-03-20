@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { fetchMangaFromAnilist } from '../../../scripts/core/api/anilist-api';
 import { fetchMangaFromMangadex, wipeMangadexCache } from '../../../scripts/core/api/mangadex-api.js';
+import { STORAGE_KEYS } from '../../../config.js';
 
 export const useLibraryStore = defineStore('library', {
     state: () => ({
@@ -23,9 +24,9 @@ export const useLibraryStore = defineStore('library', {
         async loadLibrary() {
             this.isLoading = true;
             try {
-                const data = await chrome.storage.local.get(['savedEntriesMerged', 'savedReadChapters', 'lastSyncTime']);
+                const data = await chrome.storage.local.get([STORAGE_KEYS.LIBRARY_ENTRIES, STORAGE_KEYS.READING_HISTORY, 'lastSyncTime']);
                 
-                this.entries = data.savedEntriesMerged || [];
+                this.entries = data[STORAGE_KEYS.LIBRARY_ENTRIES] || [];
                 this.history = data.savedReadChapters || {};
                 this.lastSync = data.lastSyncTime || null;
             } catch (err) {
@@ -40,8 +41,8 @@ export const useLibraryStore = defineStore('library', {
          * @param {Object} changes - The changes object from chrome.storage.onChanged
          */
         syncFromStorage(changes) {
-            if (changes.savedEntriesMerged) {
-                this.entries = changes.savedEntriesMerged.newValue || [];
+            if (changes[STORAGE_KEYS.LIBRARY_ENTRIES]) {
+                this.entries = changes[STORAGE_KEYS.LIBRARY_ENTRIES].newValue || [];
             }
             if (changes.savedReadChapters) {
                 this.history = changes.savedReadChapters.newValue || {};
@@ -67,7 +68,7 @@ export const useLibraryStore = defineStore('library', {
                 return true;
             });
 
-            await chrome.storage.local.set({ savedEntriesMerged: JSON.parse(JSON.stringify(this.entries)) });
+            await chrome.storage.local.set({ [STORAGE_KEYS.LIBRARY_ENTRIES]: JSON.parse(JSON.stringify(this.entries)) });
         },
 
         
@@ -161,7 +162,7 @@ export const useLibraryStore = defineStore('library', {
                     liveEntry.lastChecked = Date.now();
 
                     // Save periodically
-                    await chrome.storage.local.set({ savedEntriesMerged: JSON.parse(JSON.stringify(entriesList)) });
+                    await chrome.storage.local.set({ [STORAGE_KEYS.LIBRARY_ENTRIES]: JSON.parse(JSON.stringify(entriesList)) });
                     
                     // Throttle
                     await new Promise(r => setTimeout(r, 500));

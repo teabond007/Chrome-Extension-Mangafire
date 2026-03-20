@@ -3,6 +3,8 @@
  * Automatically saves chapter progress after user engagement threshold.
  */
 
+import { STORAGE_KEYS } from '../../../config.js';
+
 /**
  * ProgressTracker monitors reading activity and saves progress.
  * Uses a time-based threshold to confirm user is actually reading.
@@ -108,9 +110,9 @@ class ProgressTracker {
             // Build storage key (matches existing format)
             const storageKey = slug || `${source}:${id}`;
             
-            const data = await chrome.storage.local.get(['savedReadChapters', 'savedEntriesMerged']);
-            const history = data.savedReadChapters || {};
-            const library = data.savedEntriesMerged || [];
+            const data = await chrome.storage.local.get([STORAGE_KEYS.READING_HISTORY, STORAGE_KEYS.LIBRARY_ENTRIES]);
+            const history = data[STORAGE_KEYS.READING_HISTORY] || {};
+            const library = data[STORAGE_KEYS.LIBRARY_ENTRIES] || [];
 
             // Update reading history
             if (!history[storageKey]) {
@@ -172,8 +174,8 @@ class ProgressTracker {
 
             // Save everything
             await chrome.storage.local.set({
-                savedReadChapters: history,
-                savedEntriesMerged: library
+                [STORAGE_KEYS.READING_HISTORY]: history,
+                [STORAGE_KEYS.LIBRARY_ENTRIES]: library
             });
 
             console.log(`[ProgressTracker] ✓ Saved progress: ${slug} ch.${chapter}`);

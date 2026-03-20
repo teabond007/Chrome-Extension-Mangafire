@@ -176,6 +176,7 @@ import { getFormatName, getStatusInfo } from '../scripts/ui/manga-card-factory.j
 import * as LibFeatures from '../../scripts/core/library-features.js';
 import { animateModalEntry, playSuccessAnimation } from '../scripts/ui/anime-utils.js';
 import { useLibraryStore } from '../scripts/store/library.store.js';
+import { STORAGE_KEYS } from '../../config.js';
 
 const libraryStore = useLibraryStore();
 
@@ -395,12 +396,12 @@ const handleMarkAllRead = async () => {
             currentEntry.value.lastRead = Date.now();
             
             // Save updated entry
-            chrome.storage.local.get(['savedEntriesMerged'], (res) => {
-                const merged = res.savedEntriesMerged || [];
+            chrome.storage.local.get([STORAGE_KEYS.LIBRARY_ENTRIES], (res) => {
+                const merged = res[STORAGE_KEYS.LIBRARY_ENTRIES] || [];
                 const idx = merged.findIndex(e => e.anilistData?.id === ani.value?.id || e.mangaSlug === currentEntry.value.mangaSlug);
                 if (idx !== -1) {
                     merged[idx] = { ...currentEntry.value }; // Use spread for reactivity
-                    chrome.storage.local.set({ savedEntriesMerged: merged }, () => {
+                    chrome.storage.local.set({ [STORAGE_KEYS.LIBRARY_ENTRIES]: merged }, () => {
                         // Notify Vue tab that data has changed
                         if (window.refreshLibraryData) window.refreshLibraryData();
                     });

@@ -5,6 +5,7 @@
 
 import { fetchMangaFromAnilist } from '../scripts/core/api/anilist-api';
 import { fetchMangaFromMangadex } from '../scripts/core/api/mangadex-api.js';
+import { STORAGE_KEYS } from '../config.js';
 
 // Open options page when extension icon clicked
 chrome.action.onClicked.addListener(() => {
@@ -271,14 +272,14 @@ async function handleFetchMetadata(title, storageKey, sendResponse) {
     }
 
     // Update the entry in storage
-    const stored = await chrome.storage.local.get(['savedEntriesMerged']);
-    const library = stored.savedEntriesMerged || [];
+    const stored = await chrome.storage.local.get([STORAGE_KEYS.LIBRARY_ENTRIES]);
+    const library = stored[STORAGE_KEYS.LIBRARY_ENTRIES] || [];
     const entry = library.find(e => e.slug === storageKey || e.title === title);
 
     if (entry) {
       entry.anilistData = data;
       entry.lastChecked = Date.now();
-      await chrome.storage.local.set({ savedEntriesMerged: library });
+      await chrome.storage.local.set({ [STORAGE_KEYS.LIBRARY_ENTRIES]: library });
       Log(`Metadata saved for: ${title}`);
     }
 

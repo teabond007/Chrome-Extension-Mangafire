@@ -8,7 +8,7 @@
  * @version 3.8.0
  */
 
-import { STATUS_COLORS } from '../../config.js';
+import { STATUS_COLORS, STORAGE_KEYS } from '../../config.js';
 import { OverlayFactory } from './overlay-factory.js';
 
 interface PlatformAdapter {
@@ -185,14 +185,14 @@ export class CardEnhancer {
      */
     async loadLibrary(): Promise<LibraryEntry[]> {
         return new Promise((resolve) => {
-            chrome.storage.local.get(['savedEntriesMerged', 'savedReadChapters'], (data) => {
+            chrome.storage.local.get([STORAGE_KEYS.LIBRARY_ENTRIES, STORAGE_KEYS.READING_HISTORY], (data) => {
                 if (chrome.runtime.lastError) {
                     resolve([]);
                     return;
                 }
 
-                const entries = Array.isArray(data.savedEntriesMerged) ? data.savedEntriesMerged : [];
-                const readChapters = data.savedReadChapters || {};
+                const entries = (Array.isArray(data[STORAGE_KEYS.LIBRARY_ENTRIES]) ? data[STORAGE_KEYS.LIBRARY_ENTRIES] : []) as LibraryEntry[];
+                const readChapters = data[STORAGE_KEYS.READING_HISTORY] || {};
 
                 // Attach read chapter data to each entry
                 entries.forEach((entry: LibraryEntry) => {
@@ -458,10 +458,10 @@ export class CardEnhancer {
     async saveStatusChange(entry: LibraryEntry, newStatus: string) {
         try {
             const data: any = await new Promise(resolve => {
-                chrome.storage.local.get(['savedEntriesMerged'], resolve);
+                chrome.storage.local.get([STORAGE_KEYS.LIBRARY_ENTRIES], resolve);
             });
 
-            const entries = data.savedEntriesMerged || [];
+            const entries = data[STORAGE_KEYS.LIBRARY_ENTRIES] || [];
 
             const idx = entries.findIndex((e: LibraryEntry) =>
                 this.normalizeTitle(e.title) === this.normalizeTitle(entry.title)
@@ -481,7 +481,7 @@ export class CardEnhancer {
             }
 
             await new Promise(resolve => {
-                chrome.storage.local.set({ savedEntriesMerged: entries }, resolve as () => void);
+                chrome.storage.local.set({ [STORAGE_KEYS.LIBRARY_ENTRIES]: entries }, resolve as () => void);
             });
 
             console.log(`[CardEnhancer] Status updated: ${entry.title} → ${newStatus}`);
@@ -507,10 +507,10 @@ export class CardEnhancer {
     async saveRatingChange(entry: LibraryEntry, rating: number) {
         try {
             const data: any = await new Promise(resolve => {
-                chrome.storage.local.get(['savedEntriesMerged'], resolve);
+                chrome.storage.local.get([STORAGE_KEYS.LIBRARY_ENTRIES], resolve);
             });
 
-            const entries = data.savedEntriesMerged || [];
+            const entries = data[STORAGE_KEYS.LIBRARY_ENTRIES] || [];
             const idx = entries.findIndex((e: LibraryEntry) =>
                 this.normalizeTitle(e.title) === this.normalizeTitle(entry.title)
             );
@@ -522,7 +522,7 @@ export class CardEnhancer {
                 entries[idx].personalData.rating = rating;
 
                 await new Promise(resolve => {
-                    chrome.storage.local.set({ savedEntriesMerged: entries }, resolve as () => void);
+                    chrome.storage.local.set({ [STORAGE_KEYS.LIBRARY_ENTRIES]: entries }, resolve as () => void);
                 });
 
                 console.log(`[CardEnhancer] Rating updated: ${entry.title} → ${rating}`);

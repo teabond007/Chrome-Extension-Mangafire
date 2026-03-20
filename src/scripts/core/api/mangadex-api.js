@@ -4,14 +4,16 @@
  * Used as fallback when AniList API fails to find a manga.
  */
 
+import { API_CONFIG } from '../../../config.js';
+
 /** @type {string} Base URL for MangaDex API */
-const MANGADEX_API_URL = 'https://api.mangadex.org';
+const MANGADEX_API_URL = API_CONFIG.MANGADEX.BASE_URL;
 
 /** @type {number} Timestamp of the last successful API request */
 let lastRequestTime = 0;
 
 /** @const {number} Minimum interval between requests in milliseconds (MangaDex recommends 500ms) */
-const MIN_REQUEST_INTERVAL = 600;
+const MIN_REQUEST_INTERVAL = API_CONFIG.MANGADEX.MIN_REQUEST_INTERVAL;
 
 /** @const {number} Maximum retry attempts for failed requests */
 const MAX_RETRIES = 2;
@@ -20,7 +22,7 @@ const MAX_RETRIES = 2;
 const RETRY_DELAY_BASE = 2000;
 
 /** @const {number} Cache expiry time in milliseconds (7 days) */
-const CACHE_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
+const CACHE_EXPIRY_MS = API_CONFIG.MANGADEX.CACHE_EXPIRY_MS;
 
 /**
  * Utility function to pause execution with optional jitter.

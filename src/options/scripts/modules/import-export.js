@@ -1,6 +1,7 @@
 import { Log, decodeHTMLEntities } from '../ui/logger.js';
 import { fetchMDList } from '../../../scripts/core/api/mangadex-api.js';
 import { EXPORT_CATEGORIES, gatherStorageData, applyStorageData } from './storage-io.js';
+import { STORAGE_KEYS } from '../../../config.js';
 
 export { EXPORT_CATEGORIES };
 
@@ -57,7 +58,7 @@ export function initImportExport() {
         URL.revokeObjectURL(url);
 
         const now = Date.now();
-        chrome.storage.local.set({ LastBackupDate: now }, () => {
+        chrome.storage.local.set({ [STORAGE_KEYS.LAST_BACKUP]: now }, () => {
             updateLastBackupDisplay();
             Log("Data exported successfully.");
         });
@@ -112,11 +113,11 @@ export function initImportExport() {
      */
     const showImportPreview = (data, isMerge) => {
         const stats = {
-            libraryEntries: Array.isArray(data.savedEntriesMerged)
-                ? data.savedEntriesMerged.length
+            libraryEntries: Array.isArray(data[STORAGE_KEYS.LIBRARY_ENTRIES])
+                ? data[STORAGE_KEYS.LIBRARY_ENTRIES].length
                 : 0,
             historyTitles: data.savedReadChapters ? Object.keys(data.savedReadChapters).length : 0,
-            personalData: data.libraryPersonalData ? Object.keys(data.libraryPersonalData).length : 0,
+            personalData: data[STORAGE_KEYS.PERSONAL_DATA] ? Object.keys(data[STORAGE_KEYS.PERSONAL_DATA]).length : 0,
             hasSettings: Object.keys(data).some(k => EXPORT_CATEGORIES.settings.keys.includes(k)),
             hasCache: !!data.anilistCache || !!data.mangadexCache
         };
@@ -206,8 +207,8 @@ export function initImportExport() {
                 }
                 
                 // Add manga to library
-                chrome.storage.local.get(['savedEntriesMerged'], (data) => {
-                    let savedEntries = Array.isArray(data.savedEntriesMerged) ? data.savedEntriesMerged : [];
+                chrome.storage.local.get([STORAGE_KEYS.LIBRARY_ENTRIES], (data) => {
+                    let savedEntries = Array.isArray(data[STORAGE_KEYS.LIBRARY_ENTRIES]) ? data[STORAGE_KEYS.LIBRARY_ENTRIES] : [];
                     
                     const existingTitles = new Set(savedEntries.map(e => e.title.toLowerCase()));
                     const existingMdIds = new Set(savedEntries.filter(e => e.anilistData?.mangadexId).map(e => e.anilistData.mangadexId));
@@ -236,7 +237,7 @@ export function initImportExport() {
                         added++;
                     });
                     
-                    chrome.storage.local.set({ savedEntriesMerged: savedEntries }, () => {
+                    chrome.storage.local.set({ [STORAGE_KEYS.LIBRARY_ENTRIES]: savedEntries }, () => {
                         alert(`✅ Imported ${added} manga from "${result.listName}". ${skipped} duplicates skipped.`);
                         mdlistInput.value = '';
                         location.reload();

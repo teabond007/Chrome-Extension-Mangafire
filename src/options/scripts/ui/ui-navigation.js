@@ -2,6 +2,7 @@
  * @fileoverview Manages high-level UI navigation, including tab switching, 
  * page-linking redirects, and scrolling features.
  */
+import { STORAGE_KEYS } from '../../../config.js';
 
 /**
  * Initializes the primary sidebar tab system.
@@ -232,8 +233,8 @@ export function initUrlParams() {
                 
                 // Wait for data load then show modal
                 if (chrome.runtime?.id) {
-                    chrome.storage.local.get(['savedEntriesMerged'], (data) => {
-                        const entries = data.savedEntriesMerged || [];
+                    chrome.storage.local.get([STORAGE_KEYS.LIBRARY_ENTRIES], (data) => {
+                        const entries = data[STORAGE_KEYS.LIBRARY_ENTRIES] || [];
                         const normalizedTitle = title.toLowerCase().trim();
                     // Improved matching strategy
                         let entry = entries.find(e => e.title.toLowerCase().trim() === normalizedTitle);
@@ -279,8 +280,8 @@ export function initMessageListeners() {
             
             // 2. Find entry and show modal
             if (chrome.runtime?.id) {
-                chrome.storage.local.get(['savedEntriesMerged'], (data) => {
-                    const entries = data.savedEntriesMerged || [];
+                chrome.storage.local.get([STORAGE_KEYS.LIBRARY_ENTRIES], (data) => {
+                    const entries = data[STORAGE_KEYS.LIBRARY_ENTRIES] || [];
                     const targetTitle = (msg.title || '').toLowerCase().trim();
                     
                     // Improved matching strategy
