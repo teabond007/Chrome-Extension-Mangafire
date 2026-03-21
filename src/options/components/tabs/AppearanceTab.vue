@@ -1,5 +1,5 @@
 <template>
-    <div id="tab-appearance" class="tab-pane fade-in">
+    <div id="tab-appearance" class="tab-pane fade-in" :class="{ active: settingsStore.activeTab === 'appearance' }">
         <header class="header">
             <div class="header-text">
                 <h1>Appearance</h1>

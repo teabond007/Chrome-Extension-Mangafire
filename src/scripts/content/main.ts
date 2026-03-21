@@ -9,9 +9,13 @@ import { initCustomSite, GenericAdapter } from '../core/generic-adapter';
 import ReaderEnhancements from '../core/reader/reader-enhancements';
 import { STORAGE_KEYS } from '../../config.js';
 
+let isBootstrapping = false;
+
 async function bootstrap() {
+    if (isBootstrapping) return;
     if (!chrome.runtime?.id) return;
 
+    isBootstrapping = true;
     const currentHost = window.location.hostname;
 
     // Load ALL settings needed by various adapters
@@ -55,6 +59,9 @@ async function bootstrap() {
         }
     } catch (e) {
         console.error(`[BMH] Failed to initialize adapter:`, e);
+    } finally {
+        // Reset guard after short delay to allow for late-loading elements
+        setTimeout(() => { isBootstrapping = false; }, 1000);
     }
 }
 

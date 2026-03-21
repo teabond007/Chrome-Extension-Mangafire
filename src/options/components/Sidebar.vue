@@ -53,10 +53,14 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';
+import { storeToRefs } from 'pinia';
 import anime from 'animejs';
+import { useSettingsStore } from '../scripts/store/settings.store.js';
+
+const settingsStore = useSettingsStore();
+const { activeTab } = storeToRefs(settingsStore);
 
 const isOpen = ref(true);
-const activeTab = ref('settings');
 const sidebarRef = ref(null);
 const navMenuRef = ref(null);
 const brandNameRef = ref(null);
@@ -101,6 +105,23 @@ watch(isOpen, (newVal) => {
     animateSidebar(newVal);
 });
 
+const updateIndicator = () => {
+    if (!indicatorRef.value || !navMenuRef.value) return;
+    
+    // Use nextTick to ensure the .active class has been applied by Vue's reactivity
+    setTimeout(() => {
+        const activeItem = navMenuRef.value.querySelector('.nav-item.active');
+        if (activeItem) {
+            indicatorRef.value.style.top = `${activeItem.offsetTop}px`;
+            indicatorRef.value.style.height = `${activeItem.offsetHeight}px`;
+        }
+    }, 0);
+};
+
+watch(activeTab, () => {
+    updateIndicator();
+}, { immediate: false });
+
 onMounted(() => {
     // Initial Entrance Animation
     const navItems = navMenuRef.value.querySelectorAll('.nav-item');
@@ -139,6 +160,9 @@ onMounted(() => {
         translateY: [10, 0],
         duration: 800
     }, '-=800');
+
+    // Set initial indicator position
+    updateIndicator();
 });
 </script>
 

@@ -1,149 +1,5 @@
-/**
- * @fileoverview Manages high-level UI navigation, including tab switching, 
- * page-linking redirects, and scrolling features.
- */
 import { STORAGE_KEYS } from '../../../config.js';
-
-/**
- * Initializes the primary sidebar tab system.
- * Attaches listeners to sidebar items and manages tab-pane visibility and animation classes.
- * 
- * @returns {void}
- */
-export function initTabs() {
-    const navItems = document.querySelectorAll('.nav-item');
-    const tabPanes = document.querySelectorAll('.tab-pane');
-    const indicator = document.querySelector('.nav-indicator');
-
-    // Initial positioning
-    const activeItem = document.querySelector('.nav-item.active');
-    if (activeItem && indicator) {
-        moveIndicator(activeItem, indicator, false);
-    }
-
-    navItems.forEach(item => {
-        item.addEventListener('click', (e) => {
-            e.preventDefault();
-
-            const targetTab = item.getAttribute('data-tab');
-            if (!targetTab) return;
-
-            // Reflect the active state in the sidebar navigation
-            navItems.forEach(nav => nav.classList.remove('active'));
-            item.classList.add('active');
-
-            // Move Indicator
-            if (indicator) moveIndicator(item, indicator);
-
-            // Find current active pane
-            const currentPane = document.querySelector('.tab-pane.active');
-            const targetPane = document.getElementById(`tab-${targetTab}`);
-
-            if (currentPane === targetPane) return;
-
-
-            // Anime.js Transition
-            if (typeof window.anime !== 'undefined') {
-                if (currentPane) {
-                    window.anime({
-                        targets: currentPane,
-                        opacity: 0,
-                        translateY: -10,
-                        duration: 200,
-                        easing: 'easeInQuad',
-                        complete: () => {
-                            currentPane.style.display = 'none';
-                            currentPane.classList.remove('active');
-                            
-                            // Show target
-                            showTargetTab(targetPane);
-                        }
-                    });
-                } else {
-                    showTargetTab(targetPane);
-                }
-            } else {
-                // Fallback if anime is missing
-                tabPanes.forEach(pane => {
-                    if (pane.id === `tab-${targetTab}`) {
-                        pane.style.display = 'block';
-                        setTimeout(() => pane.classList.add('active'), 10);
-                    } else {
-                        pane.style.display = 'none';
-                        pane.classList.remove('active');
-                    }
-                });
-            }
-        });
-    });
-}
-
-/**
- * Animates the sidebar selection indicator to the target item.
- */
-function moveIndicator(target, indicator, animate = true) {
-    const container = document.querySelector('.nav-menu');
-    if (!container) return;
-
-    const targetRect = target.getBoundingClientRect();
-    const containerRect = container.getBoundingClientRect();
-
-    const top = targetRect.top - containerRect.top;
-    const height = targetRect.height;
-
-    if (!animate) {
-        indicator.style.top = `${top + (height / 2) - 15}px`;
-        return;
-    }
-
-    if (typeof window.anime !== 'undefined') {
-        window.anime({
-            targets: indicator,
-            top: top + (height / 2) - 15, // center it (height of indicator is 30px)
-            height: [30, 45, 30], // Elastic squash/stretch effect
-            duration: 500,
-            easing: 'easeOutElastic(1, .5)'
-        });
-    } else {
-        indicator.style.top = `${top + (height / 2) - 15}px`;
-    }
-}
-
-function showTargetTab(pane) {
-    if (!pane) return;
-    pane.style.display = 'block';
-    pane.style.opacity = '0';
-    pane.style.transform = 'translateY(10px)';
-    pane.classList.add('active');
-
-    if (typeof window.anime !== 'undefined') {
-        window.anime({
-            targets: pane,
-            opacity: [0, 1],
-            translateY: [10, 0],
-            duration: 400,
-            easing: 'easeOutQuad',
-            delay: 50 // Slight delay for smoothness
-        });
-
-        // Stagger cards inside if any
-        const cards = pane.querySelectorAll('.card');
-        if (cards.length > 0) {
-            window.anime({
-                targets: cards,
-                opacity: [0, 1],
-                translateY: [20, 0],
-                delay: window.anime.stagger(100, {start: 100}),
-                duration: 500,
-                easing: 'easeOutCubic'
-            });
-        }
-    } else {
-        pane.style.opacity = '1';
-        pane.style.transform = 'translateY(0)';
-    }
-}
-
+import { useSettingsStore } from '../store/settings.store.js';
 
 /**
  * Initializes special "Info Redirect" buttons that link across tabs.
@@ -159,22 +15,20 @@ export function initInfoRedirects() {
 
             const targetId = btn.getAttribute('data-target');
 
-            // Automatically switch context to the 'About' tab
-            const aboutNavItem = document.querySelector('.nav-item[data-tab="about"]');
-            if (aboutNavItem) {
-                aboutNavItem.click();
+            // Automatically switch context to the 'About' tab via Pinia
+            const settingsStore = useSettingsStore();
+            settingsStore.activeTab = 'about';
 
-                // Scroll to the specific guide card or section element
-                if (targetId) {
-                    const targetElement = document.getElementById(targetId);
-                    if (targetElement) {
-                        setTimeout(() => {
-                            targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            // Apply a visual highlight pulse to draw user attention
-                            targetElement.classList.add('highlight-pulse');
-                            setTimeout(() => targetElement.classList.remove('highlight-pulse'), 2000);
-                        }, 300);
-                    }
+            // Scroll to the specific guide card or section element
+            if (targetId) {
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    setTimeout(() => {
+                        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        // Apply a visual highlight pulse to draw user attention
+                        targetElement.classList.add('highlight-pulse');
+                        setTimeout(() => targetElement.classList.remove('highlight-pulse'), 2000);
+                    }, 300);
                 }
             }
         });
@@ -219,9 +73,9 @@ export function initUrlParams() {
     if (!hash) return;
 
     if (hash.includes('library') || hash.includes('saved-entries')) {
-        // Switch to Saved Entries tab
-        const tabBtn = document.querySelector('.nav-item[data-tab="saved-entries"]');
-        if (tabBtn) tabBtn.click();
+        // Switch to Saved Entries tab via Pinia
+        const settingsStore = useSettingsStore();
+        settingsStore.activeTab = 'saved-entries';
     }
 
     // Parse 'showDetails' param
@@ -274,9 +128,9 @@ export function initUrlParams() {
 export function initMessageListeners() {
     chrome.runtime.onMessage.addListener((msg) => {
         if (msg.type === "showMangaDetails") {
-            // 1. Switch to Saved Entries tab
-            const tabBtn = document.querySelector('.nav-item[data-tab="saved-entries"]');
-            if (tabBtn) tabBtn.click();
+            // 1. Switch to Saved Entries tab via Pinia
+            const settingsStore = useSettingsStore();
+            settingsStore.activeTab = 'saved-entries';
             
             // 2. Find entry and show modal
             if (chrome.runtime?.id) {

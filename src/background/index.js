@@ -3,8 +3,7 @@
  * Acts as central message router and orchestrates site-specific scrapers.
  */
 
-import { fetchMangaFromAnilist } from '../scripts/core/api/anilist-api';
-import { fetchMangaFromMangadex } from '../scripts/core/api/mangadex-api.js';
+import { getMergedMetadata } from '../scripts/core/api/metadata-service';
 import { STORAGE_KEYS } from '../config.js';
 
 // Open options page when extension icon clicked
@@ -248,22 +247,7 @@ async function handleFetchMetadata(title, storageKey, sendResponse) {
   try {
     Log(`Fetching metadata for: ${title}`);
 
-    let data = await fetchMangaFromAnilist(title);
-    const isIncomplete = data && (!data.bannerImage || !data.description || !data.coverImage?.large);
-
-    if (!data || isIncomplete) {
-      const mdData = await fetchMangaFromMangadex(title);
-      if (mdData) {
-        if (!data) {
-          data = mdData;
-        } else {
-          if (!data.bannerImage) data.bannerImage = mdData.bannerImage;
-          if (!data.description) data.description = mdData.description;
-          if (!data.coverImage?.large && mdData.coverImage?.large) data.coverImage = mdData.coverImage;
-          if ((!data.genres || data.genres.length === 0) && mdData.genres?.length > 0) data.genres = mdData.genres;
-        }
-      }
-    }
+    const data = await getMergedMetadata(title);
 
     if (!data) {
       Log(`No metadata found for: ${title}`);

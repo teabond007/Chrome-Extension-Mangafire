@@ -81,7 +81,7 @@
 
 <script setup>
 import { computed } from 'vue';
-import { getStatusInfo, getFormatName } from '../../scripts/ui/manga-card-factory.js';
+import { getStatusInfo, getFormatName } from '../../scripts/ui/manga-card-utils.js';
 
 // Fallback placeholder - base64 encoded or remote fallback
 const FALLBACK_COVER = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzY2NiI+PHBhdGggZD0iTTIxIDR2MTJIMy4wMVYySDFWMTZoMjBWNGgtMlptLTEuOTEgMTMuNUw0IDE4djJoMTIuMTdsLjg0LS44NCAxLjA4IDEuNi42Ni0uMjItLjk3LTEuNDNjLjEyLS4xNi4yMi0uMzUuMzEtLjU1eiIvPjwvc3ZnPg==';

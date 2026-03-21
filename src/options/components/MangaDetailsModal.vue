@@ -172,10 +172,10 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
-import { getFormatName, getStatusInfo } from '../scripts/ui/manga-card-factory.js';
+import { getFormatName, getStatusInfo } from '../scripts/ui/manga-card-utils.js';
 import * as LibFeatures from '../../scripts/core/library-features.js';
-import { animateModalEntry, playSuccessAnimation } from '../scripts/ui/anime-utils.js';
 import { useLibraryStore } from '../scripts/store/library.store.js';
+import anime from 'animejs';
 import { STORAGE_KEYS } from '../../config.js';
 
 const libraryStore = useLibraryStore();
@@ -321,6 +321,63 @@ const filteredSuggestions = computed(() => {
         t.toLowerCase().includes(val) && !personalData.value.tags.includes(t)
     ).slice(0, 5);
 });
+
+// Animation Helpers
+const animateModalEntry = (modalContent) => {
+    if (typeof anime === 'undefined') return;
+    anime.set(modalContent, { scale: 0.8, opacity: 0, rotateX: 10 });
+    anime({
+        targets: modalContent,
+        scale: 1,
+        opacity: 1,
+        rotateX: 0,
+        duration: 800,
+        easing: 'easeOutElastic(1, .6)'
+    });
+};
+
+const playSuccessAnimation = (targetContainer) => {
+    if (typeof anime === 'undefined') return;
+    
+    const existing = targetContainer.querySelector('.anime-success-checkmark');
+    if (existing) existing.remove();
+    
+    targetContainer.style.position = "relative";
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.classList.add('anime-success-checkmark');
+    svg.setAttribute("width", "40");
+    svg.setAttribute("height", "40");
+    svg.setAttribute("viewBox", "0 0 52 52");
+    svg.style.cssText = "position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; pointer-events: none;";
+    
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", "M14.1 27.2l7.1 7.2 16.7-16.8");
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke", "#4CAF50");
+    path.setAttribute("stroke-width", "4");
+    path.setAttribute("stroke-linecap", "round");
+    path.setAttribute("stroke-linejoin", "round");
+    
+    svg.appendChild(path);
+    targetContainer.appendChild(svg);
+    
+    anime({
+        targets: path,
+        strokeDashoffset: [anime.setDashoffset, 0],
+        easing: 'easeInOutQuad',
+        duration: 800,
+        complete: () => {
+            anime({
+                targets: svg,
+                opacity: 0,
+                delay: 1000,
+                duration: 500,
+                easing: 'linear',
+                complete: () => svg.remove()
+            });
+        }
+    });
+};
 
 // Methods
 const openModal = async (entry) => {

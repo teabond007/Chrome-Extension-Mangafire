@@ -1,5 +1,5 @@
 <template>
-    <div id="tab-custom-sites" class="tab-pane fade-in" style="display: none;">
+    <div id="tab-custom-sites" class="tab-pane fade-in" :class="{ active: settingsStore.activeTab === 'custom-sites' }">
         <header class="header">
             <div class="header-text">
                 <h1>Custom Sites</h1>
@@ -212,8 +212,10 @@
 import { ref, computed, onMounted } from 'vue';
 import SettingsCard from '../common/SettingsCard.vue';
 import { useCustomSitesStore } from '../../scripts/store/custom-sites.store.js';
+import { useSettingsStore } from '../../scripts/store/settings.store.js';
 
 const customSitesStore = useCustomSitesStore();
+const settingsStore = useSettingsStore();
 
 // Form state
 const newSiteUrl = ref('');

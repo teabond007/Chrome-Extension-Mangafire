@@ -5,12 +5,12 @@
 
         <!-- Main Content -->
         <main class="main-content">
-            <GeneralTab />
-            <AppearanceTab />
-            <SavedEntriesTab />
-            <AboutTab />
-            <CustomSitesTab />
-            <ProfileTab />
+            <GeneralTab v-show="settingsStore.activeTab === 'settings'" />
+            <AppearanceTab v-show="settingsStore.activeTab === 'appearance'" />
+            <SavedEntriesTab v-show="settingsStore.activeTab === 'saved-entries'" />
+            <AboutTab v-show="settingsStore.activeTab === 'about'" />
+            <CustomSitesTab v-show="settingsStore.activeTab === 'custom-sites'" />
+            <ProfileTab v-show="settingsStore.activeTab === 'profile'" />
         </main>
     </div>
 

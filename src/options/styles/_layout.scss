@@ -196,11 +196,11 @@
 
 /* --- TAB PANE VISIBILITY (FOUC FIX) --- */
 .tab-pane {
-    display: none !important;
+    display: none;
     animation: fadeIn 0.4s ease-out;
 
     &.active {
-        display: block !important;
+        display: block;
     }
 }
 

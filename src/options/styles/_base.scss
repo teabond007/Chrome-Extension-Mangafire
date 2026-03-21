@@ -31,6 +31,7 @@
 
 /* Dark Mode Variables - Applied when .dark-mode class is present on root */
 .dark-mode {
+    color-scheme: dark;
     --bg-body: linear-gradient(135deg, #0B1437 0%, #091129 100%);
     /* Deep Blue/Black */
     --bg-sidebar: #111C44;
@@ -46,6 +47,7 @@
 
 /* Black Mode Variables - High contrast AMOLED black */
 .black-mode {
+    color-scheme: dark;
     --bg-body: black;
     --bg-sidebar: #000000;
     --bg-card: #111141d0;
@@ -59,6 +61,7 @@
 
 /* Neon Mode Variables - Cyberpunk aesthetic */
 .neon-mode {
+    color-scheme: dark;
     --bg-body: black;
     --bg-sidebar: #050505;
     --bg-card: #100e14;

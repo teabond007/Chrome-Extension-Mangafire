@@ -69,7 +69,6 @@ export const useProfileStore = defineStore('profile', {
                     'profileSyncPersonal',
                     'profileSyncSettings',
                     'profileSyncCache',
-                    'profileSyncIntervalDays',
                     'profileLastSync'
                 ]);
 

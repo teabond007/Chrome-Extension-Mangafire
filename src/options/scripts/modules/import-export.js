@@ -1,4 +1,3 @@
-import { Log, decodeHTMLEntities } from '../ui/logger.js';
 import { fetchMDList } from '../../../scripts/core/api/mangadex-api.js';
 import { EXPORT_CATEGORIES, gatherStorageData, applyStorageData } from './storage-io.js';
 import { STORAGE_KEYS } from '../../../config.js';
@@ -59,8 +58,8 @@ export function initImportExport() {
 
         const now = Date.now();
         chrome.storage.local.set({ [STORAGE_KEYS.LAST_BACKUP]: now }, () => {
-            updateLastBackupDisplay();
-            Log("Data exported successfully.");
+            // updateLastBackupDisplay(); // If this is needed, we should define it or handle it
+            console.log("[ImportExport] Data exported successfully.");
         });
     };
 
@@ -136,7 +135,7 @@ export function initImportExport() {
 
         if (confirm(summary + '\n\nProceed with import?')) {
             applyStorageData(data, isMerge).then(() => {
-                Log(`Data imported successfully (${isMerge ? 'Merge' : 'Overwrite'}).`);
+                console.log(`[ImportExport] Data imported successfully (${isMerge ? 'Merge' : 'Overwrite'}).`);
                 alert("✅ Import successful! The page will now reload.");
                 location.reload();
             });

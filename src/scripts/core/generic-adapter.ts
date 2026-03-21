@@ -11,14 +11,6 @@ import { OverlayFactory } from './overlay-factory.js';
 import { STORAGE_KEYS } from '../../config.js';
 
 /**
- * @typedef {Object} CustomSiteConfig
- * @property {string} id - UUID for the site configuration
- * @property {string} hostname - The site hostname
- * @property {string} name - User-friendly display name  
- * @property {Object} selectors - CSS selectors for DOM elements
- */
-
-/**
  * Generic adapter that implements PlatformAdapter interface
  * but uses runtime configuration instead of hardcoded values.
  */
@@ -302,23 +294,6 @@ export class GenericAdapter {
             title,
             chapterNo
         };
-    }
-
-    goToNextChapter() {
-        // Try common next chapter button selectors
-        const nextBtn = document.querySelector(
-            this.config.selectors?.nextBtn ||
-            'a[href*="next"], button:contains("Next"), .next-chapter, [class*="next"]'
-        ) as HTMLElement;
-        if (nextBtn) nextBtn.click();
-    }
-
-    goToPrevChapter() {
-        const prevBtn = document.querySelector(
-            this.config.selectors?.prevBtn ||
-            'a[href*="prev"], button:contains("Prev"), .prev-chapter, [class*="prev"]'
-        ) as HTMLElement;
-        if (prevBtn) prevBtn.click();
     }
 
     exitReader() {

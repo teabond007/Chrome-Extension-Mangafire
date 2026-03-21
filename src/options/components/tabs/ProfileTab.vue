@@ -1,5 +1,5 @@
 <template>
-    <div id="tab-profile" class="tab-pane fade-in" style="display: none;">
+    <div id="tab-profile" class="tab-pane fade-in" :class="{ active: settingsStore.activeTab === 'profile' }">
         <header class="header">
             <div class="header-text">
                 <h1>Profile & Sync</h1>
@@ -376,8 +376,10 @@ import { storeToRefs } from 'pinia';
 import SettingsCard from '../common/SettingsCard.vue';
 import SwitchControl from '../common/SwitchControl.vue';
 import { useProfileStore } from '../../scripts/store/profile.store.js';
+import { useSettingsStore } from '../../scripts/store/settings.store.js';
 
 const profileStore = useProfileStore();
+const settingsStore = useSettingsStore();
 
 // Extract reactive refs from store
 const {

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
-import { fetchMangaFromAnilist } from '../../../scripts/core/api/anilist-api';
-import { fetchMangaFromMangadex, wipeMangadexCache } from '../../../scripts/core/api/mangadex-api.js';
+import { wipeMangadexCache } from '../../../scripts/core/api/mangadex-api.js';
+import { getMergedMetadata } from '../../../scripts/core/api/metadata-service';
 import { STORAGE_KEYS } from '../../../config.js';
 
 export const useLibraryStore = defineStore('library', {
@@ -27,7 +27,7 @@ export const useLibraryStore = defineStore('library', {
                 const data = await chrome.storage.local.get([STORAGE_KEYS.LIBRARY_ENTRIES, STORAGE_KEYS.READING_HISTORY, 'lastSyncTime']);
                 
                 this.entries = data[STORAGE_KEYS.LIBRARY_ENTRIES] || [];
-                this.history = data.savedReadChapters || {};
+                this.history = data[STORAGE_KEYS.READING_HISTORY] || {};
                 this.lastSync = data.lastSyncTime || null;
             } catch (err) {
                 console.error('Failed to load library:', err);
@@ -44,8 +44,8 @@ export const useLibraryStore = defineStore('library', {
             if (changes[STORAGE_KEYS.LIBRARY_ENTRIES]) {
                 this.entries = changes[STORAGE_KEYS.LIBRARY_ENTRIES].newValue || [];
             }
-            if (changes.savedReadChapters) {
-                this.history = changes.savedReadChapters.newValue || {};
+            if (changes[STORAGE_KEYS.READING_HISTORY]) {
+                this.history = changes[STORAGE_KEYS.READING_HISTORY].newValue || {};
             }
             if (changes.lastSyncTime) {
                 this.lastSync = changes.lastSyncTime.newValue;
@@ -135,30 +135,10 @@ export const useLibraryStore = defineStore('library', {
                 }));
 
                 try {
-                    // Fetch logic mirrored from library-manager.ts
-                    let data = await fetchMangaFromAnilist(liveEntry.title);
-                    const isAniListIncomplete = data && (!data.bannerImage || !data.description || !data.coverImage?.large || data.genres?.length === 0);
+                    // Use centralized metadata service
+                    const data = await getMergedMetadata(liveEntry.title);
 
-                    if (!data || isAniListIncomplete) {
-                        const mdData = await fetchMangaFromMangadex(liveEntry.title);
-                        if (mdData) {
-                            if (!data) {
-                                data = mdData;
-                            } else {
-                                // Merge
-                                if (!data.bannerImage) data.bannerImage = mdData.bannerImage;
-                                if (!data.description) data.description = mdData.description;
-                                if ((!data.coverImage?.large || data.coverImage.large.includes('default')) && mdData.coverImage?.large) {
-                                  data.coverImage = mdData.coverImage;
-                                }
-                                if ((!data.genres || data.genres.length === 0) && mdData.genres?.length > 0) {
-                                  data.genres = mdData.genres;
-                                }
-                            }
-                        }
-                    }
-
-                    if (data) liveEntry.anilistData = data;
+                    if (data) Object.assign(liveEntry, { anilistData: data });
                     liveEntry.lastChecked = Date.now();
 
                     // Save periodically

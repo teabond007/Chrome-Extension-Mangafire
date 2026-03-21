@@ -1,5 +1,5 @@
 <template>
-    <div id="tab-settings" class="tab-pane active fade-in">
+    <div id="tab-settings" class="tab-pane fade-in" :class="{ active: settingsStore.activeTab === 'settings' }">
         <header class="header">
             <div class="header-text">
                 <h1>Settings</h1>
@@ -10,7 +10,7 @@
 
         <div class="content-grid">
 
-            <!-- Row 0: General Preferences & Dashboard Settings -->
+            <!-- Row 0: General Preferences -->
             <div class="cards-row">
                 <SettingsCard 
                     title="General Preferences" 
@@ -34,7 +34,6 @@
                         />
                     </div>
                 </SettingsCard>
-
             </div>
             
             <!-- Row 1: Reader Enhancements -->
@@ -70,7 +69,7 @@
                 </SettingsCard>
             </div>
 
-            <!-- Card 1: Custom Statuses -->
+            <!-- Card: Custom Statuses -->
             <SettingsCard 
                 title="Custom Statuses" 
                 icon="🎨" 
@@ -79,9 +78,11 @@
                 <div class="feature-toggle-header">
                     <span class="description" style="margin:0;">Add custom statuses beyond the
                         defaults.</span>
-                    <ToggleSwitch 
-                        id="CustomBookmarks" 
-                        title="Enable Custom Statuses"
+                    <!-- Toggle bound directly to store via SwitchControl -->
+                    <SwitchControl
+                        id="CustomBookmarks"
+                        label=""
+                        v-model="customStatusEnabled"
                     />
                 </div>
                 <div style="margin-top: 15px;"></div>
@@ -89,18 +90,18 @@
                 <div class="input-group-row">
                     <div class="input-wrapper flex-grow">
                         <label for="bookmarkName">Status Name</label>
-                        <input type="text" id="bookmarkName" placeholder="e.g. Re-reading"
+                        <input type="text" id="bookmarkName" v-model="newStatusName" placeholder="e.g. Re-reading"
                             class="input-field">
                     </div>
                     <div class="input-wrapper">
                         <label for="colorBookmarks">Color</label>
                         <div class="color-picker-wrapper">
-                            <input type="color" id="colorBookmarks" value="#ff0000">
+                            <input type="color" id="colorBookmarks" v-model="newStatusColor">
                         </div>
                     </div>
                     <div class="input-wrapper">
                         <label for="customBorderStyleSelect">Border Style</label>
-                        <select id="customBorderStyleSelect" class="select-field">
+                        <select id="customBorderStyleSelect" v-model="newStatusStyle" class="select-field">
                             <option value="solid">Solid</option>
                             <option value="dashed">Dashed</option>
                             <option value="dotted">Dotted</option>
@@ -112,7 +113,7 @@
                         </select>
                     </div>
                     <div class="input-wrapper input-button-wrapper">
-                        <button id="addBookmarkButton" class="btn btn-primary btn-input-height">
+                        <button id="addBookmarkButton" class="btn btn-primary btn-input-height" @click="handleAddStatus">
                             + Add
                         </button>
                     </div>
@@ -120,13 +121,29 @@
 
                 <div class="active-markers-header">
                     <label class="section-label">ACTIVE STATUSES</label>
-                    <button id="resetBookmarkButton" class="btn btn-ghost btn-sm">
+                    <button id="resetBookmarkButton" class="btn btn-ghost btn-sm" @click="handleResetStatuses">
                         Remove All
                     </button>
                 </div>
 
+                <!-- Reactive status pills rendered by Vue -->
                 <div id="CustomBookmarksContainer" class="markers-container">
-                    <!-- Bookmarks will be injected here -->
+                    <span v-if="settingsStore.customStatuses.length === 0" class="description" style="margin:0;">
+                        No active statuses.
+                    </span>
+                    <div 
+                        v-for="(status, index) in settingsStore.customStatuses" 
+                        :key="index"
+                        class="marker-pill"
+                        :style="{
+                            backgroundColor: status.color + '33',
+                            border: `2px ${status.style || 'solid'} ${status.color}CC`
+                        }"
+                        :title="`Click to remove '${status.name}'`"
+                        @click="handleRemoveStatus(index, status.name)"
+                    >
+                        {{ status.name }}
+                    </div>
                 </div>
             </SettingsCard>
 
@@ -135,66 +152,71 @@
 </template>
 
 <script setup>
-import { computed, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { storeToRefs } from 'pinia';
-import ToggleSwitch from '../common/ToggleSwitch.vue';
 import SwitchControl from '../common/SwitchControl.vue';
 import SettingsCard from '../common/SettingsCard.vue';
 import { useSettingsStore } from '../../scripts/store/settings.store.js';
 
 const settingsStore = useSettingsStore();
 
-// Direct binding to store refs
-// When these are mutated by v-model, Pinia state updates.
-// Since we have a watcher in the store or direct actions, we need to ensure
-// how the update happens.
-// 
-// Store Structure Check:
-// The store has `updateSetting` action.
-// Direct mutation of `const { theme } = storeToRefs(store)` works for local state change,
-// BUT if we want to PERSIST to storage adapter, we need to trigger the action 
-// OR have a deep watcher in the store (which we haven't implemented yet, 
-// strictly speaking we implemented `storage.set` inside `updateSetting`).
-//
-// So we should use writable computed properties or a watch effect here?
-// OR better: Update the store to use `$subscribe` for auto-persistence as planned in Phase 2?
-// For now, let's use a helper composable or simple watchers here to call `updateSetting`.
-
 const { 
-    syncInterval, 
-    highlightThickness,
-    quickActions,
+    quickActions, 
     showReadingBadges,
-
     autoScroll,
     keybinds,
     progressTracking
 } = storeToRefs(settingsStore);
 
-// Auto-persist watchers
+/** Custom status feature toggle — mapped to CustomBookmarksfeatureEnabled in storage. */
+const customStatusEnabled = computed({
+    get: () => settingsStore.customStatusEnabled ?? false,
+    set: (val) => settingsStore.updateSetting('customStatusEnabled', val)
+});
+
+// New status form inputs
+const newStatusName = ref('');
+const newStatusColor = ref('#ff0000');
+const newStatusStyle = ref('solid');
+
+// Auto-persist watchers for toggle settings
 const bindSetting = (refValue, key) => {
-    watch(refValue, (newVal) => {
-        settingsStore.updateSetting(key, newVal);
-    });
+    watch(refValue, (newVal) => settingsStore.updateSetting(key, newVal));
 };
 
-// Bind all settings
 bindSetting(quickActions, 'quickActions');
 bindSetting(showReadingBadges, 'showReadingBadges');
-
 bindSetting(autoScroll, 'autoScroll');
 bindSetting(keybinds, 'keybinds');
 bindSetting(progressTracking, 'progressTracking');
 
-// Sync Interval Logic
-// We keep local 'days' binding and save explicitly via button as per original UI design
-// But we can ALSO bind it to store if we want auto-save.
-// Original UI has "Save Interval" button. Let's keep that behavior for now or simplify?
-// User asked for "refactor plan... to pinia". Simplification is good.
+/** Adds a new custom status via the store action. */
+async function handleAddStatus() {
+    const name = newStatusName.value.trim();
+    if (!name) {
+        alert('Please enter a name for the status.');
+        return;
+    }
+    await settingsStore.addCustomStatus(name, newStatusColor.value, newStatusStyle.value);
+    newStatusName.value = '';
+}
+
+/** Removes a status by index after confirmation. */
+async function handleRemoveStatus(index, name) {
+    if (confirm(`Remove status "${name}"?`)) {
+        await settingsStore.removeCustomStatus(index);
+    }
+}
+
+/** Resets all custom statuses after confirmation. */
+async function handleResetStatuses() {
+    if (confirm('Are you sure you want to remove all custom statuses?')) {
+        await settingsStore.resetCustomStatuses();
+    }
+}
 </script>
 
 <style scoped lang="scss">
-/* GeneralTab scoped styles */
 .cards-row {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -218,18 +240,5 @@ bindSetting(progressTracking, 'progressTracking');
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-}
-
-.terminal-log {
-    font-family: 'Consolas', 'Monaco', monospace;
-    font-size: 12px;
-    padding: 1rem;
-    max-height: 300px;
-    overflow-y: auto;
-    background: #0a0a0a;
-
-    &.bg-terminal {
-        border: 1px solid rgba(0, 255, 0, 0.2);
-    }
 }
 </style>

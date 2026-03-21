@@ -1,5 +1,5 @@
 <template>
-    <div id="tab-saved-entries" class="tab-pane fade-in" style="display: none;">
+    <div id="tab-saved-entries" class="tab-pane fade-in" :class="{ active: settingsStore.activeTab === 'saved-entries' }">
         <header class="header">
             <div class="header-text">
                 <h1>Saved Entries</h1>
@@ -240,7 +240,7 @@ import FilterGroup from '../common/FilterGroup.vue';
 import LibraryStatistics from '../LibraryStatistics.vue';
 import MangaCard from '../common/MangaCard.vue';
 import MangaDetailsLargeView from '../MangaDetailsLargeView.vue';
-import { getFormatName } from '../../scripts/ui/manga-card-factory.js';
+import { getFormatName } from '../../scripts/ui/manga-card-utils.js';
 import * as LibFeatures from '../../../scripts/core/library-features.js';
 import { useLibraryStore } from '../../scripts/store/library.store.js';
 import { useSettingsStore } from '../../scripts/store/settings.store.js';
@@ -621,7 +621,7 @@ onMounted(() => {
 }
 
 .sync-progress-container {
-    background: var(--bg-card);
+    background-color: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 12px 16px;
@@ -782,7 +782,7 @@ onMounted(() => {
 .library-controls .input-field {
     height: 36px;
     min-width: 150px;
-    background: var(--bg-card);
+    background-color: var(--bg-card);
     font-size: 13px;
 }
 
@@ -1074,7 +1074,7 @@ onMounted(() => {
         .input-field {
             height: 36px;
             min-width: 150px;
-            background: var(--bg-card);
+            background-color: var(--bg-card);
             font-size: 13px;
         }
 
@@ -1252,7 +1252,7 @@ onMounted(() => {
     position: sticky;
     top: 0;
     z-index: 100;
-    background: var(--bg-card);
+    background-color: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     padding: 0.75rem 1.5rem;
@@ -1281,7 +1281,7 @@ onMounted(() => {
 }
 
 .sync-progress-container {
-    background: var(--bg-card);
+    background-color: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 12px 16px;

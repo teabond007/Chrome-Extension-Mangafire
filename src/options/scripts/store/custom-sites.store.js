@@ -11,14 +11,8 @@ import { defineStore } from 'pinia';
  * @property {string} hostname - The site hostname (e.g., "bato.to")
  * @property {string} [url] - The exact listing URL provided by user
  * @property {string} name - User-friendly display name
- * @property {string} [description] - Optional description
- * @property {Object} selectors - CSS selectors for listing page DOM elements
  * @property {string} selectors.card - Manga card container selector
  * @property {string} selectors.title - Title element selector (relative to card)
- * @property {string} selectors.url - Link element selector (relative to card)
- * @property {string} [selectors.image] - Cover image selector
- * @property {string} [selectors.nextBtn] - Next chapter button (for reader pages)
- * @property {string} [selectors.prevBtn] - Previous chapter button
  * @property {Object} [readerSelectors] - CSS selectors for reader page elements
  * @property {string} [readerSelectors.readerDetect] - Element whose presence identifies a reader page
  * @property {string} [readerSelectors.readerTitle] - Manga title on reader page
@@ -92,14 +86,9 @@ export const useCustomSitesStore = defineStore('customSites', {
                 hostname: siteData.hostname || '',
                 url: siteData.url || `https://${siteData.hostname || ''}`,
                 name: siteData.name || 'Untitled Site',
-                description: siteData.description || '',
                 selectors: {
                     card: siteData.selectors?.card || '',
-                    title: siteData.selectors?.title || '',
-                    url: siteData.selectors?.url || '',
-                    image: siteData.selectors?.image || '',
-                    nextBtn: siteData.selectors?.nextBtn || '',
-                    prevBtn: siteData.selectors?.prevBtn || ''
+                    title: siteData.selectors?.title || ''
                 },
                 readerSelectors: siteData.readerSelectors || {
                     readerDetect: '',

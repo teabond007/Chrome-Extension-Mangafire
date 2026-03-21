@@ -1,5 +1,5 @@
 <template>
-    <div id="tab-about" class="tab-pane fade-in">
+    <div id="tab-about" class="tab-pane fade-in" :class="{ active: settingsStore.activeTab === 'about' }">
         <header class="header">
             <div class="header-text">
                 <h1>About</h1>
@@ -186,6 +186,9 @@
 
 <script setup>
 import GuideCard from '../common/GuideCard.vue';
+import { useSettingsStore } from '../../scripts/store/settings.store.js';
+
+const settingsStore = useSettingsStore();
 </script>
 
 <style scoped lang="scss">

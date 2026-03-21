@@ -1,10 +1,5 @@
-import { initTabs, initInfoRedirects, initScrollToTop, initUrlParams, initMessageListeners } from './ui/ui-navigation.js';
-import { initFeatureToggles } from './modules/feature-toggles.js';
-import { initMarkerManager } from './modules/marker-manager.js';
+import { initInfoRedirects, initScrollToTop, initUrlParams, initMessageListeners } from './ui/ui-navigation.js';
 import { initImportExport } from './modules/import-export.js';
-import { CrystalSelect } from './ui/custom-select.js';
-import { Log } from './ui/logger.js';
-
 import { useSettingsStore } from './store/settings.store.js';
 import { useLibraryStore } from './store/library.store.js';
 
@@ -26,19 +21,13 @@ export async function init() {
     await libraryStore.loadLibrary(); // This is async, UI should show loading state
 
     // 2. Navigation
-    initTabs();
     initInfoRedirects();
     initScrollToTop();
     initUrlParams();
     initMessageListeners();
 
-    // 3. Legacy Modules (To be refactored later)
-    initFeatureToggles();
-    // initSettings(); // REPLACED BY PINIA
-    initMarkerManager();
+    // 3. Legacy Modules
     initImportExport();
-    // initLibrary(); // REPLACED BY PINIA
-    // initAppearanceManager(); // REPLACED BY PINIA (mostly) but keeping for now for DOM manipulation
 
     // Setup Storage Listener for Cross-Context Sync
     chrome.storage.onChanged.addListener((changes, area) => {
@@ -64,23 +53,15 @@ export async function init() {
     const syncBtn = document.getElementById("sendMessageBtnSyncBookmarks");
     if (syncBtn) {
         syncBtn.addEventListener("click", () => {
-            Log("Requesting bookmark sync...");
+            console.log("[Options] Requesting bookmark sync...");
             chrome.runtime.sendMessage({ type: "scrapeBookmarks", value: 1 }, (response) => {
                 if (chrome.runtime.lastError) {
-                    Log("Error: " + chrome.runtime.lastError.message);
+                    console.error("[Options] Sync Error: " + chrome.runtime.lastError.message);
                 } else {
-                    Log("Sync process initiated...");
+                    console.log("[Options] Sync process initiated...");
                 }
             });
         });
-    }
-
-    // 10. Premium Custom Selects
-    try {
-        CrystalSelect.autoInit();
-        Log("CrystalSelect auto-initialization enabled.");
-    } catch (e) {
-        console.error("CrystalSelect Error:", e);
     }
 }
 
@@ -89,6 +70,6 @@ export async function init() {
  */
 chrome.runtime.onMessage.addListener((msg) => {
     if (msg.type === "log") {
-        Log(msg.text);
+        console.log("[Background LOG]", msg.text);
     }
 });
