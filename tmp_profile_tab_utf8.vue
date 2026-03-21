@@ -1,4 +1,4 @@
-<template>
+﻿<template>
     <div id="tab-profile" class="tab-pane fade-in" :class="{ active: settingsStore.activeTab === 'profile' }">
         <header class="header">
             <div class="header-text">
@@ -11,7 +11,7 @@
             <!-- Card 1: Google Account Status -->
             <SettingsCard 
                 title="Google Account" 
-                icon="👤"
+                icon="≡ƒæñ"
                 icon-bg="rgba(66, 133, 244, 0.15)"
                 icon-color="#4285F4"
                 guide-target="guide-profile-account"
@@ -27,7 +27,7 @@
                         <div class="account-details">
                             <span class="user-email">{{ userEmail || 'user@gmail.com' }}</span>
                             <span class="sync-status-text">
-                                <span class="status-icon">✓</span>
+                                <span class="status-icon">Γ£ô</span>
                                 Last sync: {{ lastSyncFormatted }}
                             </span>
                         </div>
@@ -42,9 +42,9 @@
                     <div class="sign-in-info">
                         <p class="info-text">Connect your Google account to sync your library across devices.</p>
                         <ul class="benefit-list">
-                            <li>📱 Access on Android app</li>
-                            <li>💾 Automatic cloud backup</li>
-                            <li>🔒 Data stored in your Drive</li>
+                            <li>≡ƒô▒ Access on Android app</li>
+                            <li>≡ƒÆ╛ Automatic cloud backup</li>
+                            <li>≡ƒöÆ Data stored in your Drive</li>
                         </ul>
                     </div>
                     <button class="btn btn-google" @click="handleSignIn">
@@ -62,7 +62,7 @@
             <!-- Card 2: Sync Configuration -->
             <SettingsCard 
                 title="Sync Settings" 
-                icon="⚙️"
+                icon="ΓÜÖ∩╕Å"
                 icon-bg="rgba(117, 81, 255, 0.15)"
                 icon-color="var(--accent-primary)"
                 guide-target="guide-profile-sync"
@@ -118,23 +118,23 @@
                     <div class="sync-checkboxes">
                         <label class="checkbox-option" :class="{ disabled: !isSignedIn }">
                             <input type="checkbox" v-model="syncLibrary" :disabled="!isSignedIn" />
-                            <span class="checkbox-label">📚 Library Entries</span>
+                            <span class="checkbox-label">≡ƒôÜ Library Entries</span>
                         </label>
                         <label class="checkbox-option" :class="{ disabled: !isSignedIn }">
                             <input type="checkbox" v-model="syncHistory" :disabled="!isSignedIn" />
-                            <span class="checkbox-label">📖 Reading History</span>
+                            <span class="checkbox-label">≡ƒôû Reading History</span>
                         </label>
                         <label class="checkbox-option" :class="{ disabled: !isSignedIn }">
                             <input type="checkbox" v-model="syncPersonal" :disabled="!isSignedIn" />
-                            <span class="checkbox-label">🏷️ Tags, Notes & Ratings</span>
+                            <span class="checkbox-label">≡ƒÅ╖∩╕Å Tags, Notes & Ratings</span>
                         </label>
                         <label class="checkbox-option" :class="{ disabled: !isSignedIn }">
                             <input type="checkbox" v-model="syncSettings" :disabled="!isSignedIn" />
-                            <span class="checkbox-label">⚙️ Settings</span>
+                            <span class="checkbox-label">ΓÜÖ∩╕Å Settings</span>
                         </label>
                         <label class="checkbox-option" :class="{ disabled: !isSignedIn }">
                             <input type="checkbox" v-model="syncCache" :disabled="!isSignedIn" />
-                            <span class="checkbox-label">💾 API Cache</span>
+                            <span class="checkbox-label">≡ƒÆ╛ API Cache</span>
                         </label>
                     </div>
                 </div>
@@ -143,7 +143,7 @@
             <!-- Card 3: Cloud Sync Actions -->
             <SettingsCard 
                 title="Cloud Sync" 
-                icon="☁️"
+                icon="Γÿü∩╕Å"
                 icon-bg="rgba(16, 185, 129, 0.15)"
                 icon-color="#10b981"
                 guide-target="guide-profile-cloud"
@@ -154,7 +154,7 @@
                         <!-- Upload Action -->
                         <div class="action-card upload-card">
                             <div class="action-icon-wrapper upload-icon">
-                                <span>⬆️</span>
+                                <span>Γ¼å∩╕Å</span>
                             </div>
                             <div class="action-content">
                                 <h4>Backup to Cloud</h4>
@@ -173,7 +173,7 @@
                         <!-- Download Action -->
                         <div class="action-card download-card">
                             <div class="action-icon-wrapper download-icon">
-                                <span>⬇️</span>
+                                <span>Γ¼ç∩╕Å</span>
                             </div>
                             <div class="action-content">
                                 <h4>Restore from Cloud</h4>
@@ -192,12 +192,12 @@
                         <!-- Cloud Status -->
                         <div class="action-card status-card">
                             <div class="action-icon-wrapper status-icon">
-                                <span>📊</span>
+                                <span>≡ƒôè</span>
                             </div>
                             <div class="action-content">
                                 <h4>Cloud Status</h4>
                                 <p v-if="cloudBackupInfo" class="cloud-stats">
-                                    {{ cloudBackupInfo.entryCount }} entries • {{ cloudBackupInfo.size }}
+                                    {{ cloudBackupInfo.entryCount }} entries ΓÇó {{ cloudBackupInfo.size }}
                                     <br />
                                     <span class="last-modified">Modified: {{ cloudBackupInfo.lastModified }}</span>
                                 </p>
@@ -208,7 +208,7 @@
                                 @click="refreshCloudStatus"
                                 :disabled="!isSignedIn"
                             >
-                                🔄 Refresh
+                                ≡ƒöä Refresh
                             </button>
                         </div>
                     </div>
@@ -223,9 +223,9 @@
 
                     <!-- Last Sync Result -->
                     <div v-if="lastSyncResult" :class="['sync-result-banner', lastSyncResult.type]">
-                        <span class="result-icon">{{ lastSyncResult.type === 'success' ? '✅' : '❌' }}</span>
+                        <span class="result-icon">{{ lastSyncResult.type === 'success' ? 'Γ£à' : 'Γ¥î' }}</span>
                         <span class="result-message">{{ lastSyncResult.message }}</span>
-                        <button class="dismiss-btn" @click="dismissResult">×</button>
+                        <button class="dismiss-btn" @click="dismissResult">├ù</button>
                     </div>
                 </div>
             </SettingsCard>
@@ -233,7 +233,7 @@
             <!-- Local Backup: Export -->
             <SettingsCard 
                 title="Local Backup (Export)" 
-                icon="💾"
+                icon="≡ƒÆ╛"
                 icon-bg="rgba(67, 24, 255, 0.15)"
                 icon-color="var(--accent-primary)"
                 guide-target="guide-profile-export"
@@ -243,23 +243,23 @@
                     <div class="export-checkboxes">
                         <label class="export-option checkbox-option">
                             <input type="checkbox" v-model="localExportSettings.library">
-                            <span class="checkbox-label">📚 Library Entries</span>
+                            <span class="checkbox-label">≡ƒôÜ Library Entries</span>
                         </label>
                         <label class="export-option checkbox-option">
                             <input type="checkbox" v-model="localExportSettings.history">
-                            <span class="checkbox-label">📖 Reading History</span>
+                            <span class="checkbox-label">≡ƒôû Reading History</span>
                         </label>
                         <label class="export-option checkbox-option">
                             <input type="checkbox" v-model="localExportSettings.personalData">
-                            <span class="checkbox-label">🏷️ Tags, Notes & Ratings</span>
+                            <span class="checkbox-label">≡ƒÅ╖∩╕Å Tags, Notes & Ratings</span>
                         </label>
                         <label class="export-option checkbox-option">
                             <input type="checkbox" v-model="localExportSettings.settings">
-                            <span class="checkbox-label">⚙️ Settings</span>
+                            <span class="checkbox-label">ΓÜÖ∩╕Å Settings</span>
                         </label>
                         <label class="export-option checkbox-option">
                             <input type="checkbox" v-model="localExportSettings.cache">
-                            <span class="checkbox-label">💾 API Cache</span>
+                            <span class="checkbox-label">≡ƒÆ╛ API Cache</span>
                         </label>
                     </div>
                 </div>
@@ -284,14 +284,14 @@
                 </div>
 
                 <div class="card-footer-info" style="margin-top: 12px; font-size: 12px; color: var(--text-secondary);">
-                    <span>ℹ️ Last local backup: <span :class="{ 'highlight-text': lastLocalBackup }">{{ lastLocalBackupFormatted }}</span></span>
+                    <span>Γä╣∩╕Å Last local backup: <span :class="{ 'highlight-text': lastLocalBackup }">{{ lastLocalBackupFormatted }}</span></span>
                 </div>
             </SettingsCard>
 
             <!-- Local Backup: Import -->
             <SettingsCard 
                 title="Local Restore (Import)" 
-                icon="📂"
+                icon="≡ƒôé"
                 icon-bg="rgba(107, 70, 193, 0.15)"
                 icon-color="#6B46C1"
                 guide-target="guide-profile-import"
@@ -312,7 +312,7 @@
                         style="display: none;"
                     >
                     <div class="drop-zone-content">
-                        <div class="drop-zone-icon" style="font-size: 24px;">📄</div>
+                        <div class="drop-zone-icon" style="font-size: 24px;">≡ƒôä</div>
                         <span class="drop-zone-text">Click to upload or drag and drop</span>
                         <span class="drop-zone-subtext">Supports .json or .xml files (max 10MB)</span>
                     </div>
@@ -339,7 +339,7 @@
                 </div>
 
                 <div class="caution-banner">
-                    <div class="caution-icon">⚠️</div>
+                    <div class="caution-icon">ΓÜá∩╕Å</div>
                     <div class="caution-text">
                         <strong>Caution:</strong> If "Merge with current data" is disabled, all existing data will be overwritten by the imported file. This action cannot be undone.
                     </div>
@@ -349,7 +349,7 @@
             <!-- MangaDex MDList Import -->
             <SettingsCard 
                 title="Import from MangaDex List" 
-                icon="📊"
+                icon="≡ƒôè"
                 icon-bg="rgba(255, 103, 64, 0.15)"
                 icon-color="#FF6740"
                 guide-target="guide-mangadex-import"
@@ -385,13 +385,13 @@
                     </div>
                 </div>
                 <div class="card-footer-info" style="margin-top: 12px; font-size: 12px; color: var(--text-secondary);">
-                    <span>📋 Imported manga will be added with "Plan to Read" status</span>
+                    <span>≡ƒôï Imported manga will be added with "Plan to Read" status</span>
                 </div>
             </SettingsCard>
 
             <!-- Setup Required Banner -->
             <div v-if="!isOAuthConfigured" class="setup-banner">
-                <div class="banner-icon">🔧</div>
+                <div class="banner-icon">≡ƒöº</div>
                 <div class="banner-content">
                     <h4>Setup Required</h4>
                     <p>Google Drive sync requires OAuth configuration. See the implementation plan for setup instructions.</p>
@@ -561,7 +561,7 @@ function handleFileDrop(event) {
  */
 async function confirmAndImport(file) {
     const mode = isMergeImport.value ? 'MERGE' : 'OVERWRITE';
-    const warning = isMergeImport.value ? '' : '\n\n⚠️ WARNING: This will delete all current data!';
+    const warning = isMergeImport.value ? '' : '\n\nΓÜá∩╕Å WARNING: This will delete all current data!';
     
     if (confirm(`Import backup from "${file.name}"?\nMode: ${mode}${warning}`)) {
         syncDirection = 'import';
@@ -1239,3 +1239,4 @@ onMounted(async () => {
     }
 }
 </style>
+

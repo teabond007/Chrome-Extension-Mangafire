@@ -7,7 +7,7 @@
         <main class="main-content">
             <GeneralTab v-show="settingsStore.activeTab === 'settings'" />
             <AppearanceTab v-show="settingsStore.activeTab === 'appearance'" />
-            <SavedEntriesTab v-show="settingsStore.activeTab === 'saved-entries'" />
+            <LibraryTab v-show="settingsStore.activeTab === 'saved-entries'" />
             <AboutTab v-show="settingsStore.activeTab === 'about'" />
             <CustomSitesTab v-show="settingsStore.activeTab === 'custom-sites'" />
             <ProfileTab v-show="settingsStore.activeTab === 'profile'" />
@@ -28,12 +28,12 @@ import { init } from './scripts/options.js';
 import { useSettingsStore } from './scripts/store/settings.store.js';
 
 import Sidebar from './components/Sidebar.vue';
-import GeneralTab from './components/tabs/GeneralTab.vue';
-import AppearanceTab from './components/tabs/AppearanceTab.vue';
-import SavedEntriesTab from './components/tabs/SavedEntriesTab.vue';
-import AboutTab from './components/tabs/AboutTab.vue';
-import CustomSitesTab from './components/tabs/CustomSitesTab.vue';
-import ProfileTab from './components/tabs/ProfileTab.vue';
+import GeneralTab from './components/tabs/General/GeneralTab.vue';
+import AppearanceTab from './components/tabs/Appearance/AppearanceTab.vue';
+import LibraryTab from './components/tabs/Library/LibraryTab.vue';
+import AboutTab from './components/tabs/About/AboutTab.vue';
+import CustomSitesTab from './components/tabs/CustomSites/CustomSitesTab.vue';
+import ProfileTab from './components/tabs/Profile/ProfileTab.vue';
 import MangaDetailsModal from './components/MangaDetailsModal.vue';
 
 const settingsStore = useSettingsStore();
