@@ -242,23 +242,23 @@
                     <p class="section-label">Include in export:</p>
                     <div class="export-checkboxes">
                         <label class="export-option checkbox-option">
-                            <input type="checkbox" id="exportLibrary" checked>
+                            <input type="checkbox" v-model="localExportSettings.library">
                             <span class="checkbox-label">📚 Library Entries</span>
                         </label>
                         <label class="export-option checkbox-option">
-                            <input type="checkbox" id="exportHistory" checked>
+                            <input type="checkbox" v-model="localExportSettings.history">
                             <span class="checkbox-label">📖 Reading History</span>
                         </label>
                         <label class="export-option checkbox-option">
-                            <input type="checkbox" id="exportPersonalData" checked>
+                            <input type="checkbox" v-model="localExportSettings.personalData">
                             <span class="checkbox-label">🏷️ Tags, Notes & Ratings</span>
                         </label>
                         <label class="export-option checkbox-option">
-                            <input type="checkbox" id="exportSettings" checked>
+                            <input type="checkbox" v-model="localExportSettings.settings">
                             <span class="checkbox-label">⚙️ Settings</span>
                         </label>
                         <label class="export-option checkbox-option">
-                            <input type="checkbox" id="exportCache">
+                            <input type="checkbox" v-model="localExportSettings.cache">
                             <span class="checkbox-label">💾 API Cache</span>
                         </label>
                     </div>
@@ -268,8 +268,13 @@
                     <div class="format-info">
                         <span class="label-info">Format: <span class="highlight-text">JSON</span></span>
                     </div>
-                    <button id="exportDataBtn" class="btn btn-primary btn-with-icon">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <button 
+                        class="btn btn-primary btn-with-icon"
+                        @click="handleLocalExport"
+                        :disabled="syncStatus === 'syncing'"
+                    >
+                        <span v-if="syncStatus === 'syncing' && syncDirection === 'export'" class="spinner"></span>
+                        <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                             <polyline points="7 10 12 15 17 10"></polyline>
                             <line x1="12" y1="15" x2="12" y2="3"></line>
@@ -279,7 +284,7 @@
                 </div>
 
                 <div class="card-footer-info" style="margin-top: 12px; font-size: 12px; color: var(--text-secondary);">
-                    <span>ℹ️ Last local backup: <span id="lastBackupDisplay">Never</span></span>
+                    <span>ℹ️ Last local backup: <span :class="{ 'highlight-text': lastLocalBackup }">{{ lastLocalBackupFormatted }}</span></span>
                 </div>
             </SettingsCard>
 
@@ -291,8 +296,21 @@
                 icon-color="#6B46C1"
                 guide-target="guide-profile-import"
             >
-                <div class="drop-zone-container" id="dropZone">
-                    <input type="file" id="importDataInput" accept=".json,.xml" style="display: none;">
+                <div 
+                    class="drop-zone-container" 
+                    :class="{ 'drag-over': isDragging }"
+                    @click="$refs.fileInput.click()"
+                    @dragover.prevent="isDragging = true"
+                    @dragleave.prevent="isDragging = false"
+                    @drop.prevent="handleFileDrop"
+                >
+                    <input 
+                        type="file" 
+                        ref="fileInput" 
+                        @change="handleFileSelect" 
+                        accept=".json,.xml" 
+                        style="display: none;"
+                    >
                     <div class="drop-zone-content">
                         <div class="drop-zone-icon" style="font-size: 24px;">📄</div>
                         <span class="drop-zone-text">Click to upload or drag and drop</span>
@@ -303,10 +321,15 @@
                 <div class="import-actions-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                     <div class="feature-toggle-wrapper">
                         <span class="toggle-main-label" style="font-size: 13px;">Merge with current data</span>
-                        <ToggleSwitch id="mergeImportToggle" />
+                        <ToggleSwitch v-model="isMergeImport" />
                     </div>
-                    <button id="startImportBtn" class="btn btn-primary btn-with-icon">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <button 
+                        class="btn btn-primary btn-with-icon"
+                        @click="$refs.fileInput.click()"
+                        :disabled="syncStatus === 'syncing'"
+                    >
+                        <span v-if="syncStatus === 'syncing' && syncDirection === 'import'" class="spinner"></span>
+                        <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                             <polyline points="17 8 12 3 7 8"></polyline>
                             <line x1="12" y1="3" x2="12" y2="15"></line>
@@ -338,9 +361,21 @@
                         <p class="sub-description">Example: https://mangadex.org/list/abc123... or just the UUID</p>
                     </div>
                     <div style="display: flex; gap: 10px; width: 100%; align-items: center;">
-                        <input type="text" id="mdlistInput" placeholder="https://mangadex.org/list/..." class="input-field" style="flex: 1;">
-                        <button id="mdlistImportBtn" class="btn btn-primary btn-with-icon">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <input 
+                            type="text" 
+                            v-model="mdListInput" 
+                            placeholder="https://mangadex.org/list/..." 
+                            class="input-field" 
+                            style="flex: 1;"
+                            @keyup.enter="handleMDListImport"
+                        >
+                        <button 
+                            class="btn btn-primary btn-with-icon"
+                            @click="handleMDListImport"
+                            :disabled="syncStatus === 'syncing' || !mdListInput"
+                        >
+                            <span v-if="syncStatus === 'syncing' && syncDirection === 'mdlist'" class="spinner"></span>
+                            <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                                 <polyline points="7 10 12 15 17 10"></polyline>
                                 <line x1="12" y1="15" x2="12" y2="3"></line>
@@ -371,10 +406,11 @@
  * @fileoverview Profile & Sync tab component for Google Drive sync.
  * Provides UI for authentication, sync configuration, and cloud backup management.
  */
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import SettingsCard from '../common/SettingsCard.vue';
 import SwitchControl from '../common/SwitchControl.vue';
+import ToggleSwitch from '../common/ToggleSwitch.vue';
 import { useProfileStore } from '../../scripts/store/profile.store.js';
 import { useSettingsStore } from '../../scripts/store/settings.store.js';
 
@@ -398,11 +434,28 @@ const {
     syncCache,
     cloudBackupInfo,
     isOAuthConfigured,
-    lastSyncFormatted
+    lastSyncFormatted,
+    localExportSettings,
+    isMergeImport,
+    lastLocalBackup
 } = storeToRefs(profileStore);
+
+// Drag and drop state
+const isDragging = ref(false);
+const mdListInput = ref('');
+const fileInput = ref(null);
 
 // Default avatar SVG as data URI
 const defaultAvatar = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234285F4"><circle cx="12" cy="8" r="4"/><path d="M12 14c-6 0-8 3-8 6v1h16v-1c0-3-2-6-8-6z"/></svg>';
+
+/**
+ * Formats last local backup time.
+ */
+const lastLocalBackupFormatted = computed(() => {
+    if (!lastLocalBackup.value) return 'Never';
+    const date = new Date(lastLocalBackup.value);
+    return date.toLocaleString();
+});
 
 // Sync interval (in days)
 const DEFAULT_SYNC_INTERVAL = 1;
@@ -471,6 +524,66 @@ function resetSyncInterval() {
  */
 function dismissResult() {
     profileStore.lastSyncResult = null;
+}
+
+/**
+ * Handles local data export.
+ */
+async function handleLocalExport() {
+    syncDirection = 'export';
+    await profileStore.exportLocalFile();
+    syncDirection = null;
+}
+
+/**
+ * Handles file selection for import.
+ */
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+        confirmAndImport(file);
+    }
+}
+
+/**
+ * Handles file drop for import.
+ */
+function handleFileDrop(event) {
+    isDragging.value = false;
+    const file = event.dataTransfer.files[0];
+    if (file) {
+        confirmAndImport(file);
+    }
+}
+
+/**
+ * Confirms and performs import.
+ */
+async function confirmAndImport(file) {
+    const mode = isMergeImport.value ? 'MERGE' : 'OVERWRITE';
+    const warning = isMergeImport.value ? '' : '\n\n⚠️ WARNING: This will delete all current data!';
+    
+    if (confirm(`Import backup from "${file.name}"?\nMode: ${mode}${warning}`)) {
+        syncDirection = 'import';
+        try {
+            await profileStore.importLocalFile(file, isMergeImport.value);
+        } catch (err) {
+            console.error('Import failed:', err);
+        } finally {
+            syncDirection = null;
+        }
+    }
+}
+
+/**
+ * Handles MangaDex list import.
+ */
+async function handleMDListImport() {
+    if (!mdListInput.value) return;
+    syncDirection = 'mdlist';
+    await profileStore.importFromMDList(mdListInput.value);
+    mdListInput.value = '';
+    syncDirection = null;
 }
 
 // Watch preference changes and persist to storage

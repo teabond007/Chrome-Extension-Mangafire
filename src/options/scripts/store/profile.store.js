@@ -6,7 +6,9 @@
 import { defineStore } from 'pinia';
 import * as gdriveAuth from '../../../scripts/core/cloud/gdrive-auth.js';
 import * as gdriveSync from '../../../scripts/core/cloud/gdrive-sync.js';
+import { fetchMDList } from '../../../scripts/core/api/mangadex-api.js';
 import { gatherStorageData, applyStorageData } from '../modules/storage-io.js';
+import { STORAGE_KEYS } from '../../../config.js';
 
 export const useProfileStore = defineStore('profile', {
     state: () => ({
@@ -30,11 +32,21 @@ export const useProfileStore = defineStore('profile', {
         syncSettings: true,
         syncCache: false,
         
-        // Cloud backup info
-        cloudBackupInfo: null,
         
         // OAuth configuration status
-        isOAuthConfigured: false
+        isOAuthConfigured: false,
+
+        // Local Export/Import state
+        lastLocalBackup: null,
+        localExportSettings: {
+            library: true,
+            history: true,
+            personalData: true,
+            settings: true,
+            cache: false,
+            customSites: true
+        },
+        isMergeImport: true
     }),
 
     getters: {
@@ -67,9 +79,9 @@ export const useProfileStore = defineStore('profile', {
                     'profileSyncLibrary',
                     'profileSyncHistory',
                     'profileSyncPersonal',
-                    'profileSyncSettings',
                     'profileSyncCache',
-                    'profileLastSync'
+                    'profileLastSync',
+                    STORAGE_KEYS.LAST_BACKUP
                 ]);
 
                 this.autoSyncEnabled = saved.profileAutoSync ?? false;
@@ -79,6 +91,7 @@ export const useProfileStore = defineStore('profile', {
                 this.syncSettings = saved.profileSyncSettings ?? true;
                 this.syncCache = saved.profileSyncCache ?? false;
                 this.lastSyncTime = saved.profileLastSync ?? null;
+                this.lastLocalBackup = saved[STORAGE_KEYS.LAST_BACKUP] ?? null;
 
                 // Check OAuth configuration
                 this.isOAuthConfigured = this.checkOAuthConfig();
@@ -301,6 +314,145 @@ export const useProfileStore = defineStore('profile', {
                 profileSyncSettings: this.syncSettings,
                 profileSyncCache: this.syncCache
             });
+        },
+
+        /**
+         * Generic data gathering helper.
+         */
+        async prepareExportData(categories) {
+            return await gatherStorageData(categories);
+        },
+
+        /**
+         * Exports data to a local JSON file.
+         */
+        async exportLocalFile() {
+            this.syncStatus = 'syncing';
+            this.syncStatusMessage = 'Preparing export...';
+            
+            try {
+                const data = await this.prepareExportData(this.localExportSettings);
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `mangabook_backup_${new Date().toISOString().slice(0, 10)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                this.lastLocalBackup = Date.now();
+                await chrome.storage.local.set({ [STORAGE_KEYS.LAST_BACKUP]: this.lastLocalBackup });
+                
+                this.syncStatus = 'success';
+                this.lastSyncResult = { type: 'success', message: 'Local backup exported successfully' };
+            } catch (error) {
+                this.syncStatus = 'error';
+                this.lastSyncResult = { type: 'error', message: `Export failed: ${error.message}` };
+            }
+        },
+
+        /**
+         * Imports data from a local file.
+         */
+        async importLocalFile(file, isMerge) {
+            this.syncStatus = 'syncing';
+            this.syncStatusMessage = 'Parsing file...';
+
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        await applyStorageData(importedData, isMerge);
+                        
+                        this.syncStatus = 'success';
+                        this.lastSyncResult = { type: 'success', message: 'Import successful! Reloading...' };
+                        
+                        // Small delay before reload to let user see success
+                        setTimeout(() => location.reload(), 1500);
+                        resolve();
+                    } catch (error) {
+                        this.syncStatus = 'error';
+                        this.lastSyncResult = { type: 'error', message: `Import failed: ${error.message}` };
+                        reject(error);
+                    }
+                };
+                reader.onerror = () => {
+                    this.syncStatus = 'error';
+                    this.lastSyncResult = { type: 'error', message: 'Failed to read file' };
+                    reject(new Error('Failed to read file'));
+                };
+                reader.readAsText(file);
+            });
+        },
+
+        /**
+         * Imports manga from a MangaDex list.
+         */
+        async importFromMDList(inputValue) {
+            if (!inputValue) return;
+
+            this.syncStatus = 'syncing';
+            this.syncStatusMessage = 'Fetching MangaDex list...';
+
+            try {
+                const result = await fetchMDList(inputValue);
+                
+                if (!result.success) {
+                    throw new Error(result.error);
+                }
+                
+                if (result.manga.length === 0) {
+                    throw new Error('No manga found in this list.');
+                }
+                
+                const data = await chrome.storage.local.get([STORAGE_KEYS.LIBRARY_ENTRIES]);
+                let savedEntries = Array.isArray(data[STORAGE_KEYS.LIBRARY_ENTRIES]) ? data[STORAGE_KEYS.LIBRARY_ENTRIES] : [];
+                
+                const existingTitles = new Set(savedEntries.map(e => e.title.toLowerCase()));
+                const existingMdIds = new Set(savedEntries.filter(e => e.anilistData?.mangadexId).map(e => e.anilistData.mangadexId));
+                
+                let added = 0;
+                let skipped = 0;
+                
+                result.manga.forEach(manga => {
+                    const title = manga.title?.english || manga.title?.romaji || 'Unknown';
+                    const mdId = manga.mangadexId;
+                    
+                    if (existingTitles.has(title.toLowerCase()) || existingMdIds.has(mdId)) {
+                        skipped++;
+                        return;
+                    }
+                    
+                    savedEntries.push({
+                        title: title,
+                        status: 'Plan to Read',
+                        readChapters: [],
+                        anilistData: manga,
+                        customStatus: null,
+                        lastUpdated: Date.now(),
+                        importedFrom: 'MDList'
+                    });
+                    added++;
+                });
+                
+                await chrome.storage.local.set({ [STORAGE_KEYS.LIBRARY_ENTRIES]: savedEntries });
+                
+                this.syncStatus = 'success';
+                this.lastSyncResult = { 
+                    type: 'success', 
+                    message: `Imported ${added} manga from "${result.listName}". ${skipped} duplicates skipped.` 
+                };
+                
+                // Trigger refresh
+                window.dispatchEvent(new CustomEvent('sync-data-updated'));
+            } catch (error) {
+                this.syncStatus = 'error';
+                this.lastSyncResult = { type: 'error', message: `MD Import failed: ${error.message}` };
+            }
         }
     }
 });

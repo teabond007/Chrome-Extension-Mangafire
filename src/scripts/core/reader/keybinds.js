@@ -132,8 +132,7 @@ class KeybindManager {
             // Navigation
             nextPage: () => this.adapter.goToNextPage?.() || this.scrollPage(1),
             prevPage: () => this.adapter.goToPrevPage?.() || this.scrollPage(-1),
-            nextChapter: () => this.adapter.goToNextChapter?.(),
-            prevChapter: () => this.adapter.goToPrevChapter?.(),
+            
             
             // Scrolling - use 50% of viewport for more controlled movement
             scrollDown: () => window.scrollBy({ top: window.innerHeight * 0.5, behavior: 'smooth' }),

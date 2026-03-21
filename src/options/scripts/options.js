@@ -1,5 +1,4 @@
 import { initInfoRedirects, initScrollToTop, initUrlParams, initMessageListeners } from './ui/ui-navigation.js';
-import { initImportExport } from './modules/import-export.js';
 import { useSettingsStore } from './store/settings.store.js';
 import { useLibraryStore } from './store/library.store.js';
 
@@ -27,7 +26,6 @@ export async function init() {
     initMessageListeners();
 
     // 3. Legacy Modules
-    initImportExport();
 
     // Setup Storage Listener for Cross-Context Sync
     chrome.storage.onChanged.addListener((changes, area) => {
