@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { wipeMangadexCache } from '../../../scripts/core/api/mangadex-api.js';
 import { getMergedMetadata } from '../../../scripts/core/api/metadata-service';
 import { STORAGE_KEYS } from '../../../config.js';
+import * as LibraryService from '../../../scripts/core/library-service.ts';
 
 export const useLibraryStore = defineStore('library', {
     state: () => ({
@@ -69,6 +70,28 @@ export const useLibraryStore = defineStore('library', {
             });
 
             await chrome.storage.local.set({ [STORAGE_KEYS.LIBRARY_ENTRIES]: JSON.parse(JSON.stringify(this.entries)) });
+        },
+
+        /**
+         * Adds or updates an entry in the library.
+         * @param {Object} entryData - The data to upsert
+         */
+        async upsertEntry(entryData) {
+            // Using service for logic, store will update via syncFromStorage (if set up)
+            // or we manually update it here for immediate feedback.
+            const updated = await LibraryService.upsertEntry(entryData);
+            
+            // Local update for immediate UI response
+            const idx = this.entries.findIndex(e => 
+                LibraryService.getMangaId(e) === LibraryService.getMangaId(updated)
+            );
+            
+            if (idx !== -1) {
+                this.entries[idx] = updated;
+            } else {
+                this.entries.push(updated);
+            }
+            return updated;
         },
 
         

@@ -78,7 +78,7 @@
                         <div id="modalTags" class="modal-tags">
                             <span v-for="t in ani?.tags?.slice(0, 10)" :key="t.name" class="modal-tag">{{ t.name }}</span>
                         </div>
-
+ 
                         <!-- Personal Data Section -->
                         <div class="modal-personal-section" id="modalPersonalSection">
                             <div class="personal-section-grid">
@@ -86,74 +86,39 @@
                                 <div class="personal-left">
                                     <h4>📝 Your Data</h4>
                                     
-                                    <!-- Rating (10 stars) -->
+                                    <!-- Rating -->
                                     <div class="modal-personal-row">
                                         <span class="modal-personal-label">Rating</span>
                                         <div class="modal-personal-content">
-                                            <div class="star-rating-container">
-                                                <span v-for="i in 10" :key="i" class="star-rating-star"
-                                                    :class="{ 'full': (hoverRating || personalData.rating) >= i }"
-                                                    @click="saveRating(i)"
-                                                    @mouseenter="hoverRating = i"
-                                                    @mouseleave="hoverRating = 0"
-                                                >
-                                                    {{ (hoverRating || personalData.rating) >= i ? '★' : '☆' }}
-                                                </span>
-                                                <span class="star-rating-value">
-                                                    {{ personalData.rating > 0 ? (personalData.rating + '/10') : '' }}
-                                                </span>
-                                            </div>
+                                            <StarRating 
+                                                v-model="personalData.rating" 
+                                                @change="saveRating" 
+                                            />
                                         </div>
                                     </div>
                                 </div>
-
-                                <!-- Right Column: Tags + Notes -->
+ 
+                                <!-- Right Column: Notes -->
                                 <div class="personal-right">
-                                    <!-- Tags -->
-                                    <div class="modal-personal-row">
-                                        <span class="modal-personal-label">Tags</span>
-                                        <div class="modal-personal-content">
-                                            <div class="tag-input-container">
-                                                <div class="tag-list">
-                                                    <span v-for="tag in personalData.tags" :key="tag" class="tag-pill">
-                                                        <span class="tag-pill-text">{{ tag }}</span>
-                                                        <button class="tag-pill-remove" @click="removeTag(tag)">&times;</button>
-                                                    </span>
-                                                </div>
-                                                <div class="tag-input-wrapper">
-                                                    <input type="text" v-model="tagInputValue" class="tag-input" 
-                                                        placeholder="Add tag..." @keydown.enter="addTag">
-                                                    <div v-if="filteredSuggestions.length > 0" class="tag-suggestions">
-                                                        <div v-for="match in filteredSuggestions" :key="match" 
-                                                            class="tag-suggestion-item" @click="addTagFromSuggestion(match)">
-                                                            {{ match }}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
                                     <!-- Notes -->
                                     <div class="modal-personal-row">
                                         <span class="modal-personal-label">Notes</span>
                                         <div class="modal-personal-content">
-                                            <div class="notes-editor-container">
-                                                <textarea v-model="personalData.notes" class="notes-textarea" 
-                                                    placeholder="Add personal notes..." rows="2" @blur="saveNotes"></textarea>
-                                                <span class="notes-char-count">{{ (personalData.notes?.length || 0) }}/500</span>
-                                            </div>
+                                            <NotesEditor 
+                                                v-model="personalData.notes" 
+                                                @save="saveNotes"
+                                            />
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
+ 
                         <div class="modal-description">
                             <h3>Synopsis</h3>
                             <p id="modalDescriptionText" v-html="ani?.description || 'No description available.'"></p>
                         </div>
-
+ 
                         <div id="modalExternalLinks" class="modal-external-links">
                             <a v-if="ani?.siteUrl" class="external-link-btn primary" :href="ani.siteUrl" target="_blank">
                                 <span>AniList</span>
@@ -169,29 +134,30 @@
         </div>
     </div>
 </template>
-
+ 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { getFormatName, getStatusInfo } from '../scripts/ui/manga-card-utils.js';
-import * as LibFeatures from '../../scripts/core/library-features.js';
+import * as LibraryService from '../../scripts/core/library-service.ts';
 import { useLibraryStore } from '../scripts/store/library.store.js';
 import anime from 'animejs';
 import { STORAGE_KEYS } from '../../config.js';
 
+// Shared Components
+import StarRating from './shared/StarRating.vue';
+import NotesEditor from './shared/NotesEditor.vue';
+ 
 const libraryStore = useLibraryStore();
-
+ 
 // State
 const isOpen = ref(false);
 const currentEntry = ref({});
 const ani = computed(() => currentEntry.value.anilistData);
 const showChapters = ref(false);
 const historyChapters = ref([]);
-const personalData = ref({ tags: [], notes: '', rating: 0 });
-const allUserTags = ref([]);
-const tagInputValue = ref('');
-const hoverRating = ref(0);
+const personalData = ref({ notes: '', rating: 0 });
 const modalBodyRef = ref(null);
-
+ 
 /**
  * Normalizes format name
  */
@@ -199,21 +165,19 @@ const formatName = computed(() => {
     if (!ani.value) return 'Manga';
     return getFormatName(ani.value.format, ani.value.countryOfOrigin);
 });
-
+ 
 /**
  * Resolved status styles
  */
 const statusStyle = computed(() => {
     if (!currentEntry.value.status) return {};
-    // TODO: customStatuses should ideally come from a store
-    // In a real app, this should probably come from a store
     const info = getStatusInfo(currentEntry.value.status, currentEntry.value.customStatus, []);
     return {
         backgroundColor: info.badgeBg,
         color: info.badgeText
     };
 });
-
+ 
 /**
  * Banner image with fallbacks
  */
@@ -221,7 +185,7 @@ const bannerUrl = computed(() => {
     if (!ani.value) return null;
     return ani.value.bannerImage || ani.value.coverImage?.extraLarge || ani.value.coverImage?.large;
 });
-
+ 
 const bannerStyle = computed(() => {
     if (!bannerUrl.value) return {};
     return {
@@ -230,7 +194,7 @@ const bannerStyle = computed(() => {
         filter: ani.value?.bannerImage ? 'none' : 'blur(4px) brightness(0.7)'
     };
 });
-
+ 
 /**
  * Ambient glow style
  */
@@ -251,7 +215,7 @@ const ambientGlowStyle = computed(() => {
         transform: 'translate3d(0, 0, 0)'
     };
 });
-
+ 
 /**
  * Cover image with fallback
  */
@@ -259,7 +223,7 @@ const coverUrl = computed(() => {
     if (!ani.value) return 'https://mangadex.org/img/avatar.png';
     return ani.value.coverImage?.large || ani.value.coverImage?.medium || 'https://mangadex.org/img/avatar.png';
 });
-
+ 
 /**
  * Formatted release date
  */
@@ -268,7 +232,7 @@ const releasedDate = computed(() => {
     const d = ani.value.startDate;
     return `${d.year}${d.month ? '-' + d.month : ''}${d.day ? '-' + d.day : ''}`;
 });
-
+ 
 /**
  * Filtered external links (prioritizing English)
  */
@@ -276,14 +240,14 @@ const filteredLinks = computed(() => {
     if (!ani.value?.externalLinks) return [];
     const links = ani.value.externalLinks;
     const sitesProcessed = new Map();
-
+ 
     links.forEach(link => {
         if (!sitesProcessed.has(link.site)) {
             sitesProcessed.set(link.site, []);
         }
         sitesProcessed.get(link.site).push(link);
     });
-
+ 
     const result = [];
     sitesProcessed.forEach((linksList) => {
         if (linksList.length > 1) {
@@ -299,7 +263,7 @@ const filteredLinks = computed(() => {
     });
     return result;
 });
-
+ 
 /**
  * Sorted chapter history
  */
@@ -310,18 +274,7 @@ const sortedChapters = computed(() => {
         return numB - numA;
     });
 });
-
-/**
- * Tag suggestions autocomplete
- */
-const filteredSuggestions = computed(() => {
-    const val = tagInputValue.value.toLowerCase().trim();
-    if (!val) return [];
-    return allUserTags.value.filter(t => 
-        t.toLowerCase().includes(val) && !personalData.value.tags.includes(t)
-    ).slice(0, 5);
-});
-
+ 
 // Animation Helpers
 const animateModalEntry = (modalContent) => {
     if (typeof anime === 'undefined') return;
@@ -335,7 +288,7 @@ const animateModalEntry = (modalContent) => {
         easing: 'easeOutElastic(1, .6)'
     });
 };
-
+ 
 const playSuccessAnimation = (targetContainer) => {
     if (typeof anime === 'undefined') return;
     
@@ -378,7 +331,7 @@ const playSuccessAnimation = (targetContainer) => {
         }
     });
 };
-
+ 
 // Methods
 const openModal = async (entry) => {
     currentEntry.value = entry;
@@ -387,9 +340,12 @@ const openModal = async (entry) => {
     
     // Load data
     loadHistoryChapters();
-    personalData.value = await LibFeatures.getPersonalData(entry);
-    allUserTags.value = await LibFeatures.loadUserTags();
-
+    
+    // Use LibraryService for centralized data loading
+    const rawData = await LibraryService.loadPersonalData();
+    const id = LibraryService.getMangaId(entry);
+    personalData.value = rawData[id] || { notes: '', rating: 0 };
+ 
     // Reset scroll and animate
     setTimeout(() => {
         if (modalBodyRef.value) modalBodyRef.value.scrollTop = 0;
@@ -397,15 +353,15 @@ const openModal = async (entry) => {
         if (content) animateModalEntry(content);
     }, 0);
 };
-
+ 
 const closeModal = () => {
     isOpen.value = false;
 };
-
+ 
 const toggleChaptersList = () => {
     showChapters.value = !showChapters.value;
 };
-
+ 
 const loadHistoryChapters = () => {
     if (!chrome.runtime?.id) return;
     chrome.storage.local.get(["savedReadChapters"], (data) => {
@@ -413,30 +369,30 @@ const loadHistoryChapters = () => {
         const titleLower = currentEntry.value.title.toLowerCase();
         const mangaSlugBase = currentEntry.value.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
         const explicitSlug = currentEntry.value.mangaSlug ? currentEntry.value.mangaSlug.split('.')[0] : null;
-
+ 
         const historyKey = Object.keys(history).find(key => {
             const kLower = key.toLowerCase();
             const kSlug = kLower.replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
             return kLower === titleLower || kSlug === mangaSlugBase || (explicitSlug && kSlug === explicitSlug) || (explicitSlug && kLower === explicitSlug);
         });
-
+ 
         historyChapters.value = historyKey ? history[historyKey] : [];
     });
 };
-
+ 
 const handleMarkAllRead = async () => {
     const totalChapters = ani.value?.chapters;
     if (!totalChapters || totalChapters <= 0) {
         alert('Unable to mark all as read: Total chapter count is unknown.');
         return;
     }
-
+ 
     if (!confirm(`Mark all ${totalChapters} chapters as read?`)) return;
-
+ 
     const allChapters = Array.from({ length: totalChapters }, (_, i) => String(i + 1));
     const slugify = (str) => str.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
     const mangaSlug = currentEntry.value.mangaSlug?.split('.')[0] || slugify(currentEntry.value.title);
-
+ 
     chrome.storage.local.get(['savedReadChapters'], (data) => {
         const history = data.savedReadChapters || {};
         history[mangaSlug] = allChapters;
@@ -465,35 +421,15 @@ const handleMarkAllRead = async () => {
         });
     });
 };
-
+ 
 // Personal Data Methods
 const saveRating = async (val) => {
-    personalData.value.rating = val;
-    await LibFeatures.saveRating(currentEntry.value, val);
+    await LibraryService.saveRating(currentEntry.value, val);
 };
 
-const saveNotes = async () => {
-    await LibFeatures.saveNotes(currentEntry.value, personalData.value.notes);
-};
-
-const addTag = async () => {
-    const val = tagInputValue.value.trim();
-    if (val && !personalData.value.tags.includes(val)) {
-        personalData.value.tags.push(val);
-        await LibFeatures.addTagToManga(currentEntry.value, val);
-        allUserTags.value = await LibFeatures.loadUserTags();
-    }
-    tagInputValue.value = '';
-};
-
-const addTagFromSuggestion = (match) => {
-    tagInputValue.value = match;
-    addTag();
-};
-
-const removeTag = async (tag) => {
-    personalData.value.tags = personalData.value.tags.filter(t => t !== tag);
-    await LibFeatures.removeTagFromManga(currentEntry.value, tag);
+const saveNotes = async (val) => {
+    personalData.value.notes = val;
+    await LibraryService.saveNotes(currentEntry.value, val);
 };
 
 /**
@@ -502,19 +438,18 @@ const removeTag = async (tag) => {
 const handleRemoveManga = async () => {
     const title = ani.value?.title?.english || ani.value?.title?.romaji || currentEntry.value.title;
     if (!confirm(`Remove "${title}" from your library?`)) return;
-
+ 
     await libraryStore.removeEntry(currentEntry.value);
     closeModal();
 };
-
+ 
 // Exposure for backward compatibility
 onMounted(() => {
     window.showMangaDetails = openModal;
 });
 </script>
-
+ 
 <style scoped lang="scss">
-/* Modal styles - migrated from _modal.css */
 .modal-overlay {
     position: fixed;
     inset: 0;
@@ -523,7 +458,7 @@ onMounted(() => {
     align-items: center;
     justify-content: center;
     z-index: 2000;
-
+ 
     .modal-content {
         background: var(--bg-card);
         border-radius: var(--radius-lg, 16px);
@@ -536,7 +471,7 @@ onMounted(() => {
         overflow: hidden;
         display: flex;
         flex-direction: column;
-
+ 
         .modal-ambient-glow {
             position: absolute;
             inset: 0;
@@ -544,7 +479,7 @@ onMounted(() => {
             z-index: 0;
             pointer-events: none;
         }
-
+ 
         .modal-banner {
             width: 100%;
             height: 200px;
@@ -552,7 +487,7 @@ onMounted(() => {
             background-position: center;
             flex-shrink: 0;
             position: relative;
-
+ 
             &::after {
                 content: '';
                 position: absolute;
@@ -563,22 +498,22 @@ onMounted(() => {
                 background: linear-gradient(to top, var(--bg-card), transparent);
             }
         }
-
+ 
         .modal-body {
             padding: 30px;
             overflow-y: auto;
             flex: 1;
-
+ 
             .modal-layout {
                 display: flex;
                 gap: 30px;
-
+ 
                 .modal-sidebar {
                     width: 220px;
                     flex-shrink: 0;
                     margin-top: -100px;
                     z-index: 5;
-
+ 
                     .modal-cover {
                         width: 100%;
                         border-radius: var(--radius-md, 8px);
@@ -586,7 +521,7 @@ onMounted(() => {
                         margin-bottom: 20px;
                         border: 4px solid var(--bg-card);
                     }
-
+ 
                     .modal-sidebar-info {
                         display: flex;
                         flex-direction: column;
@@ -594,17 +529,17 @@ onMounted(() => {
                         background: rgba(255, 255, 255, 0.03);
                         padding: 15px;
                         border-radius: var(--radius-md, 8px);
-
+ 
                         &.modal-sidebar-history {
                             margin-top: 12px;
                             gap: 10px;
-
+ 
                             .modal-history-actions {
                                 display: flex;
                                 gap: 8px;
                                 flex-wrap: wrap;
                             }
-
+ 
                             .modal-chapters-list {
                                 margin-top: 10px;
                                 padding: 10px;
@@ -616,7 +551,7 @@ onMounted(() => {
                                 display: flex;
                                 flex-wrap: wrap;
                                 gap: 6px;
-
+ 
                                 .chapter-pill {
                                     background: var(--bg-card);
                                     border: 1px solid var(--border-color);
@@ -626,41 +561,24 @@ onMounted(() => {
                                 }
                             }
                         }
-                    }
-
-                    .btn-remove-manga {
-                        width: 100%;
-                        margin-top: 12px;
-                        justify-content: center;
-                        background: rgba(220, 53, 69, 0.1);
-                        color: #dc3545;
-                        border: 1px solid rgba(220, 53, 69, 0.25);
-                        transition: all 0.2s ease;
-
-                        &:hover {
-                            background: rgba(220, 53, 69, 0.2);
-                            border-color: #dc3545;
-                        }
-                    }
-
-                    .modal-sidebar-info {
+ 
                         .modal-meta-row {
                             display: flex;
                             flex-direction: column;
                             gap: 4px;
-
+ 
                             .modal-meta-label {
                                 font-size: 11px;
                                 font-weight: 700;
                                 color: var(--text-secondary);
                                 text-transform: uppercase;
                             }
-
+ 
                             .modal-meta-value {
                                 font-size: 14px;
                                 color: var(--text-primary);
                             }
-
+ 
                             .format-badge {
                                 width: fit-content;
                                 padding: 4px 10px;
@@ -670,12 +588,12 @@ onMounted(() => {
                                 font-weight: 600;
                                 color: var(--text-primary);
                             }
-
+ 
                             .modal-score {
                                 display: flex;
                                 align-items: center;
                                 gap: 8px;
-
+ 
                                 .score-value {
                                     color: var(--warning, #FFB547);
                                     font-weight: 700;
@@ -684,35 +602,50 @@ onMounted(() => {
                             }
                         }
                     }
+ 
+                    .btn-remove-manga {
+                        width: 100%;
+                        margin-top: 12px;
+                        justify-content: center;
+                        background: rgba(220, 53, 69, 0.1);
+                        color: #dc3545;
+                        border: 1px solid rgba(220, 53, 69, 0.25);
+                        transition: all 0.2s ease;
+ 
+                        &:hover {
+                            background: rgba(220, 53, 69, 0.2);
+                            border-color: #dc3545;
+                        }
+                    }
                 }
-
+ 
                 .modal-main {
                     flex: 1;
-
+ 
                     h2 {
                         font-size: 32px;
                         margin-bottom: 15px;
                         line-height: 1.2;
                         font-weight: 800;
                     }
-
+ 
                     .modal-synonyms {
                         font-size: 13px;
                         color: var(--text-secondary);
                         margin-bottom: 12px;
                         font-style: italic;
                         line-height: 1.4;
-
+ 
                         .modal-synonym-item::after { content: " • "; }
                         .modal-synonym-item:last-child::after { content: ""; }
                     }
-
+ 
                     .modal-genres {
                         display: flex;
                         flex-wrap: wrap;
                         gap: 8px;
                         margin-bottom: 25px;
-
+ 
                         .modal-genre-tag {
                             background: rgba(67, 24, 255, 0.08);
                             color: var(--accent-primary);
@@ -723,7 +656,7 @@ onMounted(() => {
                             border: 1px solid transparent;
                             transition: all 0.2s ease;
                             cursor: default;
-
+ 
                             &:hover {
                                 transform: translateY(-2px);
                                 box-shadow: 0 4px 12px rgba(67, 24, 255, 0.25);
@@ -732,13 +665,13 @@ onMounted(() => {
                             }
                         }
                     }
-
+ 
                     .modal-tags {
                         display: flex;
                         flex-wrap: wrap;
                         gap: 6px;
                         margin-bottom: 25px;
-
+ 
                         .modal-tag {
                             font-size: 11px;
                             color: var(--text-secondary);
@@ -748,7 +681,7 @@ onMounted(() => {
                             border: 1px solid transparent;
                             transition: all 0.2s ease;
                             cursor: default;
-
+ 
                             &:hover {
                                 transform: translateY(-2px);
                                 box-shadow: 0 3px 8px rgba(255, 255, 255, 0.1);
@@ -758,161 +691,53 @@ onMounted(() => {
                             }
                         }
                     }
-
+ 
                     .modal-personal-section {
                         margin-top: 1.5rem;
                         padding: 1rem;
                         background: rgba(255, 255, 255, 0.03);
                         border-radius: 8px;
-
+ 
                         .personal-section-grid {
                             display: grid;
                             grid-template-columns: auto 1fr;
                             gap: 1.5rem;
-
+ 
                             .personal-left {
                                 display: flex;
                                 flex-direction: column;
                                 gap: 0.75rem;
                                 min-width: 180px;
-
+ 
                                 h4 { margin: 0; }
                             }
-
+ 
                             .personal-right {
                                 display: flex;
                                 flex-direction: column;
                                 gap: 0.75rem;
                             }
-
+ 
                             .modal-personal-row {
                                 display: flex;
                                 flex-direction: column;
-                                gap: 6px;
-
+                                gap: 8px;
+ 
                                 .modal-personal-label {
-                                    font-size: 12px;
-                                    font-weight: 600;
+                                    font-size: 11px;
+                                    font-weight: 700;
                                     color: var(--text-secondary);
                                     text-transform: uppercase;
-                                }
-
-                                .star-rating-container {
-                                    display: flex;
-                                    align-items: center;
-                                    gap: 2px;
-                                    flex-wrap: wrap;
-
-                                    .star-rating-star {
-                                        cursor: pointer;
-                                        font-size: 1rem;
-                                        transition: transform 0.1s, color 0.15s;
-                                        color: var(--text-secondary);
-
-                                        &:hover { transform: scale(1.15); }
-                                        &.full { color: #ffc107; }
-                                    }
-
-                                    .star-rating-value {
-                                        margin-left: 6px;
-                                        font-size: 0.8rem;
-                                        color: var(--text-secondary);
-                                    }
-                                }
-
-                                .tag-input-container {
-                                    display: flex;
-                                    flex-direction: column;
-                                    gap: 0.5rem;
-
-                                    .tag-list {
-                                        display: flex;
-                                        flex-wrap: wrap;
-                                        gap: 0.25rem;
-
-                                        .tag-pill {
-                                            display: inline-flex;
-                                            align-items: center;
-                                            gap: 0.25rem;
-                                            background: var(--accent-primary, #7551FF);
-                                            color: #fff;
-                                            padding: 0.125rem 0.5rem;
-                                            border-radius: 12px;
-                                            font-size: 0.75rem;
-
-                                            .tag-pill-remove {
-                                                background: none;
-                                                border: none;
-                                                color: inherit;
-                                                cursor: pointer;
-                                                padding: 0;
-                                            }
-                                        }
-                                    }
-
-                                    .tag-input-wrapper {
-                                        position: relative;
-
-                                        .tag-input {
-                                            width: 100%;
-                                            padding: 6px 10px;
-                                            border: 1px solid var(--border-color);
-                                            border-radius: 6px;
-                                            background: var(--input-bg);
-                                            color: var(--text-primary);
-                                        }
-
-                                        .tag-suggestions {
-                                            position: absolute;
-                                            top: 100%;
-                                            left: 0;
-                                            right: 0;
-                                            background: var(--bg-card);
-                                            border: 1px solid var(--border-color);
-                                            border-radius: 6px;
-                                            z-index: 10;
-                                            max-height: 150px;
-                                            overflow-y: auto;
-
-                                            .tag-suggestion-item {
-                                                padding: 8px 10px;
-                                                cursor: pointer;
-
-                                                &:hover { background: rgba(255, 255, 255, 0.05); }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                .notes-editor-container {
-                                    position: relative;
-
-                                    .notes-textarea {
-                                        width: 100%;
-                                        resize: vertical;
-                                        min-height: 60px;
-                                        padding: 8px;
-                                        border: 1px solid var(--border-color);
-                                        border-radius: 6px;
-                                        background: var(--input-bg);
-                                        color: var(--text-primary);
-                                    }
-
-                                    .notes-char-count {
-                                        position: absolute;
-                                        bottom: 4px;
-                                        right: 8px;
-                                        font-size: 0.7rem;
-                                        color: var(--text-secondary);
-                                    }
+                                    letter-spacing: 0.5px;
                                 }
                             }
                         }
                     }
-
+ 
                     .modal-description {
                         margin-bottom: 30px;
-
+                        margin-top: 20px;
+ 
                         h3 {
                             font-size: 18px;
                             font-weight: 700;
@@ -922,14 +747,14 @@ onMounted(() => {
                             width: fit-content;
                             padding-bottom: 4px;
                         }
-
+ 
                         p {
                             font-size: 15px;
                             color: var(--text-secondary);
                             line-height: 1.7;
                         }
                     }
-
+ 
                     .modal-external-links {
                         display: flex;
                         flex-wrap: wrap;
@@ -937,21 +762,21 @@ onMounted(() => {
                         margin-top: 20px;
                         padding-top: 20px;
                         border-top: 1px solid var(--border-color);
-
+ 
                         .external-link-btn {
                             display: flex;
                             align-items: center;
                             gap: 8px;
                             padding: 8px 16px;
                             background: var(--input-bg);
-                            border: 1px solid var(--input-border);
+                            border: 1px solid var(--border-color);
                             border-radius: 100px;
                             color: var(--text-primary);
                             text-decoration: none;
                             font-size: 13px;
                             font-weight: 600;
                             transition: all 0.2s;
-
+ 
                             &:hover {
                                 border-color: var(--accent-primary);
                                 background: rgba(67, 24, 255, 0.05);
@@ -961,7 +786,7 @@ onMounted(() => {
                 }
             }
         }
-
+ 
         .modal-close {
             position: absolute;
             top: 20px;
@@ -980,7 +805,7 @@ onMounted(() => {
             align-items: center;
             justify-content: center;
             z-index: 10;
-
+ 
             &:hover {
                 background: rgba(0, 0, 0, 0.5);
                 transform: scale(1.1);
@@ -988,22 +813,22 @@ onMounted(() => {
         }
     }
 }
-
+ 
 /* Responsive */
 @media (max-width: 800px) {
     .modal-overlay .modal-content .modal-body {
         .modal-layout {
             flex-direction: column;
-
+ 
             .modal-sidebar {
                 width: 100%;
                 margin-top: -60px;
                 display: flex;
                 gap: 20px;
                 align-items: flex-start;
-
+ 
                 .modal-cover { width: 140px; }
-
+ 
                 .modal-sidebar-info {
                     flex: 1;
                     flex-direction: row;

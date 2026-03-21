@@ -44,15 +44,21 @@ async function bootstrap() {
 
         if (customConfig) {
             console.log('[BMH] Matched custom config:', customConfig);
-            // Always enhance cards on any page
-            await initCustomSite(customConfig, settings);
-
-            // Additionally track progress if reader page is explicitly detected
             const adapter = new GenericAdapter(customConfig);
-            if (customConfig.readerSelectors?.readerDetect && adapter.isReaderPage()) {
-                console.log('[BMH] Reader page detected for custom site, initializing reader enhancements');
+            
+            // Check if this is a reader page first
+            const isReader = adapter.isReaderPage();
+
+            if (isReader) {
+                // If it's a reader page, skip card enhancement (initCustomSite)
+                // as it can cause performance issues and is usually not needed here.
+                console.log('[BMH] Reader page detected, initializing reader enhancements');
                 const enhancements = new ReaderEnhancements(adapter);
                 await enhancements.init();
+            } else {
+                // Listing/Gallery page: Always enhance cards
+                console.log('[BMH] Gallery/Listing page detected, initializing card enhancements');
+                await initCustomSite(customConfig, settings);
             }
         } else {
             console.warn(`[BMH] No adapter found for host: ${currentHost}`);

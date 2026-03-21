@@ -74,7 +74,7 @@ import LibrarySyncProgress from './LibrarySyncProgress.vue';
 import LibraryGrid from './LibraryGrid.vue';
 
 import { getFormatName } from '../../../scripts/ui/manga-card-utils.js';
-import * as LibFeatures from '../../../../scripts/core/library-features.js';
+import * as LibraryService from '../../../../scripts/core/library-service.ts';
 import { useLibraryStore } from '../../../scripts/store/library.store.js';
 import { useSettingsStore } from '../../../scripts/store/settings.store.js';
 
@@ -175,13 +175,13 @@ const filteredEntries = computed(() => {
         // Genre
         if (filters.genre !== "All" && (!ani?.genres?.includes(filters.genre))) return false;
 
-        // Search
+         // Search
         if (filters.search !== "") {
-            const titleMatch = LibFeatures.fuzzyMatch(filters.search, entry.title) ||
-                LibFeatures.fuzzyMatch(filters.search, ani?.title?.english || '') ||
-                LibFeatures.fuzzyMatch(filters.search, ani?.title?.romaji || '');
-            const authorMatch = ani?.staff?.edges?.some(e => 
-                LibFeatures.fuzzyMatch(filters.search, e.node?.name?.full || '')
+            const titleMatch = LibraryService.fuzzyMatch(filters.search, entry.title) ||
+                LibraryService.fuzzyMatch(filters.search, entry.anilistData?.title?.english || '') ||
+                LibraryService.fuzzyMatch(filters.search, entry.anilistData?.title?.romaji || '');
+            const authorMatch = entry.anilistData?.staff?.edges?.some(e => 
+                LibraryService.fuzzyMatch(filters.search, e.node?.name?.full || '')
             ) || false;
             if (!titleMatch && !authorMatch) return false;
         }
@@ -239,14 +239,14 @@ const sortedEntries = computed(() => {
             case 'score-desc': return (b.anilistData?.averageScore || 0) - (a.anilistData?.averageScore || 0);
             case 'added-desc': return (b.lastUpdated || 0) - (a.lastUpdated || 0);
             case 'last-read-desc': return (b.lastRead || 0) - (a.lastRead || 0);
-            case 'rating-desc': {
-                const rA = personalData.value[LibFeatures.getMangaId(a)]?.rating || 0;
-                const rB = personalData.value[LibFeatures.getMangaId(b)]?.rating || 0;
+             case 'rating-desc': {
+                const rA = personalData.value[LibraryService.getMangaId(a)]?.rating || 0;
+                const rB = personalData.value[LibraryService.getMangaId(b)]?.rating || 0;
                 return rB - rA;
             }
             case 'rating-asc': {
-                const rA = personalData.value[LibFeatures.getMangaId(a)]?.rating || 0;
-                const rB = personalData.value[LibFeatures.getMangaId(b)]?.rating || 0;
+                const rA = personalData.value[LibraryService.getMangaId(a)]?.rating || 0;
+                const rB = personalData.value[LibraryService.getMangaId(b)]?.rating || 0;
                 return rA - rB;
             }
             default: return 0;
@@ -329,10 +329,10 @@ const loadData = () => {
         'cardViewSize',
         'FamilyFriendlyfeatureEnabled',
     ], async (data) => {
-        customStatuses.value = data.customBookmarks || [];
+         customStatuses.value = data.customBookmarks || [];
         cardViewSize.value = data.cardViewSize || 'large';
         familyFriendlyEnabled.value = data.FamilyFriendlyfeatureEnabled || false;
-        personalData.value = await LibFeatures.loadPersonalData();
+        personalData.value = await LibraryService.loadPersonalData();
     });
 };
 

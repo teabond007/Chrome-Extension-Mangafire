@@ -1,6 +1,6 @@
 import { reactive, computed, ref } from 'vue';
 import { getFormatName } from '../scripts/ui/manga-card-utils.js';
-import * as LibFeatures from '../../scripts/core/library-features.js';
+import * as LibraryService from '../../scripts/core/library-service.ts';
 
 export function useLibraryFilters(savedEntries, customStatuses, personalData, familyFriendlyEnabled) {
     const cardViewSize = ref('large');
@@ -86,11 +86,11 @@ export function useLibraryFilters(savedEntries, customStatuses, personalData, fa
 
             // Search
             if (filters.search !== "") {
-                const titleMatch = LibFeatures.fuzzyMatch(filters.search, entry.title) ||
-                    LibFeatures.fuzzyMatch(filters.search, ani?.title?.english || '') ||
-                    LibFeatures.fuzzyMatch(filters.search, ani?.title?.romaji || '');
+                const titleMatch = LibraryService.fuzzyMatch(filters.search, entry.title) ||
+                    LibraryService.fuzzyMatch(filters.search, ani?.title?.english || '') ||
+                    LibraryService.fuzzyMatch(filters.search, ani?.title?.romaji || '');
                 const authorMatch = ani?.staff?.edges?.some(e => 
-                    LibFeatures.fuzzyMatch(filters.search, e.node?.name?.full || '')
+                    LibraryService.fuzzyMatch(filters.search, e.node?.name?.full || '')
                 ) || false;
                 if (!titleMatch && !authorMatch) return false;
             }
@@ -149,13 +149,13 @@ export function useLibraryFilters(savedEntries, customStatuses, personalData, fa
                 case 'added-desc': return (b.lastUpdated || 0) - (a.lastUpdated || 0);
                 case 'last-read-desc': return (b.lastRead || 0) - (a.lastRead || 0);
                 case 'rating-desc': {
-                    const rA = personalData.value[LibFeatures.getMangaId(a)]?.rating || 0;
-                    const rB = personalData.value[LibFeatures.getMangaId(b)]?.rating || 0;
+                    const rA = personalData.value[LibraryService.getMangaId(a)]?.rating || 0;
+                    const rB = personalData.value[LibraryService.getMangaId(b)]?.rating || 0;
                     return rB - rA;
                 }
                 case 'rating-asc': {
-                    const rA = personalData.value[LibFeatures.getMangaId(a)]?.rating || 0;
-                    const rB = personalData.value[LibFeatures.getMangaId(b)]?.rating || 0;
+                    const rA = personalData.value[LibraryService.getMangaId(a)]?.rating || 0;
+                    const rB = personalData.value[LibraryService.getMangaId(b)]?.rating || 0;
                     return rA - rB;
                 }
                 default: return 0;

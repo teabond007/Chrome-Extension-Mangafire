@@ -1,5 +1,5 @@
 /**
- * @fileoverview Generic Adapter for Custom Sites
+ * @fileoverview Generic Adapter for Custom Sites + initCustomSite() function
  * A data-driven adapter that uses CustomSiteConfig to enhance manga cards
  * on user-defined websites.
  * 

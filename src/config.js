@@ -99,7 +99,6 @@ export const STORAGE_KEYS = {
     
     // Personal Data
     PERSONAL_DATA: 'libraryPersonalData',
-    USER_TAGS: 'libraryUserTags',
     FILTER_PRESETS: 'libraryFilterPresets',
     
     // Custom Sites
@@ -163,3 +162,24 @@ export const API_CONFIG = {
         MIN_REQUEST_INTERVAL: 2000
     }
 };
+
+/**
+ * Sync intervals
+ */
+export const SYNC_CONFIG = {
+    INTERVAL_DEFAULT: 24 * 60 * 60 * 1000, // 24 hours
+    RETRY_DELAY: 5 * 60 * 1000             // 5 minutes
+};
+
+/**
+ * Progress Tracking constants
+ */
+export const PROGRESS_CONFIG = {
+    SAVE_DELAY: 5000,                  // 5 seconds
+    SCROLL_THRESHOLD: 0.1              // 10% scroll
+};
+
+/**
+ * Library Defaults
+ */
+export const DEFAULT_STATUS = 'Reading';
