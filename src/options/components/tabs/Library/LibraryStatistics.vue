@@ -199,74 +199,150 @@ const genreColors = ['#7551FF', '#6B46C1', '#805AD5', '#9F7AEA', '#B794F4', '#D6
 // Helper to normalize status strings for robust matching
 const normalizeStatus = (status) => (status || '').toLowerCase().trim().replace(/[-\s]/g, '');
 
-const stats = computed(() => {
+const processedData = computed(() => {
     const total = props.entries.length;
-    if (total === 0) return { total: 0, totalChapters: 0, reading: 0, completed: 0, planning: 0, onhold: 0, dropped: 0, avgScore: 0, completionRate: 0 };
+    const defaultRes = {
+        total: 0, reading: 0, completed: 0, planning: 0, onhold: 0, dropped: 0,
+        totalChapters: 0, avgScore: 0, completionRate: 0,
+        customStatusCounts: {}, genres: {},
+        activity: { readThisWeek: 0, readThisMonth: 0, addedThisWeek: 0, withHistory: 0 },
+        sources: { anilist: 0, mangadex: 0, noData: 0 },
+        formats: { manga: 0, manhwa: 0, manhua: 0 }
+    };
 
-    let reading = 0;
-    let completed = 0;
-    let planning = 0;
-    let onhold = 0;
-    let dropped = 0;
-    let totalChapters = 0;
+    if (total === 0) return defaultRes;
+
+    const now = Date.now();
+    const oneWeek = 7 * 24 * 60 * 60 * 1000;
+    const oneMonth = 30 * 24 * 60 * 60 * 1000;
+
+    const res = { ...defaultRes, total };
+    let totalScore = 0;
+    let scoredCount = 0;
 
     props.entries.forEach(e => {
+        // Core status counts
         const s = normalizeStatus(e.status);
-        if (s.includes('reading')) reading++;
-        else if (s === 'completed' || s === 'read') completed++;
-        else if (s.includes('plan')) planning++;
-        else if (s.includes('hold')) onhold++;
-        else if (s.includes('dropped')) dropped++;
-        
-        totalChapters += (parseInt(e.readChapters) || 0);
+        if (s.includes('reading')) res.reading++;
+        else if (s === 'completed' || s === 'read') res.completed++;
+        else if (s.includes('plan')) res.planning++;
+        else if (s.includes('hold')) res.onhold++;
+        else if (s.includes('dropped')) res.dropped++;
+
+        // Custom status mapping
+        if (e.customStatus) {
+            res.customStatusCounts[e.customStatus] = (res.customStatusCounts[e.customStatus] || 0) + 1;
+        }
+
+        // Chapters & Score metrics
+        res.totalChapters += (parseInt(e.readChapters) || 0);
+        if (e.anilistData?.averageScore) {
+            totalScore += e.anilistData.averageScore;
+            scoredCount++;
+        }
+
+        // Genre accumulation
+        if (e.anilistData?.genres) {
+            e.anilistData.genres.forEach(g => {
+                res.genres[g] = (res.genres[g] || 0) + 1;
+            });
+        }
+
+        // Activity analysis
+        if (e.lastRead) {
+            const diff = now - e.lastRead;
+            if (diff < oneWeek) res.activity.readThisWeek++;
+            if (diff < oneMonth) res.activity.readThisMonth++;
+        }
+        if (e.lastUpdated && (now - e.lastUpdated) < oneWeek) {
+            res.activity.addedThisWeek++;
+        }
+        if (e.readChapters && e.readChapters > 0) {
+            res.activity.withHistory++;
+        }
+
+        // Data source tracking
+        if (!e.anilistData || e.anilistData.status === 'NOT_FOUND') {
+            res.sources.noData++;
+        } else if (e.anilistData.source === 'MANGADEX') {
+            res.sources.mangadex++;
+        } else {
+            res.sources.anilist++;
+        }
+
+        // Content format/origin tracking
+        const format = e.anilistData?.format;
+        const country = e.anilistData?.countryOfOrigin;
+        if (format === 'Manhwa' || country === 'KR') res.formats.manhwa++;
+        else if (format === 'Manhua' || country === 'CN') res.formats.manhua++;
+        else res.formats.manga++;
     });
-    
-    const scoredEntries = props.entries.filter(e => e.anilistData?.averageScore);
-    const avgScore = scoredEntries.length > 0 
-        ? Math.round(scoredEntries.reduce((sum, e) => sum + e.anilistData.averageScore, 0) / scoredEntries.length)
-        : 0;
 
-    const completionRate = Math.round((completed / total) * 100);
+    res.avgScore = scoredCount > 0 ? Math.round(totalScore / scoredCount) : 0;
+    res.completionRate = Math.round((res.completed / total) * 100);
 
-    return { total, totalChapters, reading, completed, planning, onhold, dropped, avgScore, completionRate };
+    return res;
 });
 
+// Map processed data to UI-friendly aliases or subsets
+const stats = computed(() => ({
+    total: processedData.value.total,
+    totalChapters: processedData.value.totalChapters,
+    reading: processedData.value.reading,
+    completed: processedData.value.completed,
+    planning: processedData.value.planning,
+    onhold: processedData.value.onhold,
+    dropped: processedData.value.dropped,
+    avgScore: processedData.value.avgScore,
+    completionRate: processedData.value.completionRate
+}));
+
 const statusStats = computed(() => {
-    if (!props.customStatuses || props.customStatuses.length === 0) return [];
-    
-    return props.customStatuses.map(s => {
-        const count = props.entries.filter(e => 
-            e.customStatus === s.name || 
-            (e.status && e.status.toLowerCase() === s.name.toLowerCase())
-        ).length;
-        return {
-            name: s.name,
-            color: s.color,
-            count
-        };
-    }).filter(m => m.count > 0);
+    if (!props.customStatuses) return [];
+    return props.customStatuses.map(s => ({
+        name: s.name,
+        color: s.color,
+        count: processedData.value.customStatusCounts[s.name] || 0
+    })).filter(m => m.count > 0);
 });
 
 const statusDistribution = computed(() => {
-    if (stats.value.total === 0) return [];
+    if (processedData.value.total === 0) return [];
     const data = [
-        { label: 'Reading', value: stats.value.reading, color: '#4CAF50' },
-        { label: 'Completed', value: stats.value.completed, color: '#2196F3' },
-        { label: 'Planning', value: stats.value.planning, color: '#9C27B0' },
-        { label: 'On Hold', value: stats.value.onhold, color: '#FFC107' },
-        { label: 'Dropped', value: stats.value.dropped, color: '#F44336' },
+        { label: 'Reading', value: processedData.value.reading, color: '#4CAF50' },
+        { label: 'Completed', value: processedData.value.completed, color: '#2196F3' },
+        { label: 'Planning', value: processedData.value.planning, color: '#9C27B0' },
+        { label: 'On Hold', value: processedData.value.onhold, color: '#FFC107' },
+        { label: 'Dropped', value: processedData.value.dropped, color: '#F44336' },
         ...statusStats.value.map(m => ({ label: m.name, value: m.count, color: m.color }))
     ].filter(d => d.value > 0);
 
     let offset = 0;
     return data.map(d => {
-        const percent = d.value / stats.value.total;
+        const percent = d.value / processedData.value.total;
         const dashLen = circumference * percent;
         const currentOffset = offset;
         offset += dashLen;
         return { ...d, dashLen, offset: currentOffset };
     });
 });
+
+const topGenres = computed(() => {
+    const sorted = Object.entries(processedData.value.genres)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6);
+    
+    const maxCount = sorted.length > 0 ? sorted[0][1] : 1;
+    return sorted.map(([name, count]) => ({
+        name,
+        count,
+        percent: Math.round((count / maxCount) * 100)
+    }));
+});
+
+const activity = computed(() => processedData.value.activity);
+const sources = computed(() => processedData.value.sources);
+const formats = computed(() => processedData.value.formats);
 
 const handleGuideRedirect = () => {
     settingsStore.activeTab = 'about';
@@ -280,55 +356,6 @@ const handleGuideRedirect = () => {
         }
     }, 100);
 };
-
-const topGenres = computed(() => {
-    const genreCounts = {};
-    props.entries.forEach(e => {
-        (e.anilistData?.genres || []).forEach(g => {
-            genreCounts[g] = (genreCounts[g] || 0) + 1;
-        });
-    });
-    
-    const sorted = Object.entries(genreCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 6);
-    
-    const maxCount = sorted.length > 0 ? sorted[0][1] : 1;
-    return sorted.map(([name, count]) => ({
-        name,
-        count,
-        percent: Math.round((count / maxCount) * 100)
-    }));
-});
-
-const activity = computed(() => {
-    const now = Date.now();
-    const oneWeek = 7 * 24 * 60 * 60 * 1000;
-    const oneMonth = 30 * 24 * 60 * 60 * 1000;
-
-    return {
-        readThisWeek: props.entries.filter(e => e.lastRead && (now - e.lastRead) < oneWeek).length,
-        readThisMonth: props.entries.filter(e => e.lastRead && (now - e.lastRead) < oneMonth).length,
-        addedThisWeek: props.entries.filter(e => e.lastUpdated && (now - e.lastUpdated) < oneWeek).length,
-        withHistory: props.entries.filter(e => e.readChapters && e.readChapters > 0).length
-    };
-});
-
-const sources = computed(() => {
-    return {
-        anilist: props.entries.filter(e => e.anilistData && !e.anilistData.source).length,
-        mangadex: props.entries.filter(e => e.anilistData?.source === 'MANGADEX').length,
-        noData: props.entries.filter(e => !e.anilistData || e.anilistData.status === 'NOT_FOUND').length
-    };
-});
-
-const formats = computed(() => {
-    return {
-        manga: props.entries.filter(e => e.anilistData?.format === 'MANGA' || !e.anilistData?.format).length,
-        manhwa: props.entries.filter(e => e.anilistData?.format === 'Manhwa' || e.anilistData?.countryOfOrigin === 'KR').length,
-        manhua: props.entries.filter(e => e.anilistData?.format === 'Manhua' || e.anilistData?.countryOfOrigin === 'CN').length
-    };
-});
 
 const runEntranceAnimations = async () => {
     // Use window.anime as fallback for global anime.js

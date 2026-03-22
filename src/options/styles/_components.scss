@@ -510,3 +510,85 @@ label {
         pointer-events: none;
     }
 }
+
+/* ============ SHARED MANGA BADGES & STATUSES ============ */
+
+.manga-card-status {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    width: fit-content;
+    text-transform: uppercase;
+}
+
+// Map of status colors
+$status-colors: (
+    read: #9f9f9f,
+    reading: #4CAF50,
+    completed: #2196F3,
+    dropped: #F44336,
+    onhold: #FFC107,
+    planning: #9C27B0,
+    default: #000000
+);
+
+@each $status, $color in $status-colors {
+    .status-dot-#{$status} {
+        background: $color;
+    }
+
+    .status-#{$status} {
+        background: rgba($color, 0.15);
+        color: $color;
+
+        @if $status == read {
+            color: #9c9c9c;
+        }
+    }
+}
+
+.format-badge {
+    background: rgba(103, 58, 183, 0.15);
+    color: #673AB7;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+
+    .dark-mode & {
+        background: rgba(179, 157, 219, 0.2);
+        color: #B39DDB;
+    }
+}
+
+.demo {
+    &-shonen {
+        background: rgba(255, 87, 34, 0.15);
+        color: #FF5722;
+    }
+    &-seinen {
+        background: rgba(96, 125, 139, 0.15);
+        color: #455A64;
+    }
+    &-shoujo {
+        background: rgba(233, 30, 99, 0.15);
+        color: #E91E63;
+    }
+    &-josei {
+        background: rgba(156, 39, 176, 0.15);
+        color: #9C27B0;
+    }
+}
+
+.dark-mode .demo-seinen {
+    color: #90A4AE;
+    background: rgba(144, 164, 174, 0.15);
+}
+
+.search-highlight {
+    background: rgba(255, 235, 59, 0.3);
+    border-radius: 2px;
+    padding: 0 2px;
+}
