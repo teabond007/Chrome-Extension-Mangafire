@@ -4,7 +4,7 @@
  * and marker-manager.js modules.
  */
 import { defineStore } from 'pinia';
-import { STORAGE_KEYS } from '../../../config.js';
+import { TOGGLES, SETTINGS, DATA } from '../../../config.js';
 
 export const useSettingsStore = defineStore('settings', {
     state: () => ({
@@ -20,6 +20,7 @@ export const useSettingsStore = defineStore('settings', {
         highlightThickness: 4,     // External websites (CustomBorderSize)
         libraryThickness: 4,       // Internal library entries (LibraryBorderSize)
         borderStyle: 'solid',
+        highlightEnabled: true,
         // General Preferences
         libraryBordersEnabled: true,
         libraryHideNoHistory: false,
@@ -38,10 +39,12 @@ export const useSettingsStore = defineStore('settings', {
         autoScroll: false,
         keybinds: false,
         progressTracking: true,
+        familyFriendlyEnabled: false,
 
         // Custom Statuses (marker-manager)
         /** @type {Array<{name: string, color: string, style: string}>} */
         customStatuses: [],
+        customStatusEnabled: false,
 
         // Initial load state
         isLoaded: false
@@ -50,43 +53,56 @@ export const useSettingsStore = defineStore('settings', {
     actions: {
         async loadSettings() {
             const data = await chrome.storage.local.get([
-                'theme', 
-                'isCustomTheme',
-                'customThemeData',
-                STORAGE_KEYS.SETTINGS_HIGHLIGHT_THICKNESS, 
-                'LibraryBorderSize',
-                'GlobalBorderStyle',
-                'GlobalQuickActions',
-                'GlobalShowProgress',
-                'SyncandMarkRead',
-                'AutoScrollEnabled',
-                'KeybindsEnabled',
-                'ProgressTrackingEnabled',
-                'libraryViewMode',
-                'libraryHideNoHistory',
-                'customBookmarks'
+                SETTINGS.THEME, 
+                TOGGLES.IS_CUSTOM_THEME,
+                SETTINGS.CUSTOM_THEME_DATA,
+                SETTINGS.HIGHLIGHT_THICKNESS, 
+                SETTINGS.LIBRARY_THICKNESS,
+                SETTINGS.BORDER_STYLE,
+                TOGGLES.QUICK_ACTIONS,
+                TOGGLES.SHOW_READING_BADGES,
+                TOGGLES.HISTORY_TRACKING,
+                TOGGLES.AUTO_SCROLL,
+                TOGGLES.KEYBINDS_ENABLED,
+                TOGGLES.PROGRESS_TRACKING,
+                SETTINGS.VIEW_MODE,
+                TOGGLES.LIBRARY_HIDE_NO_HISTORY,
+                DATA.CUSTOM_STATUSES,
+                TOGGLES.CUSTOM_STATUS_ENABLED,
+                TOGGLES.LIBRARY_GLOW_EFFECT,
+                TOGGLES.LIBRARY_ANIMATED_BORDERS,
+                TOGGLES.LIBRARY_PROGRESS_BARS,
+                TOGGLES.CUSTOM_SITE_HIGHLIGHT,
+                TOGGLES.FAMILY_FRIENDLY
             ]);
 
-            this.theme = data.theme || 'dark';
-            this.isCustomTheme = !!data.isCustomTheme;
-            if (data.customThemeData) {
-                this.customTheme = data.customThemeData;
+            this.theme = data[SETTINGS.THEME] || 'dark';
+            this.isCustomTheme = !!data[TOGGLES.IS_CUSTOM_THEME];
+            if (data[SETTINGS.CUSTOM_THEME_DATA]) {
+                this.customTheme = data[SETTINGS.CUSTOM_THEME_DATA];
             }
-            this.highlightThickness = parseInt(data[STORAGE_KEYS.SETTINGS_HIGHLIGHT_THICKNESS]) || 4;
-            this.libraryThickness = parseInt(data.LibraryBorderSize) || 4;
-            this.borderStyle = data.GlobalBorderStyle || 'solid';
-            this.borderStyle = data.GlobalBorderStyle || 'solid';
+            this.highlightThickness = parseInt(data[SETTINGS.HIGHLIGHT_THICKNESS]) || 4;
+            this.libraryThickness = parseInt(data[SETTINGS.LIBRARY_THICKNESS]) || 4;
+            this.borderStyle = data[SETTINGS.BORDER_STYLE] || 'solid';
 
-            this.quickActions = data.GlobalQuickActions !== false;
-            this.showReadingBadges = data.GlobalShowProgress !== false;
-            this.syncAndMarkRead = data.SyncandMarkRead !== false;
-            this.autoScroll = !!data.AutoScrollEnabled;
-            this.keybinds = !!data.KeybindsEnabled;
-            this.progressTracking = data.ProgressTrackingEnabled !== false;
+            this.quickActions = data[TOGGLES.QUICK_ACTIONS] !== false;
+            this.showReadingBadges = data[TOGGLES.SHOW_READING_BADGES] !== false;
+            this.syncAndMarkRead = data[TOGGLES.HISTORY_TRACKING] !== false;
+            this.autoScroll = !!data[TOGGLES.AUTO_SCROLL];
+            this.keybinds = !!data[TOGGLES.KEYBINDS_ENABLED];
+            this.progressTracking = data[TOGGLES.PROGRESS_TRACKING] !== false;
             
-            this.libraryViewMode = data.libraryViewMode || 'large';
-            this.libraryHideNoHistory = !!data.libraryHideNoHistory;
-            this.customStatuses = Array.isArray(data.customBookmarks) ? data.customBookmarks : [];
+            this.libraryViewMode = data[SETTINGS.VIEW_MODE] || 'large';
+            this.libraryHideNoHistory = !!data[TOGGLES.LIBRARY_HIDE_NO_HISTORY];
+            this.customStatuses = Array.isArray(data[DATA.CUSTOM_STATUSES]) ? data[DATA.CUSTOM_STATUSES] : [];
+            this.customStatusEnabled = !!data[TOGGLES.CUSTOM_STATUS_ENABLED];
+            
+            this.libraryUseGlow = !!data[TOGGLES.LIBRARY_GLOW_EFFECT];
+            this.libraryAnimatedBorders = !!data[TOGGLES.LIBRARY_ANIMATED_BORDERS];
+            this.libraryShowStatusIcon = !!data[TOGGLES.LIBRARY_STATUS_ICONS];
+            this.libraryShowProgressBar = !!data[TOGGLES.LIBRARY_PROGRESS_BARS];
+            this.highlightEnabled = data[TOGGLES.CUSTOM_SITE_HIGHLIGHT] !== false;
+            this.familyFriendlyEnabled = !!data[TOGGLES.FAMILY_FRIENDLY];
 
             this.isLoaded = true;
         },
@@ -104,21 +120,28 @@ export const useSettingsStore = defineStore('settings', {
 
             const storagePayload = {};
             switch (key) {
-                case 'theme':                 storagePayload.theme = value; break;
-                case 'highlightThickness':    storagePayload[STORAGE_KEYS.SETTINGS_HIGHLIGHT_THICKNESS] = value; break;
-                case 'libraryThickness':      storagePayload.LibraryBorderSize = value; break;
-                case 'borderStyle':           storagePayload.GlobalBorderStyle = value; break;
-                case 'quickActions':          storagePayload.GlobalQuickActions = value; break;
-                case 'showReadingBadges':     storagePayload.GlobalShowProgress = value; break;
-                case 'syncAndMarkRead':       storagePayload.SyncandMarkRead = value; break;
-                case 'autoScroll':            storagePayload.AutoScrollEnabled = value; break;
-                case 'keybinds':              storagePayload.KeybindsEnabled = value; break;
-                case 'progressTracking':      storagePayload.ProgressTrackingEnabled = value; break;
-                case 'libraryBordersEnabled': storagePayload.LibraryBordersEnabled = value; break;
-                case 'libraryViewMode':       storagePayload.libraryViewMode = value; break;
-                case 'libraryHideNoHistory':  storagePayload.libraryHideNoHistory = value; break;
-                case 'isCustomTheme':         storagePayload.isCustomTheme = value; break;
-                case 'customTheme':           storagePayload.customThemeData = value; break;
+                case 'theme':                 storagePayload[SETTINGS.THEME] = value; break;
+                case 'highlightThickness':    storagePayload[SETTINGS.HIGHLIGHT_THICKNESS] = value; break;
+                case 'libraryThickness':      storagePayload[SETTINGS.LIBRARY_THICKNESS] = value; break;
+                case 'borderStyle':           storagePayload[SETTINGS.BORDER_STYLE] = value; break;
+                case 'quickActions':          storagePayload[TOGGLES.QUICK_ACTIONS] = value; break;
+                case 'showReadingBadges':     storagePayload[TOGGLES.SHOW_READING_BADGES] = value; break;
+                case 'syncAndMarkRead':       storagePayload[TOGGLES.HISTORY_TRACKING] = value; break;
+                case 'autoScroll':            storagePayload[TOGGLES.AUTO_SCROLL] = value; break;
+                case 'keybinds':              storagePayload[TOGGLES.KEYBINDS_ENABLED] = value; break;
+                case 'progressTracking':      storagePayload[TOGGLES.PROGRESS_TRACKING] = value; break;
+                case 'libraryBordersEnabled': storagePayload[TOGGLES.LIBRARY_BORDERS] = value; break;
+                case 'libraryViewMode':       storagePayload[SETTINGS.VIEW_MODE] = value; break;
+                case 'libraryHideNoHistory':  storagePayload[TOGGLES.LIBRARY_HIDE_NO_HISTORY] = value; break;
+                case 'isCustomTheme':         storagePayload[TOGGLES.IS_CUSTOM_THEME] = value; break;
+                case 'customTheme':           storagePayload[SETTINGS.CUSTOM_THEME_DATA] = value; break;
+                case 'customStatusEnabled':   storagePayload[TOGGLES.CUSTOM_STATUS_ENABLED] = value; break;
+                case 'libraryUseGlow':        storagePayload[TOGGLES.LIBRARY_GLOW_EFFECT] = value; break;
+                case 'libraryAnimatedBorders': storagePayload[TOGGLES.LIBRARY_ANIMATED_BORDERS] = value; break;
+                case 'libraryShowStatusIcon':  storagePayload[TOGGLES.LIBRARY_STATUS_ICONS] = value; break;
+                case 'libraryShowProgressBar': storagePayload[TOGGLES.LIBRARY_PROGRESS_BARS] = value; break;
+                case 'highlightEnabled':      storagePayload[TOGGLES.CUSTOM_SITE_HIGHLIGHT] = value; break;
+                case 'familyFriendlyEnabled': storagePayload[TOGGLES.FAMILY_FRIENDLY] = value; break;
             }
 
             if (Object.keys(storagePayload).length > 0) {
@@ -137,7 +160,7 @@ export const useSettingsStore = defineStore('settings', {
         async addCustomStatus(name, color, style = 'solid') {
             if (!name || !color) return;
             this.customStatuses = [...this.customStatuses, { name, color, style }];
-            await chrome.storage.local.set({ customBookmarks: this.customStatuses });
+            await chrome.storage.local.set({ [DATA.CUSTOM_STATUSES]: this.customStatuses });
         },
 
         /**
@@ -147,13 +170,13 @@ export const useSettingsStore = defineStore('settings', {
         async removeCustomStatus(index) {
             const updated = this.customStatuses.filter((_, i) => i !== index);
             this.customStatuses = updated;
-            await chrome.storage.local.set({ customBookmarks: updated });
+            await chrome.storage.local.set({ [DATA.CUSTOM_STATUSES]: updated });
         },
 
         /** Clears all custom statuses. */
         async resetCustomStatuses() {
             this.customStatuses = [];
-            await chrome.storage.local.remove('customBookmarks');
+            await chrome.storage.local.remove(DATA.CUSTOM_STATUSES);
         },
 
         // ─── Cross‑context Sync ───────────────────────────────────────────────
@@ -163,17 +186,24 @@ export const useSettingsStore = defineStore('settings', {
          * @param {Object} changes - chrome.storage onChanged changes map
          */
         syncFromStorage(changes) {
-            if (changes.theme)       this.theme = changes.theme.newValue;
-            if (changes[STORAGE_KEYS.SETTINGS_HIGHLIGHT_THICKNESS]) this.highlightThickness = parseInt(changes[STORAGE_KEYS.SETTINGS_HIGHLIGHT_THICKNESS].newValue);
-            if (changes.LibraryBorderSize)  this.libraryThickness = parseInt(changes.LibraryBorderSize.newValue);
-            if (changes.GlobalBorderStyle)  this.borderStyle = changes.GlobalBorderStyle.newValue;
-            if (changes.GlobalQuickActions) this.quickActions = changes.GlobalQuickActions.newValue;
-            if (changes.GlobalShowProgress) this.showReadingBadges = changes.GlobalShowProgress.newValue;
-            if (changes.SyncandMarkRead)    this.syncAndMarkRead = changes.SyncandMarkRead.newValue;
-            if (changes.AutoScrollEnabled)  this.autoScroll = changes.AutoScrollEnabled.newValue;
-            if (changes.KeybindsEnabled)    this.keybinds = changes.KeybindsEnabled.newValue;
-            if (changes.ProgressTrackingEnabled) this.progressTracking = changes.ProgressTrackingEnabled.newValue;
-            if (changes.customBookmarks)    this.customStatuses = changes.customBookmarks.newValue || [];
+            if (changes[SETTINGS.THEME])       this.theme = changes[SETTINGS.THEME].newValue;
+            if (changes[SETTINGS.HIGHLIGHT_THICKNESS]) this.highlightThickness = parseInt(changes[SETTINGS.HIGHLIGHT_THICKNESS].newValue);
+            if (changes[SETTINGS.LIBRARY_THICKNESS])  this.libraryThickness = parseInt(changes[SETTINGS.LIBRARY_THICKNESS].newValue);
+            if (changes[SETTINGS.BORDER_STYLE])  this.borderStyle = changes[SETTINGS.BORDER_STYLE].newValue;
+            if (changes[TOGGLES.QUICK_ACTIONS]) this.quickActions = changes[TOGGLES.QUICK_ACTIONS].newValue;
+            if (changes[TOGGLES.SHOW_READING_BADGES]) this.showReadingBadges = changes[TOGGLES.SHOW_READING_BADGES].newValue;
+            if (changes[TOGGLES.HISTORY_TRACKING])    this.syncAndMarkRead = changes[TOGGLES.HISTORY_TRACKING].newValue;
+            if (changes[TOGGLES.AUTO_SCROLL])  this.autoScroll = changes[TOGGLES.AUTO_SCROLL].newValue;
+            if (changes[TOGGLES.KEYBINDS_ENABLED])    this.keybinds = changes[TOGGLES.KEYBINDS_ENABLED].newValue;
+            if (changes[TOGGLES.PROGRESS_TRACKING]) this.progressTracking = changes[TOGGLES.PROGRESS_TRACKING].newValue;
+            if (changes[DATA.CUSTOM_STATUSES])    this.customStatuses = changes[DATA.CUSTOM_STATUSES].newValue || [];
+            if (changes[TOGGLES.CUSTOM_STATUS_ENABLED]) this.customStatusEnabled = changes[TOGGLES.CUSTOM_STATUS_ENABLED].newValue;
+            if (changes[TOGGLES.LIBRARY_GLOW_EFFECT]) this.libraryUseGlow = changes[TOGGLES.LIBRARY_GLOW_EFFECT].newValue;
+            if (changes[TOGGLES.LIBRARY_ANIMATED_BORDERS]) this.libraryAnimatedBorders = changes[TOGGLES.LIBRARY_ANIMATED_BORDERS].newValue;
+            if (changes[TOGGLES.LIBRARY_STATUS_ICONS]) this.libraryShowStatusIcon = changes[TOGGLES.LIBRARY_STATUS_ICONS].newValue;
+            if (changes[TOGGLES.LIBRARY_PROGRESS_BARS]) this.libraryShowProgressBar = changes[TOGGLES.LIBRARY_PROGRESS_BARS].newValue;
+            if (changes[TOGGLES.CUSTOM_SITE_HIGHLIGHT]) this.highlightEnabled = changes[TOGGLES.CUSTOM_SITE_HIGHLIGHT].newValue;
+            if (changes[TOGGLES.FAMILY_FRIENDLY]) this.familyFriendlyEnabled = changes[TOGGLES.FAMILY_FRIENDLY].newValue;
         }
     }
 });

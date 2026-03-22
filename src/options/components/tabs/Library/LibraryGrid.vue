@@ -36,7 +36,7 @@
 
 <script setup>
 import MangaCard from '../../common/MangaCard.vue';
-import MangaDetailsLargeView from '../../MangaDetailsLargeView.vue';
+import MangaDetailsLargeView from './MangaDetailsLargeView.vue';
 
 defineProps({
     sortedEntries: Array,

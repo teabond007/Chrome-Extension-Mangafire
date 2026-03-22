@@ -9,7 +9,7 @@
  */
 
 import { getAuthToken } from './gdrive-auth.js';
-import { STORAGE_KEYS } from '../../../config.js';
+import { DATA } from '../../../config.js';
 
 const BACKUP_FILENAME = 'manga_colormarker_sync.json';
 const DRIVE_API_BASE = 'https://www.googleapis.com/drive/v3';
@@ -130,7 +130,7 @@ export async function getBackupInfo() {
 
     // Get entry count by downloading just the structure
     const data = await downloadBackup();
-    const entryCount = Array.isArray(data?.[STORAGE_KEYS.LIBRARY_ENTRIES]) ? data[STORAGE_KEYS.LIBRARY_ENTRIES].length : 0;
+    const entryCount = Array.isArray(data?.[DATA.LIBRARY_ENTRIES]) ? data[DATA.LIBRARY_ENTRIES].length : 0;
 
     return {
         id: metadata.id,

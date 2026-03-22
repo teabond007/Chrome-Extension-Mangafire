@@ -8,6 +8,10 @@
         <!-- Guide Section: Core Functionality -->
         <h3 class="guide-section-header">Core Functionality</h3>
         <div class="guide-grid">
+            <GuideCard id="guide-library" title="Your Library" icon="📚">
+                The central hub for all your bookmarked content. Use the <b>Filter Bar</b> to search for specific titles, sort by activity, or filter by genre and status. Toggle <b>Bulk Mode</b> to perform updates on multiple entries simultaneously.
+            </GuideCard>
+
             <GuideCard id="guide-general" title="General Preferences" icon="⚙️">
                 Global controls for how the extension interacts with web content. Enable <b>Quick Actions</b> to add interactive hover buttons on external sites, or toggle <b>Reading Badges</b> to see your progress directly on thumbnails.
             </GuideCard>
@@ -24,7 +28,7 @@
                 Create virtual categories (e.g., "Favorites", "To-Buy") that go beyond standard site statuses. Custom statuses allow you to apply unique visual styles (different border colors or patterns) to specific groups of entries across all your configured sites.
             </GuideCard>
 
-            <GuideCard id="guide-websites" title="Site Customization" icon="🌐">
+            <GuideCard id="guide-custom-list" title="Site Customization" icon="🌐">
                 Fine-tune how the extension looks on specific domains. Adjust <b>Highlight Thickness</b> to match the visual density of different sites, ensuring your status borders are clearly visible without obstructing the site's original UI.
             </GuideCard>
         </div>
@@ -64,8 +68,16 @@
                 Track your consumption patterns over time. This section provides detailed metrics on your most-read formats, status distribution, and total chapter counts, helping you stay on top of your library growth.
             </GuideCard>
 
-            <GuideCard id="guide-backup" title="Backup & Restore" icon="💾">
-                Your data is your own. Use the backup tools to create local JSON snapshots of your entire library and configuration. This is ideal for manual migrations or as a secondary safeguard alongside cloud sync.
+            <GuideCard id="guide-profile-export" title="Export Data" icon="📤">
+                Create a local JSON snapshot of your entire library, history, and custom site configurations. This is the safest way to manually preserve your data or migrate between browsers without cloud dependency.
+            </GuideCard>
+
+            <GuideCard id="guide-profile-import" title="Import Data" icon="📥">
+                Restore your library from a previously exported JSON file. <b>Warning:</b> Importing will merge with your current local data, favoring the imported values if duplicates are found.
+            </GuideCard>
+
+            <GuideCard id="guide-backup" title="Storage Management" icon="💾">
+                Monitor your local storage usage. Unlike cloud sync, these tools interact directly with your browser's persistent storage, allowing you to clear cache or reset specific modules if you encounter performance issues.
             </GuideCard>
         </div>
 

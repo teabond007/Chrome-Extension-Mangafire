@@ -7,6 +7,13 @@
     >
         <div class="stats-header">
             <h3>Library Statistics</h3>
+            <button 
+                class="info-redirect-btn" 
+                title="About Stats"
+                @click="handleGuideRedirect"
+            >
+                <svg class="icon-svg icon-info" style="width: 16px; height: 16px;"></svg>
+            </button>
         </div>
         
 
@@ -161,6 +168,9 @@
 
 <script setup>
 import { computed, ref, watch, onMounted, nextTick } from 'vue';
+import { useSettingsStore } from '../../../scripts/store/settings.store.js';
+
+const settingsStore = useSettingsStore();
 
 const props = defineProps({
     entries: {
@@ -257,6 +267,19 @@ const statusDistribution = computed(() => {
         return { ...d, dashLen, offset: currentOffset };
     });
 });
+
+const handleGuideRedirect = () => {
+    settingsStore.activeTab = 'about';
+    
+    setTimeout(() => {
+        const targetElement = document.getElementById('guide-stats');
+        if (targetElement) {
+            targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            targetElement.classList.add('highlight-pulse');
+            setTimeout(() => targetElement.classList.remove('highlight-pulse'), 2000);
+        }
+    }, 100);
+};
 
 const topGenres = computed(() => {
     const genreCounts = {};
@@ -495,10 +518,17 @@ onMounted(() => {
         animation: slideUp 0.3s ease-in forwards;
     }
 
-    .stats-header h3 {
-        margin: 0 0 1rem 0;
-        font-size: 1.1rem;
-        color: var(--text-primary);
+    .stats-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+
+        h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+        }
     }
 
     .stats-grid-compact {

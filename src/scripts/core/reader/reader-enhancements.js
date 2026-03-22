@@ -6,6 +6,7 @@
 import AutoScrollController from './auto-scroll.js';
 import KeybindManager from './keybinds.js';
 import ProgressTracker from './progress-tracker.js';
+import { TOGGLES, SETTINGS } from '../../../config.js';
 
 /**
  * ReaderEnhancements bundles all reading enhancement features.
@@ -67,9 +68,9 @@ class ReaderEnhancements {
         const settings = await this.loadSettings();
 
         // Initialize auto-scroll
-        if (this.options.autoScroll && settings.autoScrollEnabled !== false) {
+        if (this.options.autoScroll && settings[TOGGLES.AUTO_SCROLL] !== false) {
             this.autoScroll = new AutoScrollController({
-                speed: settings.autoScrollSpeed || 50,
+                speed: settings[SETTINGS.AUTO_SCROLL_SPEED] || 50,
                 showPanel: true,
                 adapter: this.adapter
             });
@@ -77,13 +78,13 @@ class ReaderEnhancements {
         }
 
         // Initialize keyboard shortcuts
-        if (this.options.keybinds && settings.keybindsEnabled !== false) {
+        if (this.options.keybinds && settings[TOGGLES.KEYBINDS] !== false) {
             this.keybinds = new KeybindManager(this.adapter);
             await this.keybinds.init();
         }
 
         // Initialize progress tracking
-        if (this.options.progressTracking && settings.progressTrackingEnabled !== false) {
+        if (this.options.progressTracking && settings[TOGGLES.READER_PROGRESS] !== false) {
             this.progressTracker = new ProgressTracker(this.adapter);
             await this.progressTracker.init();
         }
@@ -99,10 +100,10 @@ class ReaderEnhancements {
     async loadSettings() {
         try {
             const data = await chrome.storage.local.get([
-                'autoScrollEnabled',
-                'autoScrollSpeed',
-                'keybindsEnabled',
-                'progressTrackingEnabled'
+                TOGGLES.AUTO_SCROLL,
+                SETTINGS.AUTO_SCROLL_SPEED,
+                TOGGLES.KEYBINDS,
+                TOGGLES.READER_PROGRESS
             ]);
             return data;
         } catch (e) {

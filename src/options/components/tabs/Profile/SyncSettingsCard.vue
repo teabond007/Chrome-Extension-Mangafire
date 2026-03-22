@@ -33,7 +33,14 @@
                     <span class="interval-suffix">days</span>
                 </div>
                 <div class="interval-buttons">
-                    <button class="btn btn-sm btn-primary" @click="saveSyncInterval" :disabled="!isSignedIn">Save</button>
+                    <button 
+                        class="btn btn-sm" 
+                        :class="isSaved ? 'btn-success' : 'btn-primary'"
+                        @click="saveSyncInterval" 
+                        :disabled="!isSignedIn"
+                    >
+                        {{ isSaved ? '✓ Saved!' : 'Save' }}
+                    </button>
                     <button class="btn btn-sm btn-ghost" @click="resetSyncInterval" :disabled="!isSignedIn">Reset</button>
                 </div>
             </div>
@@ -80,19 +87,36 @@ const {
 } = storeToRefs(profileStore);
 
 const syncIntervalLocal = ref(1);
+const isSaved = ref(false);
 
 onMounted(() => {
     syncIntervalLocal.value = syncInterval.value || 1;
 });
 
-const saveSyncInterval = () => {
-    profileStore.setSyncInterval(syncIntervalLocal.value);
+// Sync local ref when store initializes
+watch(syncInterval, (newVal) => {
+    if (newVal) syncIntervalLocal.value = newVal;
+});
+
+const saveSyncInterval = async () => {
+    await profileStore.setSyncInterval(syncIntervalLocal.value);
+    
+    // Visual feedback
+    isSaved.value = true;
+    setTimeout(() => {
+        isSaved.value = false;
+    }, 2000);
 };
 
 const resetSyncInterval = () => {
     syncIntervalLocal.value = 1;
     profileStore.setSyncInterval(1);
 };
+
+// Auto-persist other settings when changed
+watch([autoSyncEnabled, syncLibrary, syncHistory, syncPersonal, syncSettings, syncCache], () => {
+    profileStore.savePreferences();
+});
 </script>
 
 <style scoped lang="scss">
@@ -225,6 +249,24 @@ const resetSyncInterval = () => {
 .btn-sm {
     padding: 6px 12px;
     font-size: 12px;
+}
+
+.btn-primary {
+    background: var(--accent-primary);
+    color: white;
+    border: none;
+
+    &:hover {
+        background: var(--accent-hover);
+        box-shadow: 0 2px 8px rgba(67, 24, 255, 0.25);
+    }
+}
+
+.btn-success {
+    background: #10b981;
+    color: white;
+    border: none;
+    cursor: default;
 }
 
 .btn-secondary {

@@ -7,7 +7,7 @@
 import './selector-tool';
 import { initCustomSite, GenericAdapter } from '../core/generic-adapter';
 import ReaderEnhancements from '../core/reader/reader-enhancements';
-import { STORAGE_KEYS } from '../../config.js';
+import { TOGGLES, SETTINGS, DATA } from '../../config.js';
 
 let isBootstrapping = false;
 
@@ -20,13 +20,13 @@ async function bootstrap() {
 
     // Load ALL settings needed by various adapters
     const settingsKeys = [
-        STORAGE_KEYS.SETTINGS_HIGHLIGHT_THICKNESS,
-        STORAGE_KEYS.SETTINGS_CUSTOM_BORDER_SIZE_ENABLED,
-        STORAGE_KEYS.SETTINGS_CUSTOM_STATUS_ENABLED,
-        STORAGE_KEYS.CUSTOM_BOOKMARKS,
-        STORAGE_KEYS.CUSTOM_SITES,
-        STORAGE_KEYS.SETTINGS_CUSTOM_SITE_QUICK_ACTIONS,
-        STORAGE_KEYS.SETTINGS_CUSTOM_SITE_HIGHLIGHT
+        SETTINGS.HIGHLIGHT_THICKNESS,
+        TOGGLES.CUSTOM_BORDER_SIZE_ENABLED,
+        TOGGLES.CUSTOM_STATUS_ENABLED,
+        DATA.CUSTOM_STATUSES,
+        DATA.CUSTOM_SITES,
+        TOGGLES.CUSTOM_SITE_QUICK_ACTIONS,
+        TOGGLES.CUSTOM_SITE_HIGHLIGHT
     ];
 
     try {
@@ -36,7 +36,7 @@ async function bootstrap() {
 
         // Try to find a matching custom site configuration
         console.log(`[BMH] Checking custom sites for ${currentHost}...`);
-        const customSites = settings[STORAGE_KEYS.CUSTOM_SITES] || [];
+        const customSites = settings[DATA.CUSTOM_SITES] || [];
 
         const customConfig = customSites.find((s: any) =>
             s.enabled && currentHost.includes(s.hostname)

@@ -3,48 +3,48 @@
  * Used by both local Import/Export and Google Drive Sync.
  */
 
-import { STORAGE_KEYS } from '../../../config.js';
+import { TOGGLES, SETTINGS, DATA } from '../../../config.js';
 
 export const EXPORT_CATEGORIES = {
     library: {
-        keys: [STORAGE_KEYS.LIBRARY_ENTRIES],
+        keys: [DATA.LIBRARY_ENTRIES],
         label: 'Library Entries'
     },
     history: {
-        keys: [STORAGE_KEYS.READING_HISTORY],
+        keys: [DATA.READING_HISTORY],
         label: 'Reading History'
     },
     settings: {
         keys: [
-            STORAGE_KEYS.SETTINGS_PROFILE_SYNC,
-            STORAGE_KEYS.SETTINGS_AUTO_SCROLL,
-            STORAGE_KEYS.SETTINGS_KEYBINDS,
-            STORAGE_KEYS.SETTINGS_PROGRESS,
-            STORAGE_KEYS.SETTINGS_CARD_SIZE,
-            STORAGE_KEYS.THEME,
-            STORAGE_KEYS.BORDERS_ENABLED,
-            STORAGE_KEYS.BORDER_THICKNESS,
-            STORAGE_KEYS.GLOW_EFFECT,
-            STORAGE_KEYS.ANIMATED_BORDERS,
-            STORAGE_KEYS.STATUS_ICONS,
-            STORAGE_KEYS.PROGRESS_BARS,
-            STORAGE_KEYS.CUSTOM_BOOKMARKS,
-            STORAGE_KEYS.SETTINGS_HIGHLIGHT_THICKNESS,
-            STORAGE_KEYS.SETTINGS_QUICK_ACTIONS,
-            STORAGE_KEYS.SETTINGS_SHOW_BADGES
+            TOGGLES.AUTO_SYNC,
+            TOGGLES.AUTO_SCROLL,
+            TOGGLES.KEYBINDS_ENABLED,
+            TOGGLES.PROGRESS_TRACKING,
+            SETTINGS.VIEW_MODE,
+            SETTINGS.THEME,
+            TOGGLES.LIBRARY_BORDERS,
+            SETTINGS.LIBRARY_THICKNESS,
+            TOGGLES.LIBRARY_GLOW_EFFECT,
+            TOGGLES.LIBRARY_ANIMATED_BORDERS,
+            TOGGLES.LIBRARY_STATUS_ICONS,
+            TOGGLES.LIBRARY_PROGRESS_BARS,
+            DATA.CUSTOM_STATUSES,
+            SETTINGS.HIGHLIGHT_THICKNESS,
+            TOGGLES.QUICK_ACTIONS,
+            TOGGLES.SHOW_READING_BADGES
         ],
         label: 'Settings'
     },
     personalData: {
-        keys: [STORAGE_KEYS.PERSONAL_DATA, STORAGE_KEYS.USER_TAGS, STORAGE_KEYS.FILTER_PRESETS],
+        keys: [DATA.PERSONAL_DATA, DATA.FILTER_PRESETS],
         label: 'Tags, Notes & Ratings'
     },
     cache: {
-        keys: [STORAGE_KEYS.ANILIST_CACHE, STORAGE_KEYS.MANGADEX_CACHE],
+        keys: [DATA.ANILIST_CACHE, DATA.MANGADEX_CACHE],
         label: 'API Cache'
     },
     customSites: {
-        keys: [STORAGE_KEYS.CUSTOM_SITES],
+        keys: [DATA.CUSTOM_SITES],
         label: 'Custom Site Configs'
     }
 };
@@ -91,46 +91,46 @@ export function mergeStorageData(currentData, remoteData) {
 
 
     // Merge library entries
-    if (remoteData[STORAGE_KEYS.LIBRARY_ENTRIES] && currentData[STORAGE_KEYS.LIBRARY_ENTRIES]) {
+    if (remoteData[DATA.LIBRARY_ENTRIES] && currentData[DATA.LIBRARY_ENTRIES]) {
         const entryMap = new Map();
-        currentData[STORAGE_KEYS.LIBRARY_ENTRIES].forEach(e => { if (e.title) entryMap.set(e.title.toLowerCase(), e); });
-        remoteData[STORAGE_KEYS.LIBRARY_ENTRIES].forEach(e => { if (e.title) entryMap.set(e.title.toLowerCase(), e); });
-        mergedData[STORAGE_KEYS.LIBRARY_ENTRIES] = Array.from(entryMap.values());
+        currentData[DATA.LIBRARY_ENTRIES].forEach(e => { if (e.title) entryMap.set(e.title.toLowerCase(), e); });
+        remoteData[DATA.LIBRARY_ENTRIES].forEach(e => { if (e.title) entryMap.set(e.title.toLowerCase(), e); });
+        mergedData[DATA.LIBRARY_ENTRIES] = Array.from(entryMap.values());
     }
 
     // Merge custom statuses
-    if (remoteData[STORAGE_KEYS.CUSTOM_BOOKMARKS] && currentData[STORAGE_KEYS.CUSTOM_BOOKMARKS]) {
+    if (remoteData[DATA.CUSTOM_STATUSES] && currentData[DATA.CUSTOM_STATUSES]) {
         const markerMap = new Map();
-        currentData[STORAGE_KEYS.CUSTOM_BOOKMARKS].forEach(m => { if (m.name) markerMap.set(m.name.toLowerCase(), m); });
-        remoteData[STORAGE_KEYS.CUSTOM_BOOKMARKS].forEach(m => { if (m.name) markerMap.set(m.name.toLowerCase(), m); });
-        mergedData[STORAGE_KEYS.CUSTOM_BOOKMARKS] = Array.from(markerMap.values());
+        currentData[DATA.CUSTOM_STATUSES].forEach(m => { if (m.name) markerMap.set(m.name.toLowerCase(), m); });
+        remoteData[DATA.CUSTOM_STATUSES].forEach(m => { if (m.name) markerMap.set(m.name.toLowerCase(), m); });
+        mergedData[DATA.CUSTOM_STATUSES] = Array.from(markerMap.values());
     }
 
     // Merge reading history 
-    if (remoteData[STORAGE_KEYS.READING_HISTORY] && currentData[STORAGE_KEYS.READING_HISTORY]) {
-        const mergedHistory = { ...currentData[STORAGE_KEYS.READING_HISTORY] };
-        Object.entries(remoteData[STORAGE_KEYS.READING_HISTORY]).forEach(([key, chapters]) => {
+    if (remoteData[DATA.READING_HISTORY] && currentData[DATA.READING_HISTORY]) {
+        const mergedHistory = { ...currentData[DATA.READING_HISTORY] };
+        Object.entries(remoteData[DATA.READING_HISTORY]).forEach(([key, chapters]) => {
             if (mergedHistory[key] && Array.isArray(chapters)) {
                 mergedHistory[key] = [...new Set([...mergedHistory[key], ...chapters])];
             } else {
                 mergedHistory[key] = chapters;
             }
         });
-        mergedData[STORAGE_KEYS.READING_HISTORY] = mergedHistory;
+        mergedData[DATA.READING_HISTORY] = mergedHistory;
     }
 
     // Basic spread merges
-    if (remoteData[STORAGE_KEYS.ANILIST_CACHE] && currentData[STORAGE_KEYS.ANILIST_CACHE]) {
-        mergedData[STORAGE_KEYS.ANILIST_CACHE] = { ...currentData[STORAGE_KEYS.ANILIST_CACHE], ...remoteData[STORAGE_KEYS.ANILIST_CACHE] };
+    if (remoteData[DATA.ANILIST_CACHE] && currentData[DATA.ANILIST_CACHE]) {
+        mergedData[DATA.ANILIST_CACHE] = { ...currentData[DATA.ANILIST_CACHE], ...remoteData[DATA.ANILIST_CACHE] };
     }
-    if (remoteData[STORAGE_KEYS.PERSONAL_DATA] && currentData[STORAGE_KEYS.PERSONAL_DATA]) {
-        mergedData[STORAGE_KEYS.PERSONAL_DATA] = { ...currentData[STORAGE_KEYS.PERSONAL_DATA], ...remoteData[STORAGE_KEYS.PERSONAL_DATA] };
+    if (remoteData[DATA.PERSONAL_DATA] && currentData[DATA.PERSONAL_DATA]) {
+        mergedData[DATA.PERSONAL_DATA] = { ...currentData[DATA.PERSONAL_DATA], ...remoteData[DATA.PERSONAL_DATA] };
     }
-    if (Array.isArray(remoteData[STORAGE_KEYS.CUSTOM_SITES]) && Array.isArray(currentData[STORAGE_KEYS.CUSTOM_SITES])) {
+    if (Array.isArray(remoteData[DATA.CUSTOM_SITES]) && Array.isArray(currentData[DATA.CUSTOM_SITES])) {
         const siteMap = new Map();
-        currentData[STORAGE_KEYS.CUSTOM_SITES].forEach(s => { if (s.hostname) siteMap.set(s.hostname, s); });
-        remoteData[STORAGE_KEYS.CUSTOM_SITES].forEach(s => { if (s.hostname) siteMap.set(s.hostname, s); });
-        mergedData[STORAGE_KEYS.CUSTOM_SITES] = Array.from(siteMap.values());
+        currentData[DATA.CUSTOM_SITES].forEach(s => { if (s.hostname) siteMap.set(s.hostname, s); });
+        remoteData[DATA.CUSTOM_SITES].forEach(s => { if (s.hostname) siteMap.set(s.hostname, s); });
+        mergedData[DATA.CUSTOM_SITES] = Array.from(siteMap.values());
     }
 
     return mergedData;

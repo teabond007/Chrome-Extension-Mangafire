@@ -4,6 +4,7 @@
  * @module store/custom-sites.store
  */
 import { defineStore } from 'pinia';
+import { DATA } from '../../../config.js';
 
 /**
  * @typedef {Object} CustomSiteConfig
@@ -53,8 +54,8 @@ export const useCustomSitesStore = defineStore('customSites', {
         async loadSites() {
             this.isLoading = true;
             try {
-                const data = await chrome.storage.local.get(['customSites']);
-                this.sites = data.customSites || [];
+                const data = await chrome.storage.local.get([DATA.CUSTOM_SITES]);
+                this.sites = data[DATA.CUSTOM_SITES] || [];
             } catch (err) {
                 console.error('[CustomSitesStore] Failed to load sites:', err);
             } finally {
@@ -67,7 +68,7 @@ export const useCustomSitesStore = defineStore('customSites', {
          */
         async saveSites() {
             try {
-                await chrome.storage.local.set({ customSites: JSON.parse(JSON.stringify(this.sites)) });
+                await chrome.storage.local.set({ [DATA.CUSTOM_SITES]: JSON.parse(JSON.stringify(this.sites)) });
                 // Notify background to update content script registrations
                 chrome.runtime.sendMessage({ type: 'custom-sites-updated' });
             } catch (err) {

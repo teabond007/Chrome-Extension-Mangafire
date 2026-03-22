@@ -4,7 +4,7 @@
  * Shared between background scripts, content scripts, and options UI.
  */
 
-import { STORAGE_KEYS, DEFAULT_STATUS } from '../../config.js';
+import { DATA, DEFAULT_STATUS } from '../../config.js';
 
 export interface MangaQuery {
     title: string;
@@ -106,8 +106,8 @@ export function fuzzyScore(needle: string, haystack: string): number {
  * Loads library entries.
  */
 export async function loadLibrary(): Promise<any[]> {
-    const data = await chrome.storage.local.get([STORAGE_KEYS.LIBRARY_ENTRIES]);
-    const list = data[STORAGE_KEYS.LIBRARY_ENTRIES];
+    const data = await chrome.storage.local.get([DATA.LIBRARY_ENTRIES]);
+    const list = data[DATA.LIBRARY_ENTRIES];
     return Array.isArray(list) ? list : [];
 }
 
@@ -143,7 +143,7 @@ export async function upsertEntry(entryData: any): Promise<any> {
         library.push(updatedEntry);
     }
 
-    await chrome.storage.local.set({ [STORAGE_KEYS.LIBRARY_ENTRIES]: library });
+    await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: library });
     return updatedEntry;
 }
 
@@ -174,7 +174,7 @@ export async function updateProgress(query: MangaQuery, progress: ProgressUpdate
         entry.lastRead = Date.now();
         entry.lastUpdated = Date.now();
         
-        await chrome.storage.local.set({ [STORAGE_KEYS.LIBRARY_ENTRIES]: library });
+        await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: library });
     }
 
     return entry;
@@ -184,8 +184,8 @@ export async function updateProgress(query: MangaQuery, progress: ProgressUpdate
  * Tracks a read chapter in the history.
  */
 export async function trackReadChapter(mangaQuery: MangaQuery, chapter: string): Promise<string[]> {
-    const data = await chrome.storage.local.get([STORAGE_KEYS.READING_HISTORY]);
-    const history = (data[STORAGE_KEYS.READING_HISTORY] || {}) as Record<string, string[]>;
+    const data = await chrome.storage.local.get([DATA.READING_HISTORY]);
+    const history = (data[DATA.READING_HISTORY] || {}) as Record<string, string[]>;
     
     // Use slug as the primary key for history if available, else standard ID
     const key = mangaQuery.slug || mangaQuery.mangaSlug?.split('.')[0] || getMangaId(mangaQuery);
@@ -194,7 +194,7 @@ export async function trackReadChapter(mangaQuery: MangaQuery, chapter: string):
     if (!history[key].includes(chapter)) {
         history[key].push(chapter);
         history[key].sort((a: string, b: string) => parseFloat(a) - parseFloat(b));
-        await chrome.storage.local.set({ [STORAGE_KEYS.READING_HISTORY]: history });
+        await chrome.storage.local.set({ [DATA.READING_HISTORY]: history });
     }
     return history[key];
 }
@@ -205,8 +205,8 @@ export async function trackReadChapter(mangaQuery: MangaQuery, chapter: string):
  * Loads personal data map.
  */
 export async function loadPersonalData(): Promise<Record<string, PersonalDataEntry>> {
-    const data = await chrome.storage.local.get(['libraryPersonalData']);
-    return (data.libraryPersonalData || {}) as Record<string, PersonalDataEntry>;
+    const data = await chrome.storage.local.get([DATA.PERSONAL_DATA]);
+    return (data[DATA.PERSONAL_DATA] || {}) as Record<string, PersonalDataEntry>;
 }
 
 /**
@@ -222,7 +222,7 @@ export async function savePersonalData(entry: any, updates: Partial<PersonalData
         lastModified: Date.now()
     } as PersonalDataEntry;
     
-    await chrome.storage.local.set({ libraryPersonalData: allData });
+    await chrome.storage.local.set({ [DATA.PERSONAL_DATA]: allData });
     return allData[id];
 }
 
@@ -243,8 +243,8 @@ export async function saveNotes(entry: any, notes: string): Promise<PersonalData
  * Loads filter presets.
  */
 export async function loadFilterPresets(): Promise<any[]> {
-    const data = await chrome.storage.local.get(['libraryFilterPresets']);
-    const presets = data.libraryFilterPresets;
+    const data = await chrome.storage.local.get([DATA.FILTER_PRESETS]);
+    const presets = data[DATA.FILTER_PRESETS];
     return Array.isArray(presets) ? presets : [];
 }
 
@@ -259,7 +259,7 @@ export async function saveFilterPreset(name: string, filters: any): Promise<any[
     } else {
         presets.push({ name, filters, createdAt: Date.now() });
     }
-    await chrome.storage.local.set({ libraryFilterPresets: presets });
+    await chrome.storage.local.set({ [DATA.FILTER_PRESETS]: presets });
     return presets;
 }
 
@@ -269,6 +269,6 @@ export async function saveFilterPreset(name: string, filters: any): Promise<any[
 export async function deleteFilterPreset(name: string): Promise<any[]> {
     let presets = await loadFilterPresets();
     presets = presets.filter(p => p.name !== name);
-    await chrome.storage.local.set({ libraryFilterPresets: presets });
+    await chrome.storage.local.set({ [DATA.FILTER_PRESETS]: presets });
     return presets;
 }

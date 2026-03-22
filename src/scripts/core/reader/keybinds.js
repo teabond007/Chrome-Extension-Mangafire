@@ -3,6 +3,8 @@
  * Provides configurable keybindings for navigation, auto-scroll, and reader controls.
  */
 
+import { SETTINGS } from '../../../config.js';
+
 /**
  * KeybindManager handles keyboard shortcuts for reader pages.
  * Supports customizable bindings stored in chrome.storage.
@@ -45,8 +47,8 @@ class KeybindManager {
      */
     async loadBindings() {
         try {
-            const data = await chrome.storage.local.get('keybinds');
-            const custom = data.keybinds || {};
+            const data = await chrome.storage.local.get([SETTINGS.KEYBINDS_CUSTOM]);
+            const custom = data[SETTINGS.KEYBINDS_CUSTOM] || {};
 
             // Merge defaults with custom (custom takes priority)
             const merged = { ...KeybindManager.defaults, ...custom };
@@ -71,7 +73,7 @@ class KeybindManager {
     async saveBindings() {
         try {
             const bindings = Object.fromEntries(this.bindings);
-            await chrome.storage.local.set({ keybinds: bindings });
+            await chrome.storage.local.set({ [SETTINGS.KEYBINDS_CUSTOM]: bindings });
         } catch (e) {
             console.warn('[Keybinds] Failed to save bindings:', e);
         }

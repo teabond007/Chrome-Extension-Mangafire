@@ -76,6 +76,11 @@ import LibraryGrid from './LibraryGrid.vue';
 import { getFormatName } from '../../../scripts/ui/manga-card-utils.js';
 import * as LibraryService from '../../../../scripts/core/library-service.ts';
 import { useLibraryStore } from '../../../scripts/store/library.store.js';
+import { 
+    TOGGLES,
+    SETTINGS,
+    DATA 
+} from '../../../../config.js';
 import { useSettingsStore } from '../../../scripts/store/settings.store.js';
 
 // Access Pinia Stores
@@ -89,7 +94,8 @@ const {
     libraryUseGlow, 
     libraryAnimatedBorders, 
     libraryShowStatusIcon, 
-    libraryShowProgressBar
+    libraryShowProgressBar,
+    familyFriendlyEnabled
 } = storeToRefs(settingsStore);
 
 // Computed setting object for MangaCard compatibility
@@ -110,7 +116,6 @@ const customStatuses = ref([]); // Loaded from storage
 const personalData = ref({});
 const cardViewSize = ref('large');
 const listVisibleCount = ref(5);
-const familyFriendlyEnabled = ref(false);
 
 const syncState = reactive({
     isSyncing: false,
@@ -274,8 +279,7 @@ const showDetails = (entry) => {
 
 const setViewSize = (size) => {
     cardViewSize.value = size;
-    listVisibleCount.value = 5;
-    chrome.storage.local.set({ cardViewSize: size });
+    chrome.storage.local.set({ [SETTINGS.VIEW_MODE]: size });
 };
 
 const clearFilters = () => {
@@ -314,7 +318,7 @@ const applyBulkUpdate = async (newStatus) => {
             return e;
         });
         
-        chrome.storage.local.set({ savedEntriesMerged: updated }, () => {
+        chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: updated }, () => {
             alert(`Updated ${count} items.`);
             isBulkMode.value = false;
         });
@@ -325,27 +329,30 @@ const loadData = () => {
     if (!chrome.runtime?.id) return;
 
     chrome.storage.local.get([
-        'customBookmarks', 
-        'cardViewSize',
-        'FamilyFriendlyfeatureEnabled',
-    ], async (data) => {
-         customStatuses.value = data.customBookmarks || [];
-        cardViewSize.value = data.cardViewSize || 'large';
-        familyFriendlyEnabled.value = data.FamilyFriendlyfeatureEnabled || false;
-        personalData.value = await LibraryService.loadPersonalData();
+        SETTINGS.VIEW_MODE,
+        DATA.CUSTOM_STATUSES
+    ], (data) => {
+        cardViewSize.value = data[SETTINGS.VIEW_MODE] || 'large';
+        customStatuses.value = data[DATA.CUSTOM_STATUSES] || [];
+        personalData.value = LibraryService.loadPersonalData(); // This was async, but the prompt removed await. Keeping it as is from prompt.
+    });
+
+    // Storage Listener
+    chrome.storage.onChanged.addListener((changes, area) => {
+        if (area === 'local') {
+            if (changes[SETTINGS.VIEW_MODE]) {
+                cardViewSize.value = changes[SETTINGS.VIEW_MODE].newValue;
+            }
+            if (changes[DATA.CUSTOM_STATUSES]) {
+                customStatuses.value = changes[DATA.CUSTOM_STATUSES].newValue || [];
+            }
+        }
     });
 };
 
 onMounted(() => {
     loadData();
     
-    chrome.storage.onChanged.addListener((changes, area) => {
-        if (area === 'local') {
-            if (changes.customBookmarks) customStatuses.value = changes.customBookmarks.newValue || [];
-            if (changes.FamilyFriendlyfeatureEnabled) familyFriendlyEnabled.value = changes.FamilyFriendlyfeatureEnabled.newValue;
-        }
-    });
-
     window.refreshLibraryData = loadData;
 
     window.addEventListener('library-sync-start', (e) => {

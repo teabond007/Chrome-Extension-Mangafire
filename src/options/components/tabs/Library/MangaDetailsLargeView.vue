@@ -62,7 +62,7 @@
  * A non-modal, card-based detailed view of a manga entry for use in list layouts.
  */
 import { computed } from 'vue';
-import { getFormatName, getStatusInfo } from '../scripts/ui/manga-card-utils.js';
+import { getFormatName, getStatusInfo } from '../../../scripts/ui/manga-card-utils.js';
 
 const props = defineProps({
     entry: {

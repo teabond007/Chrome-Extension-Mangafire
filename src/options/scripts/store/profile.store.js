@@ -8,7 +8,7 @@ import * as gdriveAuth from '../../../scripts/core/cloud/gdrive-auth.js';
 import * as gdriveSync from '../../../scripts/core/cloud/gdrive-sync.js';
 import { fetchMDList } from '../../../scripts/core/api/mangadex-api.js';
 import { gatherStorageData, applyStorageData } from '../modules/storage-io.js';
-import { STORAGE_KEYS } from '../../../config.js';
+import { TOGGLES, SETTINGS, DATA } from '../../../config.js';
 
 export const useProfileStore = defineStore('profile', {
     state: () => ({
@@ -31,6 +31,7 @@ export const useProfileStore = defineStore('profile', {
         syncPersonal: true,
         syncSettings: true,
         syncCache: false,
+        syncInterval: 1, // Default to 1 day
         
         
         // OAuth configuration status
@@ -46,7 +47,10 @@ export const useProfileStore = defineStore('profile', {
             cache: false,
             customSites: true
         },
-        isMergeImport: true
+        isMergeImport: true,
+
+        // Cloud backup metadata
+        cloudBackupInfo: null
     }),
 
     getters: {
@@ -75,23 +79,26 @@ export const useProfileStore = defineStore('profile', {
             try {
                 // Load persisted preferences
                 const saved = await chrome.storage.local.get([
-                    'profileAutoSync',
-                    'profileSyncLibrary',
-                    'profileSyncHistory',
-                    'profileSyncPersonal',
-                    'profileSyncCache',
-                    'profileLastSync',
-                    STORAGE_KEYS.LAST_BACKUP
+                    TOGGLES.AUTO_SYNC,
+                    TOGGLES.SYNC_LIBRARY,
+                    TOGGLES.SYNC_HISTORY_CLOUD,
+                    TOGGLES.SYNC_PERSONAL,
+                    TOGGLES.SYNC_SETTINGS,
+                    TOGGLES.SYNC_CACHE,
+                    DATA.LAST_SYNC_CLOUD,
+                    SETTINGS.SYNC_INTERVAL,
+                    DATA.LAST_BACKUP
                 ]);
 
-                this.autoSyncEnabled = saved.profileAutoSync ?? false;
-                this.syncLibrary = saved.profileSyncLibrary ?? true;
-                this.syncHistory = saved.profileSyncHistory ?? true;
-                this.syncPersonal = saved.profileSyncPersonal ?? true;
-                this.syncSettings = saved.profileSyncSettings ?? true;
-                this.syncCache = saved.profileSyncCache ?? false;
-                this.lastSyncTime = saved.profileLastSync ?? null;
-                this.lastLocalBackup = saved[STORAGE_KEYS.LAST_BACKUP] ?? null;
+                this.autoSyncEnabled = saved[TOGGLES.AUTO_SYNC] ?? false;
+                this.syncLibrary = saved[TOGGLES.SYNC_LIBRARY] ?? true;
+                this.syncHistory = saved[TOGGLES.SYNC_HISTORY_CLOUD] ?? true;
+                this.syncPersonal = saved[TOGGLES.SYNC_PERSONAL] ?? true;
+                this.syncSettings = saved[TOGGLES.SYNC_SETTINGS] ?? true;
+                this.syncCache = saved[TOGGLES.SYNC_CACHE] ?? false;
+                this.syncInterval = saved[SETTINGS.SYNC_INTERVAL] ?? 1;
+                this.lastSyncTime = saved[DATA.LAST_SYNC_CLOUD] ?? null;
+                this.lastLocalBackup = saved[DATA.LAST_BACKUP] ?? null;
 
                 // Check OAuth configuration
                 this.isOAuthConfigured = this.checkOAuthConfig();
@@ -207,7 +214,7 @@ export const useProfileStore = defineStore('profile', {
                 // Update state
                 this.syncProgress = 100;
                 this.lastSyncTime = result.syncTime;
-                await chrome.storage.local.set({ profileLastSync: result.syncTime });
+                await chrome.storage.local.set({ [DATA.LAST_SYNC_CLOUD]: result.syncTime });
 
                 this.syncStatus = 'success';
                 this.lastSyncResult = {
@@ -216,7 +223,7 @@ export const useProfileStore = defineStore('profile', {
                 };
 
                 // Refresh cloud info
-                await this.refreshCloudInfo();
+                await this.updateCloudBackupInfo();
 
             } catch (error) {
                 this.syncStatus = 'error';
@@ -252,7 +259,7 @@ export const useProfileStore = defineStore('profile', {
 
                 this.syncProgress = 100;
                 this.lastSyncTime = Date.now();
-                await chrome.storage.local.set({ profileLastSync: this.lastSyncTime });
+                await chrome.storage.local.set({ [DATA.LAST_SYNC_CLOUD]: this.lastSyncTime });
 
                 this.syncStatus = 'success';
                 this.lastSyncResult = {
@@ -273,7 +280,7 @@ export const useProfileStore = defineStore('profile', {
         /**
          * Refreshes cloud backup info.
          */
-        async refreshCloudInfo() {
+        async updateCloudBackupInfo() {
             if (!this.isSignedIn) return;
 
             try {
@@ -282,6 +289,13 @@ export const useProfileStore = defineStore('profile', {
                 console.error('[ProfileStore] Failed to get cloud info:', error);
                 this.cloudBackupInfo = null;
             }
+        },
+
+        /**
+         * Clears the last sync result message from UI.
+         */
+        clearSyncResult() {
+            this.lastSyncResult = null;
         },
 
         /**
@@ -307,13 +321,24 @@ export const useProfileStore = defineStore('profile', {
          */
         async savePreferences() {
             await chrome.storage.local.set({
-                profileAutoSync: this.autoSyncEnabled,
-                profileSyncLibrary: this.syncLibrary,
-                profileSyncHistory: this.syncHistory,
-                profileSyncPersonal: this.syncPersonal,
-                profileSyncSettings: this.syncSettings,
-                profileSyncCache: this.syncCache
+                [TOGGLES.AUTO_SYNC]: this.autoSyncEnabled,
+                [TOGGLES.SYNC_LIBRARY]: this.syncLibrary,
+                [TOGGLES.SYNC_HISTORY_CLOUD]: this.syncHistory,
+                [TOGGLES.SYNC_PERSONAL]: this.syncPersonal,
+                [TOGGLES.SYNC_SETTINGS]: this.syncSettings,
+                [TOGGLES.SYNC_CACHE]: this.syncCache,
+                [SETTINGS.SYNC_INTERVAL]: this.syncInterval
             });
+        },
+
+        /**
+         * Sets the automatic synchronization interval.
+         * @param {number} days - Interval in days (1-30)
+         */
+        async setSyncInterval(days) {
+            const val = Math.max(1, Math.min(30, parseInt(days) || 1));
+            this.syncInterval = val;
+            await chrome.storage.local.set({ [SETTINGS.SYNC_INTERVAL]: val });
         },
 
         /**
@@ -344,7 +369,7 @@ export const useProfileStore = defineStore('profile', {
                 URL.revokeObjectURL(url);
 
                 this.lastLocalBackup = Date.now();
-                await chrome.storage.local.set({ [STORAGE_KEYS.LAST_BACKUP]: this.lastLocalBackup });
+                await chrome.storage.local.set({ [DATA.LAST_BACKUP]: this.lastLocalBackup });
                 
                 this.syncStatus = 'success';
                 this.lastSyncResult = { type: 'success', message: 'Local backup exported successfully' };
@@ -409,8 +434,8 @@ export const useProfileStore = defineStore('profile', {
                     throw new Error('No manga found in this list.');
                 }
                 
-                const data = await chrome.storage.local.get([STORAGE_KEYS.LIBRARY_ENTRIES]);
-                let savedEntries = Array.isArray(data[STORAGE_KEYS.LIBRARY_ENTRIES]) ? data[STORAGE_KEYS.LIBRARY_ENTRIES] : [];
+                const data = await chrome.storage.local.get([DATA.LIBRARY_ENTRIES]);
+                let savedEntries = Array.isArray(data[DATA.LIBRARY_ENTRIES]) ? data[DATA.LIBRARY_ENTRIES] : [];
                 
                 const existingTitles = new Set(savedEntries.map(e => e.title.toLowerCase()));
                 const existingMdIds = new Set(savedEntries.filter(e => e.anilistData?.mangadexId).map(e => e.anilistData.mangadexId));
@@ -439,7 +464,7 @@ export const useProfileStore = defineStore('profile', {
                     added++;
                 });
                 
-                await chrome.storage.local.set({ [STORAGE_KEYS.LIBRARY_ENTRIES]: savedEntries });
+                await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: savedEntries });
                 
                 this.syncStatus = 'success';
                 this.lastSyncResult = { 

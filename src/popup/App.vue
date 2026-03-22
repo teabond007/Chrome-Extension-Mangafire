@@ -48,13 +48,13 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import ToggleSwitch from '../options/components/common/ToggleSwitch.vue';
-import { STORAGE_KEYS } from '../config.js';
+import { TOGGLES } from '../config.js';
 
 // State
 const features = ref([
-    { id: "CustomBookmarks", storageKey: STORAGE_KEYS.SETTINGS_CUSTOM_STATUS_ENABLED, label: "Custom Statuses", value: false },
-    { id: "CustomBorderSize", storageKey: STORAGE_KEYS.SETTINGS_CUSTOM_BORDER_SIZE_ENABLED, label: "Custom Borders", value: false },
-    { id: "SyncandMarkRead", storageKey: STORAGE_KEYS.SETTINGS_SYNC_HISTORY, label: "Sync History", subLabel: "Sync & Mark Read", value: false }
+    { id: "CustomBookmarks", storageKey: TOGGLES.CUSTOM_STATUS_ENABLED, label: "Custom Statuses", value: false },
+    { id: "CustomBorderSize", storageKey: TOGGLES.CUSTOM_BORDER_SIZE_ENABLED, label: "Custom Borders", value: false },
+    { id: "SyncandMarkRead", storageKey: TOGGLES.HISTORY_TRACKING, label: "Sync History", subLabel: "Sync & Mark Read", value: false }
 ]);
 
 // Methods

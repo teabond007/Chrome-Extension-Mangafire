@@ -10,7 +10,11 @@
                         class="btn btn-ghost btn-sm"
                         :class="{ active: isBulkMode }"
                     >Bulk</button>
-                    <button class="info-redirect-btn" data-target="guide-entries" title="How to use">
+                    <button 
+                        class="info-redirect-btn" 
+                        title="How to use"
+                        @click="handleGuideRedirect"
+                    >
                         <svg class="icon-svg icon-info" style="width: 16px; height: 16px;"></svg>
                     </button>
                 </div>
@@ -140,6 +144,7 @@
 
 <script setup>
 import FilterGroup from '../../common/FilterGroup.vue';
+import { useSettingsStore } from '../../../scripts/store/settings.store.js';
 
 defineProps({
     filters: Object,
@@ -151,6 +156,21 @@ defineProps({
 });
 
 defineEmits(['toggle-bulk', 'set-view-size', 'clear-filters', 'toggle-bingeworthy']);
+
+const settingsStore = useSettingsStore();
+
+const handleGuideRedirect = () => {
+    settingsStore.activeTab = 'about';
+    
+    setTimeout(() => {
+        const targetElement = document.getElementById('guide-library');
+        if (targetElement) {
+            targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            targetElement.classList.add('highlight-pulse');
+            setTimeout(() => targetElement.classList.remove('highlight-pulse'), 2000);
+        }
+    }, 100);
+};
 </script>
 
 <style scoped lang="scss">

@@ -15,7 +15,7 @@
                 <SettingsCard 
                     title="Highlight Styles" 
                     icon="🖼️" 
-                    guide-target="guide-personalization"
+                    guide-target="guide-styles"
                     full-height
                 >
                     <div class="feature-toggle-wrapper">
@@ -23,7 +23,7 @@
                             <label for="CustomBorderSize" class="toggle-main-label">Custom Borders</label>
                             <span class="toggle-sub-label">Enable highlighting on sites</span>
                         </div>
-                        <ToggleSwitch id="CustomBorderSize" />
+                        <ToggleSwitch id="CustomBorderSize" v-model="highlightEnabled" />
                     </div>
 
                     <div class="divider"></div>
@@ -123,7 +123,8 @@ const {
     libraryHideNoHistory,
     libraryUseGlow,
     libraryAnimatedBorders,
-    libraryShowProgressBar
+    libraryShowProgressBar,
+    highlightEnabled
 } = storeToRefs(settingsStore);
 
 const bindSetting = (refValue, key) => {
@@ -136,6 +137,8 @@ bindSetting(libraryBordersEnabled, 'libraryBordersEnabled');
 bindSetting(libraryUseGlow, 'libraryUseGlow');
 bindSetting(libraryAnimatedBorders, 'libraryAnimatedBorders');
 bindSetting(libraryShowProgressBar, 'libraryShowProgressBar');
+bindSetting(libraryHideNoHistory, 'libraryHideNoHistory');
+bindSetting(highlightEnabled, 'highlightEnabled');
 
 const setBorderStyle = (style) => {
     borderStyle.value = style;

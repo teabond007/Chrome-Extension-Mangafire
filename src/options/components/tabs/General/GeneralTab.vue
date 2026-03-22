@@ -30,6 +30,13 @@
                             v-model="showReadingBadges"
                             margin-top
                         />
+                        <SwitchControl 
+                            id="FamilyFriendly" 
+                            label="Family Friendly Mode" 
+                            sub-label="Filter out Ecchi and Hentai tags from library"
+                            v-model="familyFriendlyEnabled"
+                            margin-top
+                        />
                     </div>
                 </SettingsCard>
             </div>
@@ -88,7 +95,8 @@ const {
     showReadingBadges,
     autoScroll,
     keybinds,
-    progressTracking
+    progressTracking,
+    familyFriendlyEnabled
 } = storeToRefs(settingsStore);
 
 const bindSetting = (refValue, key) => {
@@ -100,6 +108,7 @@ bindSetting(showReadingBadges, 'showReadingBadges');
 bindSetting(autoScroll, 'autoScroll');
 bindSetting(keybinds, 'keybinds');
 bindSetting(progressTracking, 'progressTracking');
+bindSetting(familyFriendlyEnabled, 'familyFriendlyEnabled');
 </script>
 
 <style scoped lang="scss">

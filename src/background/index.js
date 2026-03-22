@@ -4,7 +4,7 @@
  */
 
 import { getMergedMetadata } from '../scripts/core/api/metadata-service';
-import { STORAGE_KEYS } from '../config.js';
+import { DATA } from '../config.js';
 
 // Open options page when extension icon clicked
 chrome.action.onClicked.addListener(() => {
@@ -179,8 +179,8 @@ async function handleCustomSitesUpdate(sendResponse) {
 
   try {
     // Get current custom sites from storage
-    const data = await chrome.storage.local.get(['customSites']);
-    const customSites = data.customSites || [];
+    const data = await chrome.storage.local.get([DATA.CUSTOM_SITES]);
+    const customSites = data[DATA.CUSTOM_SITES] || [];
     const enabledSites = customSites.filter(s => s.enabled && s.hostname);
 
     // First, unregister any existing custom site scripts
@@ -256,14 +256,14 @@ async function handleFetchMetadata(title, storageKey, sendResponse) {
     }
 
     // Update the entry in storage
-    const stored = await chrome.storage.local.get([STORAGE_KEYS.LIBRARY_ENTRIES]);
-    const library = stored[STORAGE_KEYS.LIBRARY_ENTRIES] || [];
+    const stored = await chrome.storage.local.get([DATA.LIBRARY_ENTRIES]);
+    const library = stored[DATA.LIBRARY_ENTRIES] || [];
     const entry = library.find(e => e.slug === storageKey || e.title === title);
 
     if (entry) {
       entry.anilistData = data;
       entry.lastChecked = Date.now();
-      await chrome.storage.local.set({ [STORAGE_KEYS.LIBRARY_ENTRIES]: library });
+      await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: library });
       Log(`Metadata saved for: ${title}`);
     }
 

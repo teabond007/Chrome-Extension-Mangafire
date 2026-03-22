@@ -637,42 +637,6 @@ export class OverlayFactory {
         return tooltip;
     }
 
-    /**
-     * Create full expanded overlay (legacy, still available).
-     */
-    static createExpanded(entry, adapter, callbacks = {}) {
-        const overlay = document.createElement('div');
-        overlay.className = 'bmh-quick-actions bmh-qa-expanded';
-        overlay.dataset.entryId = entry.slug || entry.id || '';
-
-        const unitName = adapter.unitName === 'episode' ? 'Ep.' : 'Ch.';
-        const nextChapter = OverlayFactory.calculateNextChapter(entry);
-        const currentRating = entry.personalData?.rating || 0;
-
-        overlay.innerHTML = `
-            <div class="bmh-qa-content">
-                <button class="bmh-qa-btn bmh-qa-continue" data-action="continue" title="Continue to ${unitName} ${nextChapter}">
-                    <span class="bmh-qa-icon">▶</span>
-                    Continue ${unitName} ${nextChapter}
-                </button>
-                <button class="bmh-qa-btn bmh-qa-status" data-action="status" title="Change reading status">
-                    <span class="bmh-qa-status-indicator" style="background: ${OverlayFactory.getStatusColor(entry.status)}"></span>
-                    ${entry.status || 'Add to Library'}
-                </button>
-                <div class="bmh-qa-row">
-                    <div class="bmh-qa-rating" data-action="rating" title="Rate (${currentRating}/10)">
-                        ${OverlayFactory.renderRatingBadge(currentRating)}
-                    </div>
-                    <button class="bmh-qa-btn bmh-qa-details" data-action="details" title="View details">
-                        <span class="bmh-qa-icon">ℹ️</span>
-                    </button>
-                </div>
-            </div>
-        `;
-
-        OverlayFactory.attachEventListeners(overlay, entry, callbacks);
-        return overlay;
-    }
 
     /**
      * Attach event listeners to action buttons.

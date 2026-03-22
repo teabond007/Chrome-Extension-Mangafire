@@ -8,6 +8,7 @@
  */
 
 import * as highlighter from './highlighter';
+import { DATA } from '../../../config.js';
 
 /** Panel element reference */
 let panelContainer = null;
@@ -84,8 +85,8 @@ export function createPanel(configId, readerMode = false) {
  */
 async function loadExistingSelectors() {
     try {
-        const data = await chrome.storage.local.get(['customSites']);
-        const site = data.customSites?.find(s => s.id === siteId);
+        const data = await chrome.storage.local.get([DATA.CUSTOM_SITES]);
+        const site = data[DATA.CUSTOM_SITES]?.find(s => s.id === siteId);
         if (!site) return;
 
         if (isReaderMode) {
@@ -741,8 +742,8 @@ function handleClick(e) {
  */
 async function saveConfiguration() {
     try {
-        const data = await chrome.storage.local.get(['customSites']);
-        const sites = data.customSites || [];
+        const data = await chrome.storage.local.get([DATA.CUSTOM_SITES]);
+        const sites = data[DATA.CUSTOM_SITES] || [];
 
         const idx = sites.findIndex(s => s.id === siteId);
         if (idx === -1) {
@@ -757,7 +758,7 @@ async function saveConfiguration() {
         }
         sites[idx].updatedAt = Date.now();
 
-        await chrome.storage.local.set({ customSites: sites });
+        await chrome.storage.local.set({ [DATA.CUSTOM_SITES]: sites });
 
         chrome.runtime.sendMessage({ type: 'custom-sites-updated' });
 

@@ -4,7 +4,7 @@
         icon="☁️"
         icon-bg="rgba(16, 185, 129, 0.15)"
         icon-color="#10b981"
-        guide-target="guide-profile-cloud"
+        guide-target="guide-profile-sync"
         class="sync-actions-card"
     >
         <div :class="{ disabled: !isSignedIn }">

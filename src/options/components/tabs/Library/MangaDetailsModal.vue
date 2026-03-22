@@ -137,15 +137,15 @@
  
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { getFormatName, getStatusInfo } from '../scripts/ui/manga-card-utils.js';
-import * as LibraryService from '../../scripts/core/library-service.ts';
-import { useLibraryStore } from '../scripts/store/library.store.js';
+import { getFormatName, getStatusInfo } from '../../../scripts/ui/manga-card-utils.js';
+import * as LibraryService from '../../../../scripts/core/library-service.ts';
+import { useLibraryStore } from '../../../scripts/store/library.store.js';
 import anime from 'animejs';
-import { STORAGE_KEYS } from '../../config.js';
+import { DATA } from '../../../../config.js';
 
 // Shared Components
-import StarRating from './shared/StarRating.vue';
-import NotesEditor from './shared/NotesEditor.vue';
+import StarRating from './StarRating.vue';
+import NotesEditor from './NotesEditor.vue';
  
 const libraryStore = useLibraryStore();
  
@@ -364,8 +364,8 @@ const toggleChaptersList = () => {
  
 const loadHistoryChapters = () => {
     if (!chrome.runtime?.id) return;
-    chrome.storage.local.get(["savedReadChapters"], (data) => {
-        const history = data.savedReadChapters || {};
+    chrome.storage.local.get([DATA.READING_HISTORY], (data) => {
+        const history = data[DATA.READING_HISTORY] || {};
         const titleLower = currentEntry.value.title.toLowerCase();
         const mangaSlugBase = currentEntry.value.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
         const explicitSlug = currentEntry.value.mangaSlug ? currentEntry.value.mangaSlug.split('.')[0] : null;
@@ -393,23 +393,23 @@ const handleMarkAllRead = async () => {
     const slugify = (str) => str.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
     const mangaSlug = currentEntry.value.mangaSlug?.split('.')[0] || slugify(currentEntry.value.title);
  
-    chrome.storage.local.get(['savedReadChapters'], (data) => {
-        const history = data.savedReadChapters || {};
+    chrome.storage.local.get([DATA.READING_HISTORY], (data) => {
+        const history = data[DATA.READING_HISTORY] || {};
         history[mangaSlug] = allChapters;
         
-        chrome.storage.local.set({ savedReadChapters: history }, () => {
+        chrome.storage.local.set({ [DATA.READING_HISTORY]: history }, () => {
             historyChapters.value = allChapters;
             currentEntry.value.readChapters = totalChapters;
             currentEntry.value.lastChapterRead = String(totalChapters);
             currentEntry.value.lastRead = Date.now();
             
             // Save updated entry
-            chrome.storage.local.get([STORAGE_KEYS.LIBRARY_ENTRIES], (res) => {
-                const merged = res[STORAGE_KEYS.LIBRARY_ENTRIES] || [];
+            chrome.storage.local.get([DATA.LIBRARY_ENTRIES], (res) => {
+                const merged = res[DATA.LIBRARY_ENTRIES] || [];
                 const idx = merged.findIndex(e => e.anilistData?.id === ani.value?.id || e.mangaSlug === currentEntry.value.mangaSlug);
                 if (idx !== -1) {
                     merged[idx] = { ...currentEntry.value }; // Use spread for reactivity
-                    chrome.storage.local.set({ [STORAGE_KEYS.LIBRARY_ENTRIES]: merged }, () => {
+                    chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: merged }, () => {
                         // Notify Vue tab that data has changed
                         if (window.refreshLibraryData) window.refreshLibraryData();
                     });

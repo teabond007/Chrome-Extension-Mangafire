@@ -88,65 +88,79 @@ export const NOTIFICATION_CONFIG = {
 // Status colors and defaults are preserved as constants below for direct import.
 
 /**
- * Standardized storage keys for chrome.storage.local
- * Prevents typos and centralizes data definitions across the extension.
+ * Toggles: Boolean feature flags and operational switches (true/false)
  * @type {Object<string, string>}
  */
-export const STORAGE_KEYS = {
-    // Library
+export const TOGGLES = {
+    // Cloud Sync
+    AUTO_SYNC: 'profileAutoSync',
+    SYNC_LIBRARY: 'profileSyncLibrary',
+    SYNC_HISTORY_CLOUD: 'profileSyncHistory',
+    SYNC_PERSONAL: 'profileSyncPersonal',
+    SYNC_SETTINGS: 'profileSyncSettings',
+    SYNC_CACHE: 'profileSyncCache',
+
+    // Core Features
+    NOTIFICATIONS: 'NotificationsfeatureEnabled',
+    FAMILY_FRIENDLY: 'FamilyFriendlyfeatureEnabled',
+    HISTORY_TRACKING: 'SyncandMarkReadfeatureEnabled',
+    PROGRESS_TRACKING: 'progressTrackingEnabled',
+    AUTO_SCROLL: 'autoScrollEnabled',
+    KEYBINDS_ENABLED: 'keybindsEnabled',
+
+    // Custom Sites
+    CUSTOM_SITE_HIGHLIGHT: 'CustomSiteHighlightEnabled',
+    CUSTOM_SITE_QUICK_ACTIONS: 'CustomSiteQuickActionsEnabled',
+    CUSTOM_BORDER_SIZE_ENABLED: 'CustomBorderSizefeatureEnabled',
+    CUSTOM_STATUS_ENABLED: 'CustomBookmarksfeatureEnabled',
+
+    // UI Enhancements
+    LIBRARY_BORDERS: 'LibraryCardBordersEnabled',
+    LIBRARY_GLOW_EFFECT: 'LibraryGlowEffect',
+    LIBRARY_ANIMATED_BORDERS: 'LibraryAnimatedBorders',
+    LIBRARY_STATUS_ICONS: 'LibraryStatusIcons',
+    LIBRARY_PROGRESS_BARS: 'LibraryProgressBars',
+    LIBRARY_HIDE_NO_HISTORY: 'libraryHideNoHistory',
+    QUICK_ACTIONS: 'quickActions',
+    SHOW_READING_BADGES: 'showReadingBadges',
+    IS_CUSTOM_THEME: 'isCustomTheme'
+};
+
+/**
+ * Settings: Configurable values, preferences and metadata strings
+ * @type {Object<string, string>}
+ */
+export const SETTINGS = {
+    THEME: 'theme',
+    CUSTOM_THEME_DATA: 'customThemeData',
+    HIGHLIGHT_THICKNESS: 'CustomBorderSize',
+    LIBRARY_THICKNESS: 'LibraryBorderSize',
+    BORDER_STYLE: 'GlobalBorderStyle',
+    VIEW_MODE: 'cardViewSize', // Unified from cardViewSize/libraryViewMode
+    SYNC_INTERVAL: 'profileSyncInterval'
+};
+
+/**
+ * Data: Complex objects, collections, caches and timestamps
+ * @type {Object<string, string>}
+ */
+export const DATA = {
     LIBRARY_ENTRIES: 'savedEntriesMerged',
     READING_HISTORY: 'savedReadChapters',
-    
-    // Personal Data
     PERSONAL_DATA: 'libraryPersonalData',
     FILTER_PRESETS: 'libraryFilterPresets',
-    
-    // Custom Sites
     CUSTOM_SITES: 'customSites',
-    
-    // API Caches
+    CUSTOM_STATUSES: 'customBookmarks',
     ANILIST_CACHE: 'anilistCache',
     MANGADEX_CACHE: 'mangadexCache',
+    KEYBINDS_CONFIG: 'keybinds',
     
-    // Settings & Features
-    SETTINGS_PROFILE_SYNC: 'profileAutoSync',
-    SETTINGS_AUTO_SCROLL: 'autoScrollEnabled',
-    SETTINGS_KEYBINDS: 'keybindsEnabled',
-    SETTINGS_PROGRESS: 'progressTrackingEnabled',
-    SETTINGS_CARD_SIZE: 'cardViewSize',
-    SETTINGS_HIGHLIGHT_THICKNESS: 'CustomBorderSize',
-    SETTINGS_QUICK_ACTIONS: 'quickActions',
-    SETTINGS_SHOW_BADGES: 'showReadingBadges',
-    
-    // Core Feature Toggles
-    SETTINGS_SYNC_HISTORY: 'SyncandMarkReadfeatureEnabled',
-    SETTINGS_AUTO_SYNC: 'AutoSyncfeatureEnabled',
-    SETTINGS_NOTIFICATIONS: 'NotificationsfeatureEnabled',
-    
-    // Custom Site Feature Toggles
-    SETTINGS_CUSTOM_SITE_HIGHLIGHT: 'CustomSiteHighlightEnabled',
-    SETTINGS_CUSTOM_SITE_QUICK_ACTIONS: 'CustomSiteQuickActionsEnabled',
-    SETTINGS_CUSTOM_BORDER_SIZE_ENABLED: 'CustomBorderSizefeatureEnabled',
-    SETTINGS_CUSTOM_STATUS_ENABLED: 'CustomBookmarksfeatureEnabled',
-    
-    // Appearance
-    THEME: 'theme',
-    BORDERS_ENABLED: 'LibraryCardBordersEnabled',
-    BORDER_THICKNESS: 'LibraryCardBorderThickness',
-    GLOW_EFFECT: 'LibraryGlowEffect',
-    ANIMATED_BORDERS: 'LibraryAnimatedBorders',
-    STATUS_ICONS: 'LibraryStatusIcons',
-    PROGRESS_BARS: 'LibraryProgressBars',
-    
-    // Custom State
-    CUSTOM_BOOKMARKS: 'customBookmarks',
-    
-    // Sync Metadata
+    // Timestamps
     LAST_BACKUP: 'LastBackupDate',
-    
-    // Keybindings Customization
-    KEYBINDS_CONFIG: 'keybinds'
+    LAST_SYNC_CLOUD: 'profileLastSync',
+    LAST_SYNC_TIME: 'lastSyncTime'
 };
+
 
 /**
  * Configuration for remote API integrations.
