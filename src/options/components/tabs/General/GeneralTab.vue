@@ -37,6 +37,13 @@
                             v-model="familyFriendlyEnabled"
                             margin-top
                         />
+                        <SwitchControl 
+                            id="AutoReadStale" 
+                            label="Auto-Read Stale Entries" 
+                            sub-label="Convert 'Reading' entries to 'Read' if inactive for 30+ days"
+                            v-model="autoReadStale"
+                            margin-top
+                        />
                     </div>
                 </SettingsCard>
             </div>
@@ -96,7 +103,8 @@ const {
     autoScroll,
     keybinds,
     progressTracking,
-    familyFriendlyEnabled
+    familyFriendlyEnabled,
+    autoReadStale
 } = storeToRefs(settingsStore);
 
 const bindSetting = (refValue, key) => {
@@ -109,6 +117,7 @@ bindSetting(autoScroll, 'autoScroll');
 bindSetting(keybinds, 'keybinds');
 bindSetting(progressTracking, 'progressTracking');
 bindSetting(familyFriendlyEnabled, 'familyFriendlyEnabled');
+bindSetting(autoReadStale, 'autoReadStale');
 </script>
 
 <style scoped lang="scss">

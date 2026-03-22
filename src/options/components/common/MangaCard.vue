@@ -18,7 +18,7 @@
             <div class="card-status-dot" :style="{ backgroundColor: statusInfo.borderColor }"></div>
             
             <!-- Corner Ribbon (Optional) -->
-            <div v-if="entry.status && entry.status !== 'Read'" 
+            <div v-if="entry.status" 
                  class="manga-card-ribbon" 
                  :style="{ '--status-color': statusInfo.borderColor }">
                 {{ entry.status }}

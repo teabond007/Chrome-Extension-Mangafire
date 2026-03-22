@@ -3,6 +3,7 @@ import { wipeMangadexCache } from '../../../scripts/core/api/mangadex-api.js';
 import { getMergedMetadata } from '../../../scripts/core/api/metadata-service';
 import { DATA } from '../../../config.js';
 import * as LibraryService from '../../../scripts/core/library-service.ts';
+import { useSettingsStore } from './settings.store.js';
 
 export const useLibraryStore = defineStore('library', {
     state: () => ({
@@ -30,6 +31,17 @@ export const useLibraryStore = defineStore('library', {
                 this.entries = data[DATA.LIBRARY_ENTRIES] || [];
                 this.history = data[DATA.READING_HISTORY] || {};
                 this.lastSync = data[DATA.LAST_SYNC_TIME] || null;
+
+                // Auto-maintenance: Read stale entries
+                const settingsStore = useSettingsStore();
+                if (settingsStore.autoReadStale && this.entries.length > 0) {
+                    const { updatedLibrary, changedCount } = LibraryService.autoReadStaleEntries(this.entries);
+                    if (changedCount > 0) {
+                        console.log(`[LibraryStore] Auto-read ${changedCount} stale entries.`);
+                        this.entries = updatedLibrary;
+                        await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: JSON.parse(JSON.stringify(this.entries)) });
+                    }
+                }
             } catch (err) {
                 console.error('Failed to load library:', err);
             } finally {

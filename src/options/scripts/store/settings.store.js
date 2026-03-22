@@ -40,6 +40,7 @@ export const useSettingsStore = defineStore('settings', {
         keybinds: false,
         progressTracking: true,
         familyFriendlyEnabled: false,
+        autoReadStale: false,
 
         // Custom Statuses (marker-manager)
         /** @type {Array<{name: string, color: string, style: string}>} */
@@ -73,7 +74,8 @@ export const useSettingsStore = defineStore('settings', {
                 TOGGLES.LIBRARY_ANIMATED_BORDERS,
                 TOGGLES.LIBRARY_PROGRESS_BARS,
                 TOGGLES.CUSTOM_SITE_HIGHLIGHT,
-                TOGGLES.FAMILY_FRIENDLY
+                TOGGLES.FAMILY_FRIENDLY,
+                TOGGLES.AUTO_READ_STALE
             ]);
 
             this.theme = data[SETTINGS.THEME] || 'dark';
@@ -103,6 +105,7 @@ export const useSettingsStore = defineStore('settings', {
             this.libraryShowProgressBar = !!data[TOGGLES.LIBRARY_PROGRESS_BARS];
             this.highlightEnabled = data[TOGGLES.CUSTOM_SITE_HIGHLIGHT] !== false;
             this.familyFriendlyEnabled = !!data[TOGGLES.FAMILY_FRIENDLY];
+            this.autoReadStale = !!data[TOGGLES.AUTO_READ_STALE];
 
             this.isLoaded = true;
         },
@@ -142,6 +145,7 @@ export const useSettingsStore = defineStore('settings', {
                 case 'libraryShowProgressBar': storagePayload[TOGGLES.LIBRARY_PROGRESS_BARS] = value; break;
                 case 'highlightEnabled':      storagePayload[TOGGLES.CUSTOM_SITE_HIGHLIGHT] = value; break;
                 case 'familyFriendlyEnabled': storagePayload[TOGGLES.FAMILY_FRIENDLY] = value; break;
+                case 'autoReadStale':         storagePayload[TOGGLES.AUTO_READ_STALE] = value; break;
             }
 
             if (Object.keys(storagePayload).length > 0) {
@@ -204,6 +208,7 @@ export const useSettingsStore = defineStore('settings', {
             if (changes[TOGGLES.LIBRARY_PROGRESS_BARS]) this.libraryShowProgressBar = changes[TOGGLES.LIBRARY_PROGRESS_BARS].newValue;
             if (changes[TOGGLES.CUSTOM_SITE_HIGHLIGHT]) this.highlightEnabled = changes[TOGGLES.CUSTOM_SITE_HIGHLIGHT].newValue;
             if (changes[TOGGLES.FAMILY_FRIENDLY]) this.familyFriendlyEnabled = changes[TOGGLES.FAMILY_FRIENDLY].newValue;
+            if (changes[TOGGLES.AUTO_READ_STALE]) this.autoReadStale = changes[TOGGLES.AUTO_READ_STALE].newValue;
         }
     }
 });

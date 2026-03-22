@@ -272,3 +272,31 @@ export async function deleteFilterPreset(name: string): Promise<any[]> {
     await chrome.storage.local.set({ [DATA.FILTER_PRESETS]: presets });
     return presets;
 }
+
+/**
+ * Maintenance: Converts 'Reading' entries to 'Read' if inactive for >30 days.
+ * @param {Array} library - Loaded library entries
+ * @returns {Object} { updatedLibrary: Array, changedCount: number }
+ */
+export function autoReadStaleEntries(library: any[]): { updatedLibrary: any[], changedCount: number } {
+    const STALE_THRESHOLD = 30 * 24 * 60 * 60 * 1000; // 30 days
+    const now = Date.now();
+    let changedCount = 0;
+
+    const updatedLibrary = library.map(entry => {
+        if (entry.status === 'Reading' && entry.lastRead) {
+            const diff = now - entry.lastRead;
+            if (diff > STALE_THRESHOLD) {
+                changedCount++;
+                return {
+                    ...entry,
+                    status: 'Read',
+                    lastUpdated: now
+                };
+            }
+        }
+        return entry;
+    });
+
+    return { updatedLibrary, changedCount };
+}
