@@ -114,11 +114,33 @@ function injectSelectorToolOnLoad(tabId) {
 
 async function editSite(site) {
     const baseUrl = site.url || `https://${site.hostname}`;
-    const urlObj = new URL(baseUrl);
-    urlObj.searchParams.set('bmh-selector-mode', 'true');
-    urlObj.searchParams.set('bmh-site-id', site.id);
-    const tab = await chrome.tabs.create({ url: urlObj.toString() });
-    injectSelectorToolOnLoad(tab.id);
+    const exampleUrl = prompt(
+        'Enter the URL of the page you want to pick manga cards from (homepage, latest releases, etc).\n\n' +
+        'Original site link will not be updated.',
+        baseUrl
+    );
+
+    if (!exampleUrl) return;
+
+    try {
+        const urlObj = new URL(exampleUrl);
+        
+        // Warn if domain differs
+        const host = urlObj.hostname.replace('www.', '');
+        const targetHost = site.hostname.replace('www.', '');
+        if (!host.includes(targetHost) && !targetHost.includes(host)) {
+            if (!confirm(`The URL host "${urlObj.hostname}" looks different from "${site.hostname}". Proceed anyway?`)) {
+                return;
+            }
+        }
+
+        urlObj.searchParams.set('bmh-selector-mode', 'true');
+        urlObj.searchParams.set('bmh-site-id', site.id);
+        const tab = await chrome.tabs.create({ url: urlObj.toString() });
+        injectSelectorToolOnLoad(tab.id);
+    } catch {
+        alert('Invalid URL. Please enter a valid URL starting with http:// or https://');
+    }
 }
 
 async function editReaderPage(site) {

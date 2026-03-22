@@ -49,7 +49,7 @@
 
             <div class="modal-footer">
                 <button class="btn btn-primary" @click="$emit('edit', site)">
-                    ✏️ Re-select Elements
+                    ✏️ Re-select Cards
                 </button>
                 <button class="btn btn-secondary" @click="$emit('close')">
                     Close

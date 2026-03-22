@@ -13,12 +13,12 @@
             <button 
                 class="btn btn-icon" 
                 @click="$emit('edit', site)"
-                title="Edit Selectors"
+                title="Edit Card Selectors"
             >✏️</button>
             <button 
                 class="btn btn-icon btn-reader" 
                 @click="$emit('edit-reader', site)"
-                title="Edit Reading Page"
+                title="Edit Reader Selectors"
             >📖</button>
             <button 
                 class="btn btn-icon" 
