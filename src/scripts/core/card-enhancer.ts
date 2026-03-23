@@ -69,6 +69,8 @@ interface EnhancerSettings {
     progressBadges: boolean;
     quickActions: boolean;
     newChapterBadges: boolean;
+    showRibbons: boolean;
+    useGlow: boolean;
     border: {
         size: number;
         style: string;
@@ -114,7 +116,9 @@ export class CardEnhancer {
                 radius: '8px'
             },
             customStatuses: settings[DATA.CUSTOM_STATUSES] || [],
-            customStatusesEnabled: settings[TOGGLES.CUSTOM_STATUS_ENABLED] || false
+            customStatusesEnabled: settings[TOGGLES.CUSTOM_STATUS_ENABLED] || false,
+            showRibbons: settings[TOGGLES.CUSTOM_SITE_SHOW_RIBBONS] !== false,
+            useGlow: !!settings[TOGGLES.CUSTOM_SITE_GLOW_EFFECT]
         };
     }
 
@@ -287,6 +291,10 @@ export class CardEnhancer {
         if (this.settings.quickActions) {
             this.applyQuickActions(card, entry);
         }
+
+        if (this.settings.showRibbons) {
+            this.applyRibbon(card, entry);
+        }
     }
 
     /**
@@ -327,10 +335,59 @@ export class CardEnhancer {
             this.adapter.applyBorder(card.element, color, this.settings.border.size, style);
         } else {
             const target = (card.element.closest('li') || card.element) as HTMLElement;
-            target.style.setProperty('border', `${this.settings.border.size}px ${style} ${color}`, 'important');
+            
+            if (this.settings.useGlow) {
+                const t = this.settings.border.size;
+                target.style.setProperty('border', 'none', 'important');
+                target.style.setProperty('--glow-color', `${color}80`);
+                target.style.setProperty('box-shadow', `
+                    0 0 ${t * 2.5}px var(--glow-color),
+                    0 0 ${t * 5}px var(--glow-color),
+                    0 0 ${t * 8}px var(--glow-color),
+                    inset 0 0 15px rgba(255, 255, 255, 0.05)
+                `, 'important');
+            } else {
+                target.style.setProperty('border', `${this.settings.border.size}px ${style} ${color}`, 'important');
+                target.style.setProperty('box-shadow', 'none', 'important');
+            }
+            
             target.style.setProperty('border-radius', this.settings.border.radius, 'important');
             target.style.setProperty('box-sizing', 'border-box', 'important');
         }
+    }
+
+    /**
+     * Apply status ribbon to the corner.
+     * @param {Object} card - Card object
+     * @param {Object} entry - Library entry data
+     */
+    applyRibbon(card: CardObject, entry: LibraryEntry) {
+        if (!entry.status || entry.status === 'Add to Library') return;
+
+        let color = '';
+        const status = (entry.status || '').trim().toLowerCase();
+
+        // Match color (reuse logic from applyBorder or centralize it)
+        const entries = Object.entries(STATUS_COLORS);
+        for (const [key, value] of entries) {
+            if (status === key.toLowerCase() || status.includes(key.toLowerCase())) {
+                color = value;
+                break;
+            }
+        }
+
+        // Custom status overrides
+        if (this.settings.customStatusesEnabled && this.settings.customStatuses) {
+            this.settings.customStatuses.forEach(custom => {
+                if (custom.name && status.includes(custom.name.toLowerCase())) {
+                    color = custom.color;
+                }
+            });
+        }
+
+        if (!color) color = '#6366f1'; // Default backup color
+
+        OverlayFactory.mountStatusRibbon(card.element, entry.status, color);
     }
 
     /**

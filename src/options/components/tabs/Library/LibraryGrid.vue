@@ -1,11 +1,16 @@
 <template>
-    <div>
+    <div id="library-grid" class="library-grid-container">
         <!-- Manga Grid (Card Views) -->
-        <div v-if="cardViewSize !== 'list'" class="manga-grid" :class="{ compact: cardViewSize === 'compact' }">
+        <div 
+            v-if="cardViewSize !== 'list'" 
+            class="manga-grid" 
+            :class="{ compact: cardViewSize === 'compact' }"
+        >
             <MangaCard 
                 v-for="entry in sortedEntries" 
                 :key="entry.title + (entry.anilistData?.id || '')"
                 :entry="entry"
+                :personal-data="personalData?.[getMangaId(entry)]"
                 :custom-statuses="customStatuses"
                 :library-settings="librarySettings"
                 @click="$emit('show-details', entry)"
@@ -16,19 +21,23 @@
             </div>
         </div>
 
-        <!-- Detailed List View (Modal-like) -->
+        <!-- Detailed List View -->
         <div v-else class="manga-list-view">
-            <MangaDetailsLargeView
+            <MangaDetailsLargeView 
                 v-for="entry in visibleListEntries"
-                :key="'list-' + entry.title + (entry.anilistData?.id || '')"
+                :key="'list-' + entry.title"
                 :entry="entry"
-                @open-modal="$emit('show-details', entry)"
+                :personal-data="personalData?.[getMangaId(entry)]"
+                @click="$emit('show-details', entry)"
             />
             <div v-if="sortedEntries.length === 0" class="empty-library">
                 No matches found.
             </div>
+            
             <div v-if="hasMoreEntries" class="load-more-container">
-                <button @click="$emit('load-more')" class="btn btn-primary">Load More</button>
+                <button @click="$emit('load-more')" class="btn btn-primary btn-full">
+                    Load More
+                </button>
             </div>
         </div>
     </div>
@@ -37,6 +46,7 @@
 <script setup>
 import MangaCard from '../../common/MangaCard.vue';
 import MangaDetailsLargeView from './MangaDetailsLargeView.vue';
+import { getMangaId } from '../../../../scripts/core/library-service.ts';
 
 defineProps({
     sortedEntries: Array,
@@ -44,6 +54,7 @@ defineProps({
     hasMoreEntries: Boolean,
     cardViewSize: String,
     customStatuses: Array,
+    personalData: Object,
     librarySettings: Object
 });
 

@@ -312,6 +312,48 @@ export class OverlayFactory {
     }
 
     /**
+     * Create and mount a status ribbon in the corner.
+     * @param {HTMLElement} host - The card element
+     * @param {String} text - Ribbon text
+     * @param {String} color - Ribbon background color
+     */
+    static mountStatusRibbon(host, text, color) {
+        const container = document.createElement('div');
+        container.className = 'bmh-vue-ribbon-container';
+        host.appendChild(container);
+
+        const shadow = container.attachShadow({ mode: 'open' });
+        const mountPoint = document.createElement('div');
+        shadow.appendChild(mountPoint);
+
+        const style = document.createElement('style');
+        style.textContent = `
+            .bmh-ribbon {
+                position: absolute;
+                top: 0;
+                right: 0;
+                background: ${color};
+                color: white;
+                font-size: 10px;
+                font-weight: 700;
+                padding: 4px 20px 4px 10px;
+                clip-path: polygon(0 0, 100% 0, 100% 100%, 10px 100%);
+                z-index: 15;
+                font-family: sans-serif;
+                pointer-events: none;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                text-transform: uppercase;
+            }
+        `;
+        shadow.appendChild(style);
+        
+        const ribbon = document.createElement('div');
+        ribbon.className = 'bmh-ribbon';
+        ribbon.textContent = text;
+        mountPoint.appendChild(ribbon);
+    }
+
+    /**
      * Create and mount a Vue-based auto-scroll control panel.
      * @param {Object} props - Component props (speed, isRunning)
      * @param {Object} handlers - Event handlers (toggle, speed-change)

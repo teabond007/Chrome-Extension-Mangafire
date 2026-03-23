@@ -3,7 +3,6 @@
         class="manga-card" 
         :class="{ 
             'glow-effect': useGlow, 
-            'reading-pulse': useAnimatedPulse,
             'has-custom-status': !!entry.customStatus,
             'stale-entry': isStale
         }"
@@ -18,7 +17,7 @@
             <div class="card-status-dot" :style="{ backgroundColor: statusInfo.borderColor }"></div>
             
             <!-- Corner Ribbon (Optional) -->
-            <div v-if="entry.status" 
+            <div v-if="entry.status && librarySettings.showRibbons" 
                  class="manga-card-ribbon" 
                  :style="{ '--status-color': statusInfo.borderColor }">
                 {{ entry.status }}
@@ -28,9 +27,7 @@
                 {{ personalData.rating }}
             </div>
 
-            <div v-if="showProgressBar" class="manga-card-progress-bar">
-                <div class="manga-card-progress-fill" :style="{ width: progressPercentage + '%' }"></div>
-            </div>
+
 
             <div class="manga-card-actions">
                 <a 
@@ -69,13 +66,13 @@
                         {{ demographic }}
                     </div>
 
-                    <div class="info-item">
+                    <div v-if="librarySettings.showReadingBadges" class="info-item">
                         <template v-if="entry.anilistData.chapters">
-                            <span class="info-label">Read:</span>{{ entry.readChapters || 0 }} / 
+                            <span class="info-label">Read:</span>{{ entry.readChapters || 'ch.???' }} / 
                             <span class="info-label">Total:</span>{{ entry.anilistData.chapters }}
                         </template>
                         <template v-else>
-                            <span class="info-label">Read:</span>{{ entry.readChapters || 0 }} 
+                            <span class="info-label">Read:</span>{{ entry.readChapters || 'ch.???' }} 
                             <span class="info-label ongoing-tag">Ongoing</span>
                         </template>
                     </div>
@@ -90,7 +87,8 @@
 
 <script setup>
 import { computed, ref, onMounted } from 'vue';
-import { getStatusInfo, getFormatName } from '../../scripts/ui/manga-card-utils.js';
+import { getStatusInfo, getFormatName, getDemographic } from '../../scripts/ui/manga-card-utils.js';
+import { BORDER_DEFAULTS, DEFAULT_STATUS } from '../../../config.js';
 import * as LibraryService from '../../../scripts/core/library-service.ts';
 
 // Fallback placeholder - base64 encoded or remote fallback
@@ -105,23 +103,24 @@ const props = defineProps({
         type: Array,
         default: () => []
     },
+    personalData: {
+        type: Object,
+        default: () => ({ rating: 0, notes: '' })
+    },
     librarySettings: {
         type: Object,
         default: () => ({
             bordersEnabled: true,
-            borderThickness: 2,
+            borderThickness: BORDER_DEFAULTS.size,
             useGlowEffect: false,
-            animatedBorders: false,
-
-            showProgressBar: false,
+            showReadingBadges: true,
+            showRibbons: true,
             smartInactivity: false
         })
     }
 });
 
 defineEmits(['click', 'status-click']);
-
-const personalData = ref({ rating: 0 });
 
 const statusInfo = computed(() => {
     return getStatusInfo(props.entry.status, props.entry.customStatus, props.customStatuses);
@@ -133,26 +132,28 @@ const cardStyle = computed(() => {
     if (!props.librarySettings.bordersEnabled) return { border: 'none' };
     
     if (useGlow.value) {
+        const t = props.librarySettings.borderThickness || BORDER_DEFAULTS.size;
         return { 
             '--glow-color': `${statusInfo.value.borderColor}80`,
+            '--glow-spread-1': `${t * 2.5}px`,
+            '--glow-spread-2': `${t * 5}px`,
+            '--glow-spread-3': `${t * 8}px`,
             border: 'none'
         };
     }
     
-    const thicknessValue = props.librarySettings.borderThickness || 2;
+    const thicknessValue = props.librarySettings.borderThickness || BORDER_DEFAULTS.size;
     const thickness = `${thicknessValue}px`;
     return {
-        border: `${thickness} ${statusInfo.value.borderStyle || 'solid'} ${statusInfo.value.borderColor}`,
+        border: `${thickness} ${statusInfo.value.borderStyle || BORDER_DEFAULTS.style} ${statusInfo.value.borderColor}`,
         '--border-thickness': thickness
     };
 });
 
-const useAnimatedPulse = computed(() => {
-    return props.librarySettings.animatedBorders && props.entry.status === 'Reading';
-});
+
 
 const isStale = computed(() => {
-    if (props.librarySettings.smartInactivity && props.entry.status === "Reading" && props.entry.lastRead) {
+    if (props.librarySettings.smartInactivity && props.entry.status === DEFAULT_STATUS && props.entry.lastRead) {
         const diff = Date.now() - props.entry.lastRead;
         const days = diff / (1000 * 60 * 60 * 24);
         return days > 30;
@@ -167,18 +168,7 @@ const coverUrl = computed(() => {
     return FALLBACK_COVER;
 });
 
-const showProgressBar = computed(() => {
-    return props.librarySettings.showProgressBar && 
-           props.entry.anilistData?.chapters && 
-           props.entry.readChapters;
-});
 
-const progressPercentage = computed(() => {
-    if (!showProgressBar.value) return 0;
-    const total = props.entry.anilistData.chapters;
-    const read = parseInt(props.entry.readChapters) || 0;
-    return Math.min(100, Math.round((read / total) * 100));
-});
 
 const displayTitle = computed(() => {
     return props.entry.anilistData?.title?.english || 
@@ -192,23 +182,7 @@ const formatName = computed(() => {
 });
 
 const demographic = computed(() => {
-    const tags = props.entry.anilistData?.tags;
-    if (!tags || !Array.isArray(tags)) return null;
-    
-    const tagNames = tags.map(t => t.name.toLowerCase());
-    if (tagNames.includes('seinen')) return 'Seinen';
-    if (tagNames.includes('josei')) return 'Josei';
-    if (tagNames.includes('shounen')) return 'Shonen';
-    if (tagNames.includes('shoujo')) return 'Shoujo';
-    return null;
-});
-
-onMounted(async () => {
-    const rawData = await LibraryService.loadPersonalData();
-    const id = LibraryService.getMangaId(props.entry);
-    if (rawData[id]) {
-        personalData.value.rating = rawData[id].rating || 0;
-    }
+    return getDemographic(props.entry.anilistData?.tags);
 });
 </script>
 
@@ -216,7 +190,6 @@ onMounted(async () => {
 .manga-card {
     background: var(--bg-card);
     border-radius: var(--radius-md);
-    overflow: hidden;
     transition: all 0.3s ease;
     cursor: pointer;
     position: relative;
@@ -264,12 +237,17 @@ onMounted(async () => {
         background-size: cover;
         background-position: center;
         position: relative;
+        border-top-left-radius: inherit;
+        border-top-right-radius: inherit;
+        overflow: hidden;
     }
 
     /* Card Body */
     &-body {
         padding: 12px;
         background: var(--bg-card);
+        border-bottom-left-radius: inherit;
+        border-bottom-right-radius: inherit;
     }
 
     &-title {
@@ -377,8 +355,19 @@ onMounted(async () => {
 /* Glow effect alternative to borders */
 .glow-effect {
     border: none !important;
-    box-shadow: 0 0 15px var(--glow-color, rgba(76, 175, 80, 0.5)),
+    box-shadow: 
+        0 0 var(--glow-spread-1, 10px) var(--glow-color, rgba(76, 175, 80, 0.4)),
+        0 0 var(--glow-spread-2, 20px) var(--glow-color, rgba(76, 175, 80, 0.2)),
+        0 0 var(--glow-spread-3, 35px) var(--glow-color, rgba(76, 175, 80, 0.1)),
         inset 0 0 15px rgba(255, 255, 255, 0.05) !important;
+    
+    &:hover {
+        box-shadow: 
+            0 0 calc(var(--glow-spread-1, 10px) * 1.5) var(--glow-color, rgba(76, 175, 80, 0.6)),
+            0 0 calc(var(--glow-spread-2, 20px) * 1.5) var(--glow-color, rgba(76, 175, 80, 0.4)),
+            0 0 calc(var(--glow-spread-3, 35px) * 1.5) var(--glow-color, rgba(76, 175, 80, 0.2)),
+            inset 0 0 15px rgba(255, 255, 255, 0.1) !important;
+    }
 }
 
 /* Corner ribbon status */
@@ -395,35 +384,9 @@ onMounted(async () => {
     z-index: 5;
 }
 
-/* Progress bar overlay */
-.manga-card-progress {
-    &-bar {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 5;
-    }
 
-    &-fill {
-        height: 100%;
-        background: linear-gradient(90deg, var(--primary), #00BCD4);
-        transition: width 0.3s ease;
-    }
-}
 
-/* Animated border for "Reading" status */
-@keyframes borderPulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
-    50% { box-shadow: 0 0 0 4px rgba(76, 175, 80, 0); }
-}
 
-.reading-pulse {
-    animation: borderPulse 2s ease-in-out infinite;
-    --pulse-color: v-bind('statusInfo.borderColor');
-}
 
 /* Shimmer effect for special cards */
 @keyframes shimmer {

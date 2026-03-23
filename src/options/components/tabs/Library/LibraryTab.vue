@@ -6,11 +6,6 @@
                 <p class="subtitle">Browse and manage your manga library</p>
             </div>
             <div class="header-actions">
-                <button 
-                    id="BtnShowStats" 
-                    class="btn btn-ghost btn-sm"
-                    @click="toggleStats"
-                >📊 Stats</button>
                 <button @click="freshSync" class="btn btn-warning-large">⚡Fresh Sync Entries</button>
             </div>
         </header>
@@ -55,6 +50,7 @@
                 :visible-list-entries="visibleListEntries"
                 :has-more-entries="hasMoreEntries"
                 :custom-statuses="customStatuses"
+                :personal-data="personalData"
                 :library-settings="librarySettings"
                 @show-details="showDetails"
                 @show-status-picker="showStatusPicker"
@@ -84,46 +80,66 @@ import {
 import { useSettingsStore } from '../../../scripts/store/settings.store.js';
 
 // Access Pinia Stores
+// Access Pinia Stores
 const libraryStore = useLibraryStore();
 const settingsStore = useSettingsStore();
 
 // Destructure reactive state from stores
-const { entries: savedEntries } = storeToRefs(libraryStore);
+const { 
+    entries: savedEntries, 
+    personalData, 
+    isSyncing, 
+    syncProgress 
+} = storeToRefs(libraryStore);
+
 const { 
     libraryBordersEnabled, 
     libraryUseGlow, 
     libraryAnimatedBorders, 
-    libraryShowStatusIcon, 
-    libraryShowProgressBar,
-    familyFriendlyEnabled
+    libraryShowStatusIcon,
+    familyFriendlyEnabled,
+    customStatuses,
+    showReadingBadges,
+    autoReadStale: smartInactivity,
+    highlightThickness,
+    libraryHideNoHistory,
+    libraryShowRibbons
 } = storeToRefs(settingsStore);
 
 // Computed setting object for MangaCard compatibility
 const librarySettings = computed(() => ({
     bordersEnabled: libraryBordersEnabled.value,
-    borderThickness: settingsStore.libraryThickness,
-    hideNoHistory: false, // TODO: Move to store if needed globally
+    borderThickness: highlightThickness.value,
+    hideNoHistory: libraryHideNoHistory.value,
     useGlowEffect: libraryUseGlow.value,
     animatedBorders: libraryAnimatedBorders.value,
     showStatusIcon: libraryShowStatusIcon.value,
-    showProgressBar: libraryShowProgressBar.value,
-    smartInactivity: settingsStore.smartInactivity
+    showReadingBadges: showReadingBadges.value,
+    showRibbons: libraryShowRibbons.value,
+    smartInactivity: smartInactivity.value
 }));
 
 const showStats = ref(false);
 const isBulkMode = ref(false);
-const customStatuses = ref([]); // Loaded from storage
-const personalData = ref({});
-const cardViewSize = ref('large');
 const listVisibleCount = ref(5);
 
-const syncState = reactive({
-    isSyncing: false,
-    current: 0,
-    total: 0,
-    percentage: 0,
-    currentTitle: ''
-});
+const syncState = computed(() => ({
+    isSyncing: isSyncing.value,
+    current: syncProgress.value.current,
+    total: syncProgress.value.total,
+    currentTitle: syncProgress.value.title,
+    percentage: syncProgress.value.total > 0 
+        ? Math.round((syncProgress.value.current / syncProgress.value.total) * 100) 
+        : 0
+}));
+
+const setViewSize = (size) => {
+    settingsStore.updateSetting(SETTINGS.VIEW_MODE, size);
+};
+
+const showDetails = (entry) => {
+    libraryStore.selectedEntry = entry;
+};
 
 const filters = reactive({
     sort: 'last-read-desc',
@@ -271,17 +287,6 @@ const hasMoreEntries = computed(() => {
 const loadMoreEntries = () => listVisibleCount.value += 5;
 const toggleStats = () => showStats.value = !showStats.value;
 
-const showDetails = (entry) => {
-    if (window.showMangaDetails) {
-        window.showMangaDetails(entry);
-    }
-};
-
-const setViewSize = (size) => {
-    cardViewSize.value = size;
-    chrome.storage.local.set({ [SETTINGS.VIEW_MODE]: size });
-};
-
 const clearFilters = () => {
     filters.chapterMin = null;
     filters.chapterMax = null;
@@ -325,58 +330,7 @@ const applyBulkUpdate = async (newStatus) => {
     }
 };
 
-const loadData = () => {
-    if (!chrome.runtime?.id) return;
-
-    chrome.storage.local.get([
-        SETTINGS.VIEW_MODE,
-        DATA.CUSTOM_STATUSES
-    ], (data) => {
-        cardViewSize.value = data[SETTINGS.VIEW_MODE] || 'large';
-        customStatuses.value = data[DATA.CUSTOM_STATUSES] || [];
-        personalData.value = LibraryService.loadPersonalData(); // This was async, but the prompt removed await. Keeping it as is from prompt.
-    });
-
-    // Storage Listener
-    chrome.storage.onChanged.addListener((changes, area) => {
-        if (area === 'local') {
-            if (changes[SETTINGS.VIEW_MODE]) {
-                cardViewSize.value = changes[SETTINGS.VIEW_MODE].newValue;
-            }
-            if (changes[DATA.CUSTOM_STATUSES]) {
-                customStatuses.value = changes[DATA.CUSTOM_STATUSES].newValue || [];
-            }
-        }
-    });
-};
-
 onMounted(() => {
-    loadData();
-    
-    window.refreshLibraryData = loadData;
-
-    window.addEventListener('library-sync-start', (e) => {
-        syncState.isSyncing = true;
-        syncState.total = e.detail?.total || 0;
-        syncState.current = 0;
-        syncState.percentage = 0;
-        syncState.currentTitle = 'Starting...';
-    });
-
-    window.addEventListener('library-sync-progress', (e) => {
-        const { current, total, title } = e.detail;
-        syncState.isSyncing = true;
-        syncState.current = current;
-        syncState.total = total;
-        syncState.currentTitle = title || 'Processing...';
-        if (total > 0) {
-            syncState.percentage = Math.round((current / total) * 100);
-        }
-    });
-
-    window.addEventListener('library-sync-complete', () => {
-        syncState.isSyncing = false;
-        loadData();
-    });
+    libraryStore.loadLibrary();
 });
 </script>

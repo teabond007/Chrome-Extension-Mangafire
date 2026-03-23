@@ -16,12 +16,12 @@ import { STATUS_COLORS } from '../../../config.js';
 export function getStatusInfo(status, customStatusName, customStatuses) {
     const statusLower = status.toLowerCase();
     
-    // Check if the status matches a custom status name directly
-    let matched = customStatuses.find(m => m.name.toLowerCase() === statusLower);
-    
     // Check if an explicit custom status is assigned
-    if (!matched && customStatusName) {
-        matched = customStatuses.find(m => m.name === customStatusName);
+    let matched = customStatusName ? customStatuses.find(m => m.name === customStatusName) : null;
+    
+    // Check if the overall status name matches a custom status (overdrive defaults)
+    if (!matched) {
+        matched = customStatuses.find(m => m.name.toLowerCase() === statusLower);
     }
 
     if (matched) {

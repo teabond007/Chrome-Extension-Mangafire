@@ -123,6 +123,9 @@ export const TOGGLES = {
     LIBRARY_HIDE_NO_HISTORY: 'libraryHideNoHistory',
     QUICK_ACTIONS: 'quickActions',
     SHOW_READING_BADGES: 'showReadingBadges',
+    LIBRARY_SHOW_RIBBONS: 'libraryShowStatusRibbon',
+    CUSTOM_SITE_SHOW_RIBBONS: 'customSiteStatusRibbon',
+    CUSTOM_SITE_GLOW_EFFECT: 'customSiteGlowEffect',
     IS_CUSTOM_THEME: 'isCustomTheme',
     AUTO_READ_STALE: 'autoReadStaleReading'
 };

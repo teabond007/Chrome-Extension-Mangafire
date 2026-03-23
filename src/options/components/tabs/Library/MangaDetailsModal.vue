@@ -136,7 +136,7 @@
 </template>
  
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { getFormatName, getStatusInfo } from '../../../scripts/ui/manga-card-utils.js';
 import * as LibraryService from '../../../../scripts/core/library-service.ts';
 import { useLibraryStore } from '../../../scripts/store/library.store.js';
@@ -157,6 +157,13 @@ const showChapters = ref(false);
 const historyChapters = ref([]);
 const personalData = ref({ notes: '', rating: 0 });
 const modalBodyRef = ref(null);
+
+// React to global selection
+watch(() => libraryStore.selectedEntry, (newEntry) => {
+    if (newEntry) {
+        openModal(newEntry);
+    }
+}, { immediate: true });
  
 /**
  * Normalizes format name
@@ -356,6 +363,7 @@ const openModal = async (entry) => {
  
 const closeModal = () => {
     isOpen.value = false;
+    libraryStore.selectedEntry = null;
 };
  
 const toggleChaptersList = () => {
@@ -445,7 +453,9 @@ const handleRemoveManga = async () => {
  
 // Exposure for backward compatibility
 onMounted(() => {
-    window.showMangaDetails = openModal;
+    window.showMangaDetails = (entry) => {
+        libraryStore.selectedEntry = entry;
+    };
 });
 </script>
  

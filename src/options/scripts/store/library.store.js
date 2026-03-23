@@ -9,10 +9,12 @@ export const useLibraryStore = defineStore('library', {
     state: () => ({
         entries: [], // Array of saved manga objects
         history: {}, // Map of reading history
+        personalData: {}, // Map of notes and ratings
         isLoading: true,
         lastSync: null,
         isSyncing: false,
-        syncProgress: { current: 0, total: 0, title: '' }
+        syncProgress: { current: 0, total: 0, title: '' },
+        selectedEntry: null // For reactive modal navigation
     }),
 
     getters: {
@@ -26,10 +28,16 @@ export const useLibraryStore = defineStore('library', {
         async loadLibrary() {
             this.isLoading = true;
             try {
-                const data = await chrome.storage.local.get([DATA.LIBRARY_ENTRIES, DATA.READING_HISTORY, DATA.LAST_SYNC_TIME]);
+                const data = await chrome.storage.local.get([
+                    DATA.LIBRARY_ENTRIES, 
+                    DATA.READING_HISTORY, 
+                    DATA.PERSONAL_DATA, 
+                    DATA.LAST_SYNC_TIME
+                ]);
                 
                 this.entries = data[DATA.LIBRARY_ENTRIES] || [];
                 this.history = data[DATA.READING_HISTORY] || {};
+                this.personalData = data[DATA.PERSONAL_DATA] || {};
                 this.lastSync = data[DATA.LAST_SYNC_TIME] || null;
 
                 // Auto-maintenance: Read stale entries
@@ -39,7 +47,7 @@ export const useLibraryStore = defineStore('library', {
                     if (changedCount > 0) {
                         console.log(`[LibraryStore] Auto-read ${changedCount} stale entries.`);
                         this.entries = updatedLibrary;
-                        await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: JSON.parse(JSON.stringify(this.entries)) });
+                        await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: this.entries });
                     }
                 }
             } catch (err) {
@@ -59,6 +67,9 @@ export const useLibraryStore = defineStore('library', {
             }
             if (changes[DATA.READING_HISTORY]) {
                 this.history = changes[DATA.READING_HISTORY].newValue || {};
+            }
+            if (changes[DATA.PERSONAL_DATA]) {
+                this.personalData = changes[DATA.PERSONAL_DATA].newValue || {};
             }
             if (changes[DATA.LAST_SYNC_TIME]) {
                 this.lastSync = changes[DATA.LAST_SYNC_TIME].newValue;
@@ -81,7 +92,7 @@ export const useLibraryStore = defineStore('library', {
                 return true;
             });
 
-            await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: JSON.parse(JSON.stringify(this.entries)) });
+            await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: this.entries });
         },
 
         /**
@@ -116,15 +127,7 @@ export const useLibraryStore = defineStore('library', {
             }
 
             if (entry) {
-                // Wait for components to mount if needed (standard practice in current codebase)
-                const attemptShow = (retries = 0) => {
-                    if (window.showMangaDetails) {
-                        window.showMangaDetails(entry);
-                    } else if (retries < 15) {
-                        setTimeout(() => attemptShow(retries + 1), 200);
-                    }
-                };
-                attemptShow();
+                this.selectedEntry = entry;
             } else {
                 console.warn(`[LibraryStore] Could not find entry for: ${titleOrSlug}`);
             }
@@ -221,16 +224,17 @@ export const useLibraryStore = defineStore('library', {
 
                     if (data) Object.assign(liveEntry, { anilistData: data });
                     liveEntry.lastChecked = Date.now();
-
-                    // Save periodically
-                    await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: JSON.parse(JSON.stringify(entriesList)) });
                     
                     // Throttle
-                    await new Promise(r => setTimeout(r, 500));
+                    await new Promise(r => setTimeout(r, 600));
                 } catch (err) {
                     console.error('Error fetching metadata for', liveEntry.title, err);
                 }
             }
+
+            // Save all updates once after the loop
+            await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: entriesList });
+            this.entries = entriesList;
             
             window.dispatchEvent(new CustomEvent('library-sync-complete'));
         }

@@ -21,6 +21,10 @@
                             <span class="meta-label">Format</span>
                             <div class="format-badge">{{ formatName }}</div>
                         </div>
+                        <div v-if="personalData?.rating > 0" class="meta-row">
+                            <span class="meta-label">Rating</span>
+                            <div class="score-value">★ {{ personalData.rating }}</div>
+                        </div>
                         <div class="meta-row">
                             <span class="meta-label">Score</span>
                             <div class="score-value">{{ ani?.averageScore ? ani.averageScore + '%' : '-' }}</div>
@@ -68,6 +72,10 @@ const props = defineProps({
     entry: {
         type: Object,
         required: true
+    },
+    personalData: {
+        type: Object,
+        default: () => ({ rating: 0, notes: '' })
     }
 });
 

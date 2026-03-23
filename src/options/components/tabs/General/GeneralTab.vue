@@ -18,30 +18,37 @@
                 >
                     <div class="input-group-vertical">
                         <SwitchControl 
-                            id="QuickActions" 
+                            :id="TOGGLES.QUICK_ACTIONS" 
                             label="Quick Actions Overlay" 
                             sub-label="Show 'Continue', 'Status', 'Rating' on hover"
                             v-model="quickActions"
                         />
                         <SwitchControl 
-                            id="ShowProgress" 
+                            :id="TOGGLES.SHOW_READING_BADGES" 
                             label="Show Reading Badges" 
                             sub-label="Display 'Ch. X/Y' on manga cards"
                             v-model="showReadingBadges"
                             margin-top
                         />
                         <SwitchControl 
-                            id="FamilyFriendly" 
+                            :id="TOGGLES.FAMILY_FRIENDLY" 
                             label="Family Friendly Mode" 
                             sub-label="Filter out Ecchi and Hentai tags from library"
                             v-model="familyFriendlyEnabled"
                             margin-top
                         />
                         <SwitchControl 
-                            id="AutoReadStale" 
+                            :id="TOGGLES.AUTO_READ_STALE" 
                             label="Auto-Read Stale Entries" 
                             sub-label="Convert 'Reading' entries to 'Read' if inactive for 30+ days"
                             v-model="autoReadStale"
+                            margin-top
+                        />
+                        <SwitchControl 
+                            :id="TOGGLES.LIBRARY_SHOW_RIBBONS" 
+                            label="Show Status Ribbons" 
+                            sub-label="Show corner status banners (Read, Completed, etc) on cards"
+                            v-model="libraryShowRibbons"
                             margin-top
                         />
                     </div>
@@ -59,20 +66,20 @@
                     full-height
                 >
                     <SwitchControl 
-                        id="AutoScrollEnabled" 
+                        :id="TOGGLES.AUTO_SCROLL" 
                         label="Auto-Scroll Panel" 
                         sub-label="Show floating auto-scroll controls on reader pages"
                         v-model="autoScroll"
                     />
                     <SwitchControl 
-                        id="KeybindsEnabled" 
+                        :id="TOGGLES.KEYBINDS_ENABLED" 
                         label="Keyboard Shortcuts" 
                         sub-label="Arrow keys, Space (auto-scroll), F (fullscreen)"
                         v-model="keybinds"
                         margin-top
                     />
                     <SwitchControl 
-                        id="ProgressTrackingEnabled" 
+                        :id="TOGGLES.PROGRESS_TRACKING" 
                         label="Auto-Save Progress" 
                         sub-label="Automatically save chapter progress while reading"
                         v-model="progressTracking"
@@ -93,6 +100,7 @@ import { storeToRefs } from 'pinia';
 import SwitchControl from '../../common/SwitchControl.vue';
 import SettingsCard from '../../common/SettingsCard.vue';
 import CustomStatusManager from './CustomStatusManager.vue';
+import { TOGGLES } from '../../../../config.js';
 import { useSettingsStore } from '../../../scripts/store/settings.store.js';
 
 const settingsStore = useSettingsStore();
@@ -104,7 +112,8 @@ const {
     keybinds,
     progressTracking,
     familyFriendlyEnabled,
-    autoReadStale
+    autoReadStale,
+    libraryShowRibbons
 } = storeToRefs(settingsStore);
 
 const bindSetting = (refValue, key) => {
@@ -118,6 +127,7 @@ bindSetting(keybinds, 'keybinds');
 bindSetting(progressTracking, 'progressTracking');
 bindSetting(familyFriendlyEnabled, 'familyFriendlyEnabled');
 bindSetting(autoReadStale, 'autoReadStale');
+bindSetting(libraryShowRibbons, 'libraryShowRibbons');
 </script>
 
 <style scoped lang="scss">
