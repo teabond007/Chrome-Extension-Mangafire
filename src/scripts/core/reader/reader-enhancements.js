@@ -78,13 +78,13 @@ class ReaderEnhancements {
         }
 
         // Initialize keyboard shortcuts
-        if (this.options.keybinds && settings[TOGGLES.KEYBINDS] !== false) {
+        if (this.options.keybinds && settings[TOGGLES.KEYBINDS_ENABLED] !== false) {
             this.keybinds = new KeybindManager(this.adapter);
             await this.keybinds.init();
         }
 
         // Initialize progress tracking
-        if (this.options.progressTracking && settings[TOGGLES.READER_PROGRESS] !== false) {
+        if (this.options.progressTracking && settings[TOGGLES.PROGRESS_TRACKING] !== false) {
             this.progressTracker = new ProgressTracker(this.adapter);
             await this.progressTracker.init();
         }
@@ -102,8 +102,8 @@ class ReaderEnhancements {
             const data = await chrome.storage.local.get([
                 TOGGLES.AUTO_SCROLL,
                 SETTINGS.AUTO_SCROLL_SPEED,
-                TOGGLES.KEYBINDS,
-                TOGGLES.READER_PROGRESS
+                TOGGLES.KEYBINDS_ENABLED,
+                TOGGLES.PROGRESS_TRACKING
             ]);
             return data;
         } catch (e) {

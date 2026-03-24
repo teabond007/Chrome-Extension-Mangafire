@@ -2,6 +2,7 @@
  * @fileoverview Universal auto-scroll controller for vertical manga/webtoon reading.
  * Handles both window scroll and custom scroll containers used by manga sites.
  */
+import { OverlayFactory } from '../overlay-factory.js';
 
 /**
  * AutoScrollController manages smooth automatic scrolling for reader pages.
@@ -205,9 +206,7 @@ class AutoScrollController {
             onSpeedChange: (val) => this.setSpeed(val)
         };
 
-        import('../overlay-factory.js').then(module => {
-            this.vueApp = module.OverlayFactory.mountReaderControls(props, handlers);
-        });
+        this.vueApp = OverlayFactory.mountReaderControls(props, handlers);
     }
 
     /**

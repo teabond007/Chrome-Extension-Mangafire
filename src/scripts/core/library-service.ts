@@ -4,9 +4,10 @@
  * Shared between background scripts, content scripts, and options UI.
  */
 
-import { DATA, DEFAULT_STATUS } from '../../config.js';
+import { DATA, DEFAULT_STATUS, LIBRARY_ENTRY_KEYS } from '../../config.js';
 
 export interface MangaQuery {
+    [key: string]: any;
     title: string;
     slug?: string;
     source?: string;
@@ -31,8 +32,8 @@ export interface PersonalDataEntry {
 export function getMangaId(entry: any): string {
     if (entry.anilistData?.id) return `anilist:${entry.anilistData.id}`;
     if (entry.mangadexId) return `mangadex:${entry.mangadexId}`;
+    if (entry[LIBRARY_ENTRY_KEYS.MANGA_SLUG]) return `slug:${entry[LIBRARY_ENTRY_KEYS.MANGA_SLUG]}`;
     if (entry.slug) return `slug:${entry.slug}`;
-    if (entry.mangaSlug) return `slug:${entry.mangaSlug.split('.')[0]}`;
     return `title:${slugify(entry.title)}`;
 }
 
@@ -130,20 +131,22 @@ export async function upsertEntry(entryData: any): Promise<any> {
         updatedEntry = {
             ...library[existingIdx],
             ...entryData,
-            lastUpdated: now
+            [LIBRARY_ENTRY_KEYS.LAST_UPDATED]: now
         };
         library[existingIdx] = updatedEntry;
     } else {
         updatedEntry = {
-            status: DEFAULT_STATUS,
+            [LIBRARY_ENTRY_KEYS.STATUS]: DEFAULT_STATUS,
             ...entryData,
-            lastRead: now,
-            lastUpdated: now
+            [LIBRARY_ENTRY_KEYS.LAST_READ]: now,
+            [LIBRARY_ENTRY_KEYS.LAST_UPDATED]: now
         };
         library.push(updatedEntry);
     }
 
-    await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: library });
+    // Ensure array integrity
+    const finalLibrary = Array.isArray(library) ? library : [];
+    await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: JSON.parse(JSON.stringify(finalLibrary)) });
     return updatedEntry;
 }
 
@@ -158,23 +161,25 @@ export async function updateProgress(query: MangaQuery, progress: ProgressUpdate
         // Create new entry if not found
         return await upsertEntry({
             ...query,
-            lastReadChapter: progress.chapter,
-            lastReaderUrl: progress.url,
-            lastRead: Date.now()
+            [LIBRARY_ENTRY_KEYS.LAST_READ_CHAPTER]: progress.chapter,
+            [LIBRARY_ENTRY_KEYS.LAST_READER_URL]: progress.url,
+            [LIBRARY_ENTRY_KEYS.LAST_READ]: Date.now()
         });
     }
 
     // Only update if chapter is newer or same
-    const current = parseFloat(entry.lastReadChapter) || 0;
+    const current = parseFloat(entry[LIBRARY_ENTRY_KEYS.LAST_READ_CHAPTER]) || 0;
     const incoming = parseFloat(progress.chapter) || 0;
 
     if (incoming >= current) {
-        entry.lastReadChapter = progress.chapter;
-        entry.lastReaderUrl = progress.url;
-        entry.lastRead = Date.now();
-        entry.lastUpdated = Date.now();
+        entry[LIBRARY_ENTRY_KEYS.LAST_READ_CHAPTER] = progress.chapter;
+        entry[LIBRARY_ENTRY_KEYS.LAST_READER_URL] = progress.url;
+        entry[LIBRARY_ENTRY_KEYS.LAST_READ] = Date.now();
+        entry[LIBRARY_ENTRY_KEYS.LAST_UPDATED] = Date.now();
         
-        await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: library });
+        // Ensure array integrity
+        const finalLibrary = Array.isArray(library) ? library : [];
+        await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: JSON.parse(JSON.stringify(finalLibrary)) });
     }
 
     return entry;
@@ -188,7 +193,7 @@ export async function trackReadChapter(mangaQuery: MangaQuery, chapter: string):
     const history = (data[DATA.READING_HISTORY] || {}) as Record<string, string[]>;
     
     // Use slug as the primary key for history if available, else standard ID
-    const key = mangaQuery.slug || mangaQuery.mangaSlug?.split('.')[0] || getMangaId(mangaQuery);
+    const key = mangaQuery.slug || mangaQuery[LIBRARY_ENTRY_KEYS.MANGA_SLUG] || getMangaId(mangaQuery);
     
     if (!history[key]) history[key] = [];
     if (!history[key].includes(chapter)) {
@@ -284,14 +289,14 @@ export function autoReadStaleEntries(library: any[]): { updatedLibrary: any[], c
     let changedCount = 0;
 
     const updatedLibrary = library.map(entry => {
-        if (entry.status === 'Reading' && entry.lastRead) {
-            const diff = now - entry.lastRead;
+        if (entry[LIBRARY_ENTRY_KEYS.STATUS] === 'Reading' && entry[LIBRARY_ENTRY_KEYS.LAST_READ]) {
+            const diff = now - entry[LIBRARY_ENTRY_KEYS.LAST_READ];
             if (diff > STALE_THRESHOLD) {
                 changedCount++;
                 return {
                     ...entry,
-                    status: 'Read',
-                    lastUpdated: now
+                    [LIBRARY_ENTRY_KEYS.STATUS]: 'Read',
+                    [LIBRARY_ENTRY_KEYS.LAST_UPDATED]: now
                 };
             }
         }

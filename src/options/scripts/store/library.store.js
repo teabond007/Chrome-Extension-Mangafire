@@ -35,7 +35,17 @@ export const useLibraryStore = defineStore('library', {
                     DATA.LAST_SYNC_TIME
                 ]);
                 
-                this.entries = data[DATA.LIBRARY_ENTRIES] || [];
+                const rawEntries = data[DATA.LIBRARY_ENTRIES];
+                console.log('[LibraryStore] loadLibrary from storage. Raw type:', typeof rawEntries, 'isArray:', Array.isArray(rawEntries));
+                
+                if (Array.isArray(rawEntries)) {
+                    console.log('[LibraryStore] loadLibrary count:', rawEntries.length);
+                    this.entries = rawEntries;
+                } else {
+                    console.warn('[LibraryStore] loadLibrary: entries is not an array! Data:', rawEntries);
+                    this.entries = [];
+                }
+
                 this.history = data[DATA.READING_HISTORY] || {};
                 this.personalData = data[DATA.PERSONAL_DATA] || {};
                 this.lastSync = data[DATA.LAST_SYNC_TIME] || null;
@@ -62,8 +72,12 @@ export const useLibraryStore = defineStore('library', {
          * @param {Object} changes - The changes object from chrome.storage.onChanged
          */
         syncFromStorage(changes) {
+            console.log('[LibraryStore] syncFromStorage triggered. Keys changed:', Object.keys(changes));
+            
             if (changes[DATA.LIBRARY_ENTRIES]) {
-                this.entries = changes[DATA.LIBRARY_ENTRIES].newValue || [];
+                const newValue = changes[DATA.LIBRARY_ENTRIES].newValue;
+                console.log('[LibraryStore] sync: LibraryEntries changed. New count:', Array.isArray(newValue) ? newValue.length : 'NOT_ARRAY');
+                this.entries = Array.isArray(newValue) ? newValue : [];
             }
             if (changes[DATA.READING_HISTORY]) {
                 this.history = changes[DATA.READING_HISTORY].newValue || {};
@@ -81,18 +95,75 @@ export const useLibraryStore = defineStore('library', {
          * @param {Object} entry - The entry object to remove
          */
         async removeEntry(entry) {
+            console.log('[LibraryStore] removeEntry requested for:', entry);
+            if (!entry) {
+                console.warn('[LibraryStore] removeEntry called with null/undefined entry');
+                return;
+            }
+
             const aniId = entry.anilistData?.id;
             const slug = entry.mangaSlug;
-            const title = entry.title?.toLowerCase();
+            const title = (entry.title || '').toLowerCase().trim();
+
+            // Safeguard: ensure this.entries is an array
+            if (!Array.isArray(this.entries)) {
+                console.warn('[LibraryStore] removeEntry called but entries is not an array. Resetting.');
+                this.entries = [];
+                await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: [] });
+                return;
+            }
+
+            const beforeCount = Array.isArray(this.entries) ? this.entries.length : 'NOT_ARRAY';
+            
+            // Safeguard: ensure this.entries is an array
+            if (!Array.isArray(this.entries)) {
+                console.warn('[LibraryStore] removeEntry: entries is not an array. Resetting.');
+                this.entries = [];
+                await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: [] });
+                return;
+            }
 
             this.entries = this.entries.filter(e => {
+                if (!e) return false; // Filter out nulls/undefineds
+
+                // Match by AniList ID
                 if (aniId && e.anilistData?.id === aniId) return false;
+
+                // Match by Slug
                 if (slug && e.mangaSlug === slug) return false;
-                if (title && e.title?.toLowerCase() === title) return false;
+
+                // Match by Title (Normalize both for robust comparison)
+                if (title) {
+                    const entryTitle = (e.title || '').toLowerCase().trim();
+                    if (entryTitle === title) return false;
+                }
+
                 return true;
             });
 
-            await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: this.entries });
+            const afterCount = this.entries.length;
+            console.log(`[LibraryStore] filter complete. Count: ${beforeCount} -> ${afterCount}`);
+
+            // CRITICAL: Convert to plain JS object/array before saving to storage.
+            // Vue/Pinia Proxies can sometimes cause issues with chrome.storage serialization.
+            try {
+                const plainEntries = JSON.parse(JSON.stringify(this.entries));
+                console.log('[LibraryStore] saving plainEntries to storage. Length:', plainEntries.length);
+                
+                await new Promise((resolve, reject) => {
+                    chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: plainEntries }, () => {
+                        if (chrome.runtime.lastError) {
+                            console.error('[LibraryStore] Storage set error:', chrome.runtime.lastError);
+                            reject(chrome.runtime.lastError);
+                        } else {
+                            console.log('[LibraryStore] Storage set successful');
+                            resolve();
+                        }
+                    });
+                });
+            } catch (err) {
+                console.error('[LibraryStore] Failed to save removed entry to storage:', err);
+            }
         },
 
         /**

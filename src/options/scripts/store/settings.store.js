@@ -26,7 +26,6 @@ export const useSettingsStore = defineStore('settings', {
         libraryHideNoHistory: false,
         libraryUseGlow: false,
         libraryAnimatedBorders: false,
-        libraryShowStatusIcon: false,
         cardViewSize: 'large', // 'compact', 'large', 'list'
         
         // General Preferences
@@ -82,7 +81,9 @@ export const useSettingsStore = defineStore('settings', {
                 TOGGLES.AUTO_READ_STALE,
                 TOGGLES.LIBRARY_SHOW_RIBBONS,
                 TOGGLES.CUSTOM_SITE_SHOW_RIBBONS,
-                TOGGLES.CUSTOM_SITE_GLOW_EFFECT
+                TOGGLES.CUSTOM_SITE_GLOW_EFFECT,
+                TOGGLES.CUSTOM_SITE_QUICK_ACTIONS,
+                TOGGLES.CUSTOM_BORDER_SIZE_ENABLED
             ]);
 
             this.theme = data[SETTINGS.THEME] || 'dark';
@@ -108,13 +109,14 @@ export const useSettingsStore = defineStore('settings', {
             
             this.libraryUseGlow = !!data[TOGGLES.LIBRARY_GLOW_EFFECT];
             this.libraryAnimatedBorders = !!data[TOGGLES.LIBRARY_ANIMATED_BORDERS];
-            this.libraryShowStatusIcon = !!data[TOGGLES.LIBRARY_STATUS_ICONS];
             this.highlightEnabled = data[TOGGLES.CUSTOM_SITE_HIGHLIGHT] !== false;
             this.familyFriendlyEnabled = !!data[TOGGLES.FAMILY_FRIENDLY];
             this.autoReadStale = !!data[TOGGLES.AUTO_READ_STALE];
             this.libraryShowRibbons = data[TOGGLES.LIBRARY_SHOW_RIBBONS] !== false;
             this.customSiteShowRibbons = data[TOGGLES.CUSTOM_SITE_SHOW_RIBBONS] !== false;
             this.customSiteUseGlow = !!data[TOGGLES.CUSTOM_SITE_GLOW_EFFECT];
+            this.quickActions = data[TOGGLES.CUSTOM_SITE_QUICK_ACTIONS] !== false;
+            this.customBorderSizeEnabled = !!data[TOGGLES.CUSTOM_BORDER_SIZE_ENABLED];
 
             this.isLoaded = true;
         },
@@ -150,17 +152,22 @@ export const useSettingsStore = defineStore('settings', {
                 case 'customStatusEnabled':   storagePayload[TOGGLES.CUSTOM_STATUS_ENABLED] = value; break;
                 case 'libraryUseGlow':        storagePayload[TOGGLES.LIBRARY_GLOW_EFFECT] = value; break;
                 case 'libraryAnimatedBorders': storagePayload[TOGGLES.LIBRARY_ANIMATED_BORDERS] = value; break;
-                case 'libraryShowStatusIcon':  storagePayload[TOGGLES.LIBRARY_STATUS_ICONS] = value; break;
                 case 'highlightEnabled':      storagePayload[TOGGLES.CUSTOM_SITE_HIGHLIGHT] = value; break;
                 case 'familyFriendlyEnabled': storagePayload[TOGGLES.FAMILY_FRIENDLY] = value; break;
                 case 'autoReadStale':         storagePayload[TOGGLES.AUTO_READ_STALE] = value; break;
                 case 'libraryShowRibbons':    storagePayload[TOGGLES.LIBRARY_SHOW_RIBBONS] = value; break;
                 case 'customSiteShowRibbons': storagePayload[TOGGLES.CUSTOM_SITE_SHOW_RIBBONS] = value; break;
                 case 'customSiteUseGlow':     storagePayload[TOGGLES.CUSTOM_SITE_GLOW_EFFECT] = value; break;
+                case 'customBorderSizeEnabled': storagePayload[TOGGLES.CUSTOM_BORDER_SIZE_ENABLED] = value; break;
             }
 
             if (Object.keys(storagePayload).length > 0) {
-                await chrome.storage.local.set(storagePayload);
+                // Ensure plain object serialization for arrays
+                const finalPayload = {};
+                for (const [k, v] of Object.entries(storagePayload)) {
+                    finalPayload[k] = Array.isArray(v) ? JSON.parse(JSON.stringify(v)) : v;
+                }
+                await chrome.storage.local.set(finalPayload);
             }
         },
 
@@ -174,8 +181,11 @@ export const useSettingsStore = defineStore('settings', {
          */
         async addCustomStatus(name, color, style = BORDER_DEFAULTS.style) {
             if (!name || !color) return;
-            this.customStatuses = [...this.customStatuses, { name, color, style }];
-            await chrome.storage.local.set({ [DATA.CUSTOM_STATUSES]: this.customStatuses });
+            // Ensure this.customStatuses is an array before spreading
+            const current = Array.isArray(this.customStatuses) ? this.customStatuses : [];
+            const updated = [...current, { name, color, style }];
+            this.customStatuses = updated;
+            await chrome.storage.local.set({ [DATA.CUSTOM_STATUSES]: JSON.parse(JSON.stringify(updated)) });
         },
 
         /**
@@ -183,9 +193,13 @@ export const useSettingsStore = defineStore('settings', {
          * @param {number} index
          */
         async removeCustomStatus(index) {
+            if (!Array.isArray(this.customStatuses)) {
+                this.customStatuses = [];
+                return;
+            }
             const updated = this.customStatuses.filter((_, i) => i !== index);
             this.customStatuses = updated;
-            await chrome.storage.local.set({ [DATA.CUSTOM_STATUSES]: updated });
+            await chrome.storage.local.set({ [DATA.CUSTOM_STATUSES]: JSON.parse(JSON.stringify(updated)) });
         },
 
         /** Clears all custom statuses. */
@@ -211,18 +225,25 @@ export const useSettingsStore = defineStore('settings', {
             if (changes[TOGGLES.AUTO_SCROLL])  this.autoScroll = changes[TOGGLES.AUTO_SCROLL].newValue;
             if (changes[TOGGLES.KEYBINDS_ENABLED])    this.keybinds = changes[TOGGLES.KEYBINDS_ENABLED].newValue;
             if (changes[TOGGLES.PROGRESS_TRACKING]) this.progressTracking = changes[TOGGLES.PROGRESS_TRACKING].newValue;
-            if (changes[DATA.CUSTOM_STATUSES])    this.customStatuses = changes[DATA.CUSTOM_STATUSES].newValue || [];
+            if (changes[DATA.CUSTOM_STATUSES]) {
+                const val = changes[DATA.CUSTOM_STATUSES].newValue;
+                this.customStatuses = Array.isArray(val) ? val : [];
+            }
             if (changes[TOGGLES.CUSTOM_STATUS_ENABLED]) this.customStatusEnabled = changes[TOGGLES.CUSTOM_STATUS_ENABLED].newValue;
             if (changes[TOGGLES.LIBRARY_GLOW_EFFECT]) this.libraryUseGlow = changes[TOGGLES.LIBRARY_GLOW_EFFECT].newValue;
             if (changes[TOGGLES.LIBRARY_ANIMATED_BORDERS]) this.libraryAnimatedBorders = changes[TOGGLES.LIBRARY_ANIMATED_BORDERS].newValue;
-            if (changes[TOGGLES.LIBRARY_STATUS_ICONS]) this.libraryShowStatusIcon = changes[TOGGLES.LIBRARY_STATUS_ICONS].newValue;
             if (changes[TOGGLES.CUSTOM_SITE_HIGHLIGHT]) this.highlightEnabled = changes[TOGGLES.CUSTOM_SITE_HIGHLIGHT].newValue;
             if (changes[TOGGLES.FAMILY_FRIENDLY]) this.familyFriendlyEnabled = changes[TOGGLES.FAMILY_FRIENDLY].newValue;
             if (changes[TOGGLES.AUTO_READ_STALE]) this.autoReadStale = changes[TOGGLES.AUTO_READ_STALE].newValue;
             if (changes[TOGGLES.LIBRARY_SHOW_RIBBONS]) this.libraryShowRibbons = changes[TOGGLES.LIBRARY_SHOW_RIBBONS].newValue;
             if (changes[TOGGLES.CUSTOM_SITE_SHOW_RIBBONS]) this.customSiteShowRibbons = changes[TOGGLES.CUSTOM_SITE_SHOW_RIBBONS].newValue;
             if (changes[TOGGLES.CUSTOM_SITE_GLOW_EFFECT]) this.customSiteUseGlow = changes[TOGGLES.CUSTOM_SITE_GLOW_EFFECT].newValue;
+            if (changes[TOGGLES.CUSTOM_BORDER_SIZE_ENABLED]) this.customBorderSizeEnabled = changes[TOGGLES.CUSTOM_BORDER_SIZE_ENABLED].newValue;
             if (changes[SETTINGS.VIEW_MODE]) this.cardViewSize = changes[SETTINGS.VIEW_MODE].newValue;
+            if (changes[DATA.CUSTOM_SITES]) {
+                // Background usually handles this but we want to stay in sync if needed
+                // Not strictly needed for store logic but good for consistency
+            }
         }
     }
 });

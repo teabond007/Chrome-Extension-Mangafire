@@ -8,7 +8,7 @@
  * @version 3.8.0
  */
 
-import { STATUS_COLORS, TOGGLES, SETTINGS, DATA } from '../../config.js';
+import { STATUS_COLORS, TOGGLES, SETTINGS, DATA, LIBRARY_ENTRY_KEYS } from '../../config.js';
 import { OverlayFactory } from './overlay-factory.js';
 
 interface PlatformAdapter {
@@ -42,6 +42,7 @@ interface CardData {
 }
 
 interface LibraryEntry {
+    [key: string]: any; // Allow indexing by schema keys
     title: string;
     slug?: string;
     source?: string;
@@ -49,7 +50,8 @@ interface LibraryEntry {
     status: string;
     chapters?: number;
     readChapters?: (string | number)[];
-    lastReadChapter?: number;
+    lastReadChapter?: string | number;
+    lastReaderUrl?: string;
     lastRead?: number;
     lastUpdated?: number;
     anilistData?: {
@@ -106,17 +108,17 @@ export class CardEnhancer {
     constructor(adapter: PlatformAdapter, settings: any = {}) {
         this.adapter = adapter;
         this.settings = {
-            highlighting: settings.highlighting !== false,
-            progressBadges: settings.progressBadges !== false,
-            quickActions: settings.quickActions === true,
-            newChapterBadges: settings.newChapterBadges === true,
+            highlighting: settings[TOGGLES.CUSTOM_SITE_HIGHLIGHT] !== false,
+            progressBadges: settings.progressBadges !== false || settings[TOGGLES.SHOW_READING_BADGES] !== false,
+            quickActions: settings[TOGGLES.CUSTOM_SITE_QUICK_ACTIONS] !== false,
+            newChapterBadges: settings.newChapterBadges !== false,
             border: {
-                size: settings[SETTINGS.HIGHLIGHT_THICKNESS] || 4,
-                style: settings.borderStyle || 'solid',
+                size: (settings[TOGGLES.CUSTOM_BORDER_SIZE_ENABLED] !== false) ? (settings[SETTINGS.HIGHLIGHT_THICKNESS] || 4) : 0,
+                style: settings[SETTINGS.BORDER_STYLE] || 'solid',
                 radius: '8px'
             },
-            customStatuses: settings[DATA.CUSTOM_STATUSES] || [],
-            customStatusesEnabled: settings[TOGGLES.CUSTOM_STATUS_ENABLED] || false,
+            customStatuses: Array.isArray(settings[DATA.CUSTOM_STATUSES]) ? settings[DATA.CUSTOM_STATUSES] : [],
+            customStatusesEnabled: settings[TOGGLES.CUSTOM_STATUS_ENABLED] !== false,
             showRibbons: settings[TOGGLES.CUSTOM_SITE_SHOW_RIBBONS] !== false,
             useGlow: !!settings[TOGGLES.CUSTOM_SITE_GLOW_EFFECT]
         };
@@ -440,7 +442,27 @@ export class CardEnhancer {
      */
     handleContinueReading(entry: LibraryEntry, card: CardObject) {
         const nextChapter = OverlayFactory.calculateNextChapter(entry);
-        const url = this.adapter.buildChapterUrl?.(entry, nextChapter);
+        
+        // 1. Try adapter's custom method
+        let url = this.adapter.buildChapterUrl?.(entry, nextChapter);
+
+        // 2. If no adapter URL, try to "smart increment" the last known reader URL
+        if (!url && entry[LIBRARY_ENTRY_KEYS.LAST_READER_URL]) {
+            const lastUrl = entry[LIBRARY_ENTRY_KEYS.LAST_READER_URL];
+            const lastChapter = parseFloat(entry[LIBRARY_ENTRY_KEYS.LAST_READ_CHAPTER] as string) || 0;
+            
+            // Try to find the chapter number in the URL and replace it
+            // Matches patterns like ".../chapter-123", ".../ch-123", ".../123/"
+            const chapterRegex = new RegExp(`([/-])${lastChapter}(\\b|/|\\.|$)`);
+            if (chapterRegex.test(lastUrl)) {
+                url = lastUrl.replace(chapterRegex, `$1${nextChapter}$2`);
+                console.log(`[CardEnhancer] Smart incremented URL: ${lastUrl} -> ${url}`);
+            } else {
+                // Fallback: just go to the last read URL (better than Ch.1)
+                url = lastUrl;
+                console.log(`[CardEnhancer] Using last read URL fallback: ${url}`);
+            }
+        }
 
         if (url) {
             window.location.href = url;
@@ -536,8 +558,10 @@ export class CardEnhancer {
                 console.log(`[CardEnhancer] Added new entry to library: ${entry.title}`);
             }
 
+            // Ensure array integrity and plain object serialization
+            const finalEntries = Array.isArray(entries) ? entries : [];
             await new Promise(resolve => {
-                chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: entries }, resolve as () => void);
+                chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: JSON.parse(JSON.stringify(finalEntries)) }, resolve as () => void);
             });
 
             console.log(`[CardEnhancer] Status updated: ${entry.title} → ${newStatus}`);
@@ -577,8 +601,11 @@ export class CardEnhancer {
                 }
                 entries[idx].personalData.rating = rating;
 
+                
+                // Ensure array integrity and plain object serialization
+                const finalEntries = Array.isArray(entries) ? entries : [];
                 await new Promise(resolve => {
-                    chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: entries }, resolve as () => void);
+                    chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: JSON.parse(JSON.stringify(finalEntries)) }, resolve as () => void);
                 });
 
                 console.log(`[CardEnhancer] Rating updated: ${entry.title} → ${rating}`);

@@ -53,6 +53,7 @@ const applyCustomTheme = () => {
     
     settingsStore.updateSetting('isCustomTheme', true);
     settingsStore.updateSetting('customTheme', { ...customTheme.value });
+    settingsStore.updateSetting('theme', 'custom');
     theme.value = 'custom';
 };
 

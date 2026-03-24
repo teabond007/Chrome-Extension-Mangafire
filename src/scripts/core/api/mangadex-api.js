@@ -71,8 +71,8 @@ function cleanTitle(title, aggressive = false) {
  */
 async function getCachedData(title) {
   return new Promise((resolve) => {
-    chrome.storage.local.get([DATA.API_CACHE], (data) => {
-      const cache = data[DATA.API_CACHE] || {};
+    chrome.storage.local.get([DATA.MANGADEX_CACHE], (data) => {
+      const cache = data[DATA.MANGADEX_CACHE] || {};
       const key = title.toLowerCase().trim();
       const entry = cache[key];
       
@@ -92,8 +92,8 @@ async function getCachedData(title) {
  */
 async function setCachedData(title, data) {
   return new Promise((resolve) => {
-    chrome.storage.local.get([DATA.API_CACHE], (storageData) => {
-      const cache = storageData[DATA.API_CACHE] || {};
+    chrome.storage.local.get([DATA.MANGADEX_CACHE], (storageData) => {
+      const cache = storageData[DATA.MANGADEX_CACHE] || {};
       const key = title.toLowerCase().trim();
       
       cache[key] = {
@@ -101,7 +101,7 @@ async function setCachedData(title, data) {
         timestamp: Date.now()
       };
       
-      chrome.storage.local.set({ [DATA.API_CACHE]: cache }, resolve);
+      chrome.storage.local.set({ [DATA.MANGADEX_CACHE]: cache }, resolve);
     });
   });
 }
@@ -321,8 +321,8 @@ export async function fetchMangaFromMangadex(title, retryCount = 0) {
  */
 export async function cleanMangadexCache() {
   return new Promise((resolve) => {
-    chrome.storage.local.get([DATA.API_CACHE], (data) => {
-      const cache = data[DATA.API_CACHE] || {};
+    chrome.storage.local.get([DATA.MANGADEX_CACHE], (data) => {
+      const cache = data[DATA.MANGADEX_CACHE] || {};
       const now = Date.now();
       let removed = 0;
       
@@ -333,7 +333,7 @@ export async function cleanMangadexCache() {
         }
       });
       
-      chrome.storage.local.set({ [DATA.API_CACHE]: cache }, () => resolve(removed));
+      chrome.storage.local.set({ [DATA.MANGADEX_CACHE]: cache }, () => resolve(removed));
     });
   });
 }
@@ -345,7 +345,7 @@ export async function cleanMangadexCache() {
  */
 export async function wipeMangadexCache() {
   return new Promise((resolve) => {
-    chrome.storage.local.remove(DATA.API_CACHE, resolve);
+    chrome.storage.local.remove(DATA.MANGADEX_CACHE, resolve);
   });
 }
 

@@ -3,7 +3,7 @@
  * Automatically saves chapter progress after user engagement threshold.
  */
 
-import { PROGRESS_CONFIG } from '../../../config.js';
+import { PROGRESS_CONFIG, LIBRARY_ENTRY_KEYS } from '../../../config.js';
 import * as LibraryService from '../library-service.ts';
 
 /**
@@ -37,11 +37,11 @@ class ProgressTracker {
         }
 
         this.currentQuery = {
-            source: this.adapter.id || this.adapter.PREFIX,
+            [LIBRARY_ENTRY_KEYS.SOURCE]: this.adapter.id || this.adapter.PREFIX,
             slug: urlData.slug,
             title: urlData.title || '',
-            sourceId: urlData.id,
-            mangaSlug: urlData.slug
+            [LIBRARY_ENTRY_KEYS.SOURCE_ID]: urlData.id,
+            [LIBRARY_ENTRY_KEYS.MANGA_SLUG]: urlData.slug
         };
 
         this.currentProgress = {
@@ -137,7 +137,7 @@ class ProgressTracker {
             chrome.runtime.sendMessage({
                 action: 'progressSaved',
                 data: { 
-                    source: this.currentQuery.source, 
+                    source: this.currentQuery[LIBRARY_ENTRY_KEYS.SOURCE], 
                     slug: this.currentQuery.slug, 
                     chapter: this.currentProgress.chapter,
                     entry: entry

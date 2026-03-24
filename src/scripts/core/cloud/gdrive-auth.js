@@ -19,13 +19,6 @@ const SCOPES = ['https://www.googleapis.com/auth/drive.appdata'];
  */
 export async function getAuthToken(interactive = true) {
     return new Promise((resolve, reject) => {
-        // Debug logging
-        console.log('[GDriveAuth] getAuthToken called');
-        console.log('[GDriveAuth] typeof chrome:', typeof chrome);
-        console.log('[GDriveAuth] chrome.identity:', chrome?.identity);
-        console.log('[GDriveAuth] chrome.runtime:', chrome?.runtime);
-        console.log('[GDriveAuth] location.protocol:', location.protocol);
-        
         // Check if running in extension context
         if (typeof chrome === 'undefined') {
             reject(new Error('chrome object not defined. Are you running in a browser?'));

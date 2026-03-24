@@ -14,7 +14,6 @@
             class="manga-card-cover" 
             :style="{ backgroundImage: `url('${coverUrl}')` }"
         >
-            <div class="card-status-dot" :style="{ backgroundColor: statusInfo.borderColor }"></div>
             
             <!-- Corner Ribbon (Optional) -->
             <div v-if="entry.status && librarySettings.showRibbons" 
@@ -31,14 +30,14 @@
 
             <div class="manga-card-actions">
                 <a 
-                    v-if="entry.lastReaderUrl && (entry.lastChapterRead || entry.lastChapterRead === 0)" 
-                    :href="entry.lastReaderUrl" 
+                    v-if="entry[LIBRARY_ENTRY_KEYS.LAST_READER_URL] && (entry[LIBRARY_ENTRY_KEYS.LAST_READ_CHAPTER] || entry[LIBRARY_ENTRY_KEYS.LAST_READ_CHAPTER] === 0)" 
+                    :href="entry[LIBRARY_ENTRY_KEYS.LAST_READER_URL]" 
                     target="_blank" 
                     class="card-action-btn card-action-continue"
                     @click.stop
-                    :title="'Continue reading Ch.' + (entry.lastChapterRead || '?')"
+                    :title="'Continue reading Ch.' + (entry[LIBRARY_ENTRY_KEYS.LAST_READ_CHAPTER] || '?')"
                 >
-                    ▶ Ch.{{ entry.lastChapterRead || '?' }}
+                    ▶ Ch.{{ entry[LIBRARY_ENTRY_KEYS.LAST_READ_CHAPTER] || '?' }}
                 </a>
             </div>
         </div>
@@ -88,7 +87,7 @@
 <script setup>
 import { computed, ref, onMounted } from 'vue';
 import { getStatusInfo, getFormatName, getDemographic } from '../../scripts/ui/manga-card-utils.js';
-import { BORDER_DEFAULTS, DEFAULT_STATUS } from '../../../config.js';
+import { BORDER_DEFAULTS, DEFAULT_STATUS, LIBRARY_ENTRY_KEYS } from '../../../config.js';
 import * as LibraryService from '../../../scripts/core/library-service.ts';
 
 // Fallback placeholder - base64 encoded or remote fallback
@@ -297,17 +296,6 @@ const demographic = computed(() => {
     }
 }
 
-/* Status Dot Indicator */
-.card-status-dot {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    border: 2px solid white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
 
 .ongoing-tag {
     background: rgba(251, 191, 36, 0.15);

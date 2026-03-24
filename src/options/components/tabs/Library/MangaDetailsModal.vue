@@ -141,7 +141,7 @@ import { getFormatName, getStatusInfo } from '../../../scripts/ui/manga-card-uti
 import * as LibraryService from '../../../../scripts/core/library-service.ts';
 import { useLibraryStore } from '../../../scripts/store/library.store.js';
 import anime from 'animejs';
-import { DATA } from '../../../../config.js';
+import { DATA, LIBRARY_ENTRY_KEYS } from '../../../../config.js';
 
 // Shared Components
 import StarRating from './StarRating.vue';
@@ -375,8 +375,8 @@ const loadHistoryChapters = () => {
     chrome.storage.local.get([DATA.READING_HISTORY], (data) => {
         const history = data[DATA.READING_HISTORY] || {};
         const titleLower = currentEntry.value.title.toLowerCase();
-        const mangaSlugBase = currentEntry.value.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-        const explicitSlug = currentEntry.value.mangaSlug ? currentEntry.value.mangaSlug.split('.')[0] : null;
+        const mangaSlugBase = titleLower.replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        const explicitSlug = currentEntry.value[LIBRARY_ENTRY_KEYS.MANGA_SLUG] ? currentEntry.value[LIBRARY_ENTRY_KEYS.MANGA_SLUG].split('.')[0] : null;
  
         const historyKey = Object.keys(history).find(key => {
             const kLower = key.toLowerCase();
@@ -399,7 +399,7 @@ const handleMarkAllRead = async () => {
  
     const allChapters = Array.from({ length: totalChapters }, (_, i) => String(i + 1));
     const slugify = (str) => str.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-    const mangaSlug = currentEntry.value.mangaSlug?.split('.')[0] || slugify(currentEntry.value.title);
+    const mangaSlug = currentEntry.value[LIBRARY_ENTRY_KEYS.MANGA_SLUG]?.split('.')[0] || slugify(currentEntry.value.title);
  
     chrome.storage.local.get([DATA.READING_HISTORY], (data) => {
         const history = data[DATA.READING_HISTORY] || {};
@@ -408,13 +408,14 @@ const handleMarkAllRead = async () => {
         chrome.storage.local.set({ [DATA.READING_HISTORY]: history }, () => {
             historyChapters.value = allChapters;
             currentEntry.value.readChapters = totalChapters;
-            currentEntry.value.lastChapterRead = String(totalChapters);
-            currentEntry.value.lastRead = Date.now();
+            currentEntry.value[LIBRARY_ENTRY_KEYS.LAST_READ_CHAPTER] = String(totalChapters);
+            currentEntry.value[LIBRARY_ENTRY_KEYS.LAST_READ] = Date.now();
             
             // Save updated entry
             chrome.storage.local.get([DATA.LIBRARY_ENTRIES], (res) => {
-                const merged = res[DATA.LIBRARY_ENTRIES] || [];
-                const idx = merged.findIndex(e => e.anilistData?.id === ani.value?.id || e.mangaSlug === currentEntry.value.mangaSlug);
+                const raw = res[DATA.LIBRARY_ENTRIES];
+                const merged = Array.isArray(raw) ? raw : [];
+                const idx = merged.findIndex(e => e.anilistData?.id === ani.value?.id || e[LIBRARY_ENTRY_KEYS.MANGA_SLUG] === currentEntry.value[LIBRARY_ENTRY_KEYS.MANGA_SLUG]);
                 if (idx !== -1) {
                     merged[idx] = { ...currentEntry.value }; // Use spread for reactivity
                     chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: merged }, () => {
@@ -447,6 +448,7 @@ const handleRemoveManga = async () => {
     const title = ani.value?.title?.english || ani.value?.title?.romaji || currentEntry.value.title;
     if (!confirm(`Remove "${title}" from your library?`)) return;
  
+    console.log('[MangaDetailsModal] Requesting removal for:', currentEntry.value);
     await libraryStore.removeEntry(currentEntry.value);
     closeModal();
 };
@@ -657,13 +659,13 @@ onMounted(() => {
                         margin-bottom: 25px;
  
                         .modal-genre-tag {
-                            background: rgba(67, 24, 255, 0.08);
+                            background: rgba(var(--accent-primary-rgb), 0.1);
                             color: var(--accent-primary);
                             padding: 5px 14px;
                             border-radius: 100px;
                             font-size: 12px;
-                            font-weight: 600;
-                            border: 1px solid transparent;
+                            font-weight: 700;
+                            border: 1px solid rgba(var(--accent-primary-rgb), 0.3);
                             transition: all 0.2s ease;
                             cursor: default;
  

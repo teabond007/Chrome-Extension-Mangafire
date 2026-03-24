@@ -167,7 +167,8 @@ async function handleGDriveDeleteBackup(sendResponse) {
   }
 }
 
-// ========== Custom Sites Handler Functions ==========
+
+let isUpdatingCustomSites = false;
 
 /**
  * Updates dynamic content script registrations based on user-defined custom sites.
@@ -177,15 +178,27 @@ async function handleGDriveDeleteBackup(sendResponse) {
 async function handleCustomSitesUpdate(sendResponse) {
   const CUSTOM_SCRIPT_ID = 'bmh-custom-sites';
 
+  if (isUpdatingCustomSites) {
+    console.log('[Background] Update already in progress, skipping');
+    if (sendResponse) sendResponse({ success: true, message: 'Update already in progress' });
+    return;
+  }
+
+  isUpdatingCustomSites = true;
+
   try {
     // Get current custom sites from storage
     const data = await chrome.storage.local.get([DATA.CUSTOM_SITES]);
-    const customSites = data[DATA.CUSTOM_SITES] || [];
-    const enabledSites = customSites.filter(s => s.enabled && s.hostname);
+    const rawSites = data[DATA.CUSTOM_SITES];
+    const customSites = Array.isArray(rawSites) ? rawSites : [];
+    const enabledSites = customSites.filter(s => s && s.enabled && s.hostname);
 
     // First, unregister any existing custom site scripts
     try {
-      await chrome.scripting.unregisterContentScripts({ ids: [CUSTOM_SCRIPT_ID] });
+      const scripts = await chrome.scripting.getRegisteredContentScripts({ ids: [CUSTOM_SCRIPT_ID] });
+      if (scripts.length > 0) {
+        await chrome.scripting.unregisterContentScripts({ ids: [CUSTOM_SCRIPT_ID] });
+      }
     } catch (e) {
       // Script not registered yet, ignore
     }
@@ -231,8 +244,13 @@ async function handleCustomSitesUpdate(sendResponse) {
     if (sendResponse) sendResponse({ success: true, count: enabledSites.length });
 
   } catch (error) {
+    if (error.message?.includes('Duplicate script ID')) {
+       console.warn('[Background] Duplicate script ID during registration, attempting recovery');
+    }
     console.error('[Background] Failed to update custom site scripts:', error);
     if (sendResponse) sendResponse({ success: false, error: error.message });
+  } finally {
+    isUpdatingCustomSites = false;
   }
 }
 
@@ -263,7 +281,10 @@ async function handleFetchMetadata(title, storageKey, sendResponse) {
     if (entry) {
       entry.anilistData = data;
       entry.lastChecked = Date.now();
-      await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: library });
+      
+      // Ensure array integrity and plain object serialization
+      const finalLibrary = Array.isArray(library) ? library : [];
+      await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: JSON.parse(JSON.stringify(finalLibrary)) });
       Log(`Metadata saved for: ${title}`);
     }
 

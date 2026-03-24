@@ -118,7 +118,6 @@ export const TOGGLES = {
     LIBRARY_BORDERS: 'LibraryCardBordersEnabled',
     LIBRARY_GLOW_EFFECT: 'LibraryGlowEffect',
     LIBRARY_ANIMATED_BORDERS: 'LibraryAnimatedBorders',
-    LIBRARY_STATUS_ICONS: 'LibraryStatusIcons',
     LIBRARY_PROGRESS_BARS: 'LibraryProgressBars',
     LIBRARY_HIDE_NO_HISTORY: 'libraryHideNoHistory',
     QUICK_ACTIONS: 'quickActions',
@@ -141,7 +140,8 @@ export const SETTINGS = {
     LIBRARY_THICKNESS: 'LibraryBorderSize',
     BORDER_STYLE: 'GlobalBorderStyle',
     VIEW_MODE: 'cardViewSize', // Unified from cardViewSize/libraryViewMode
-    SYNC_INTERVAL: 'profileSyncInterval'
+    SYNC_INTERVAL: 'profileSyncInterval',
+    AUTO_SCROLL_SPEED: 'autoScrollSpeed'
 };
 
 /**
@@ -158,11 +158,34 @@ export const DATA = {
     ANILIST_CACHE: 'anilistCache',
     MANGADEX_CACHE: 'mangadexCache',
     KEYBINDS_CONFIG: 'keybinds',
+    KEYBINDS_CUSTOM: 'customKeybinds',
     
     // Timestamps
     LAST_BACKUP: 'LastBackupDate',
     LAST_SYNC_CLOUD: 'profileLastSync',
     LAST_SYNC_TIME: 'lastSyncTime'
+};
+
+/**
+ * Library Entry Keys: Standardized property names for manga objects
+ * @type {Object<string, string>}
+ */
+export const LIBRARY_ENTRY_KEYS = {
+    TITLE: 'title',
+    STATUS: 'status',
+    CHAPTERS: 'chapters',
+    READ_CHAPTERS: 'readChapters',
+    LAST_READ_CHAPTER: 'lastReadChapter',
+    LAST_READER_URL: 'lastReaderUrl',
+    SOURCE: 'source',
+    SOURCE_ID: 'sourceId',
+    SOURCE_URL: 'sourceUrl',
+    MANGA_SLUG: 'mangaSlug',
+    ANILIST_DATA: 'anilistData',
+    PERSONAL_DATA: 'personalData',
+    CUSTOM_STATUS: 'customStatus',
+    LAST_READ: 'lastRead',
+    LAST_UPDATED: 'lastUpdated'
 };
 
 
@@ -173,11 +196,11 @@ export const API_CONFIG = {
     MANGADEX: {
         BASE_URL: 'https://api.mangadex.org',
         CACHE_EXPIRY_MS: 7 * 24 * 60 * 60 * 1000, // 7 days
-        MIN_REQUEST_INTERVAL: 600
+        MIN_REQUEST_INTERVAL: 500
     },
     ANILIST: {
         BASE_URL: 'https://graphql.anilist.co',
-        MIN_REQUEST_INTERVAL: 2000
+        MIN_REQUEST_INTERVAL: 750
     }
 };
 
@@ -195,6 +218,14 @@ export const SYNC_CONFIG = {
 export const PROGRESS_CONFIG = {
     SAVE_DELAY: 5000,                  // 5 seconds
     SCROLL_THRESHOLD: 0.1              // 10% scroll
+};
+
+/**
+ * Library configuration
+ */
+export const LIBRARY_CONFIG = {
+    INITIAL_LOAD: 100,
+    LOAD_MORE_INCREMENT: 100
 };
 
 /**

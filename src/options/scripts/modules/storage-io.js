@@ -26,7 +26,6 @@ export const EXPORT_CATEGORIES = {
             SETTINGS.LIBRARY_THICKNESS,
             TOGGLES.LIBRARY_GLOW_EFFECT,
             TOGGLES.LIBRARY_ANIMATED_BORDERS,
-            TOGGLES.LIBRARY_STATUS_ICONS,
             TOGGLES.LIBRARY_PROGRESS_BARS,
             DATA.CUSTOM_STATUSES,
             SETTINGS.HIGHLIGHT_THICKNESS,
@@ -65,7 +64,12 @@ export async function gatherStorageData(categoryFlags) {
 
     if (keysToExport.length === 0) return {};
 
-    const data = await chrome.storage.local.get(keysToExport);
+    // Filter out any undefined or null keys to prevent storage.get errors
+    const validKeys = keysToExport.filter(k => k !== undefined && k !== null);
+    
+    if (validKeys.length === 0) return {};
+
+    const data = await chrome.storage.local.get(validKeys);
     
     // Add metadata
     data._exportMeta = {
@@ -91,26 +95,32 @@ export function mergeStorageData(currentData, remoteData) {
 
 
     // Merge library entries
-    if (remoteData[DATA.LIBRARY_ENTRIES] && currentData[DATA.LIBRARY_ENTRIES]) {
+    const remoteLibrary = remoteData[DATA.LIBRARY_ENTRIES];
+    const currentLibrary = currentData[DATA.LIBRARY_ENTRIES];
+    if (Array.isArray(remoteLibrary) || Array.isArray(currentLibrary)) {
         const entryMap = new Map();
-        currentData[DATA.LIBRARY_ENTRIES].forEach(e => { if (e.title) entryMap.set(e.title.toLowerCase(), e); });
-        remoteData[DATA.LIBRARY_ENTRIES].forEach(e => { if (e.title) entryMap.set(e.title.toLowerCase(), e); });
+        if (Array.isArray(currentLibrary)) currentLibrary.forEach(e => { if (e && e.title) entryMap.set(e.title.toLowerCase(), e); });
+        if (Array.isArray(remoteLibrary)) remoteLibrary.forEach(e => { if (e && e.title) entryMap.set(e.title.toLowerCase(), e); });
         mergedData[DATA.LIBRARY_ENTRIES] = Array.from(entryMap.values());
     }
 
     // Merge custom statuses
-    if (remoteData[DATA.CUSTOM_STATUSES] && currentData[DATA.CUSTOM_STATUSES]) {
+    const remoteStatuses = remoteData[DATA.CUSTOM_STATUSES];
+    const currentStatuses = currentData[DATA.CUSTOM_STATUSES];
+    if (Array.isArray(remoteStatuses) || Array.isArray(currentStatuses)) {
         const markerMap = new Map();
-        currentData[DATA.CUSTOM_STATUSES].forEach(m => { if (m.name) markerMap.set(m.name.toLowerCase(), m); });
-        remoteData[DATA.CUSTOM_STATUSES].forEach(m => { if (m.name) markerMap.set(m.name.toLowerCase(), m); });
+        if (Array.isArray(currentStatuses)) currentStatuses.forEach(m => { if (m && m.name) markerMap.set(m.name.toLowerCase(), m); });
+        if (Array.isArray(remoteStatuses)) remoteStatuses.forEach(m => { if (m && m.name) markerMap.set(m.name.toLowerCase(), m); });
         mergedData[DATA.CUSTOM_STATUSES] = Array.from(markerMap.values());
     }
 
     // Merge reading history 
-    if (remoteData[DATA.READING_HISTORY] && currentData[DATA.READING_HISTORY]) {
-        const mergedHistory = { ...currentData[DATA.READING_HISTORY] };
-        Object.entries(remoteData[DATA.READING_HISTORY]).forEach(([key, chapters]) => {
-            if (mergedHistory[key] && Array.isArray(chapters)) {
+    const remoteHistory = remoteData[DATA.READING_HISTORY];
+    const currentHistory = currentData[DATA.READING_HISTORY];
+    if (remoteHistory && typeof remoteHistory === 'object' && currentHistory && typeof currentHistory === 'object') {
+        const mergedHistory = { ...currentHistory };
+        Object.entries(remoteHistory).forEach(([key, chapters]) => {
+            if (mergedHistory[key] && Array.isArray(mergedHistory[key]) && Array.isArray(chapters)) {
                 mergedHistory[key] = [...new Set([...mergedHistory[key], ...chapters])];
             } else {
                 mergedHistory[key] = chapters;
@@ -126,10 +136,13 @@ export function mergeStorageData(currentData, remoteData) {
     if (remoteData[DATA.PERSONAL_DATA] && currentData[DATA.PERSONAL_DATA]) {
         mergedData[DATA.PERSONAL_DATA] = { ...currentData[DATA.PERSONAL_DATA], ...remoteData[DATA.PERSONAL_DATA] };
     }
-    if (Array.isArray(remoteData[DATA.CUSTOM_SITES]) && Array.isArray(currentData[DATA.CUSTOM_SITES])) {
+    
+    const remoteSites = remoteData[DATA.CUSTOM_SITES];
+    const currentSites = currentData[DATA.CUSTOM_SITES];
+    if (Array.isArray(remoteSites) || Array.isArray(currentSites)) {
         const siteMap = new Map();
-        currentData[DATA.CUSTOM_SITES].forEach(s => { if (s.hostname) siteMap.set(s.hostname, s); });
-        remoteData[DATA.CUSTOM_SITES].forEach(s => { if (s.hostname) siteMap.set(s.hostname, s); });
+        if (Array.isArray(currentSites)) currentSites.forEach(s => { if (s && s.hostname) siteMap.set(s.hostname, s); });
+        if (Array.isArray(remoteSites)) remoteSites.forEach(s => { if (s && s.hostname) siteMap.set(s.hostname, s); });
         mergedData[DATA.CUSTOM_SITES] = Array.from(siteMap.values());
     }
 

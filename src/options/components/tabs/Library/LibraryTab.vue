@@ -47,7 +47,7 @@
             <LibraryGrid 
                 :card-view-size="cardViewSize"
                 :sorted-entries="sortedEntries"
-                :visible-list-entries="visibleListEntries"
+                :visible-entries="visibleEntries"
                 :has-more-entries="hasMoreEntries"
                 :custom-statuses="customStatuses"
                 :personal-data="personalData"
@@ -61,7 +61,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import LibraryStatistics from './LibraryStatistics.vue';
 import LibraryFilterBar from './LibraryFilterBar.vue';
@@ -75,7 +75,8 @@ import { useLibraryStore } from '../../../scripts/store/library.store.js';
 import { 
     TOGGLES,
     SETTINGS,
-    DATA 
+    DATA,
+    LIBRARY_CONFIG
 } from '../../../../config.js';
 import { useSettingsStore } from '../../../scripts/store/settings.store.js';
 
@@ -96,14 +97,14 @@ const {
     libraryBordersEnabled, 
     libraryUseGlow, 
     libraryAnimatedBorders, 
-    libraryShowStatusIcon,
     familyFriendlyEnabled,
     customStatuses,
     showReadingBadges,
     autoReadStale: smartInactivity,
     highlightThickness,
     libraryHideNoHistory,
-    libraryShowRibbons
+    libraryShowRibbons,
+    cardViewSize
 } = storeToRefs(settingsStore);
 
 // Computed setting object for MangaCard compatibility
@@ -113,7 +114,6 @@ const librarySettings = computed(() => ({
     hideNoHistory: libraryHideNoHistory.value,
     useGlowEffect: libraryUseGlow.value,
     animatedBorders: libraryAnimatedBorders.value,
-    showStatusIcon: libraryShowStatusIcon.value,
     showReadingBadges: showReadingBadges.value,
     showRibbons: libraryShowRibbons.value,
     smartInactivity: smartInactivity.value
@@ -121,7 +121,7 @@ const librarySettings = computed(() => ({
 
 const showStats = ref(false);
 const isBulkMode = ref(false);
-const listVisibleCount = ref(5);
+const visibleCount = ref(LIBRARY_CONFIG.INITIAL_LOAD);
 
 const syncState = computed(() => ({
     isSyncing: isSyncing.value,
@@ -156,11 +156,13 @@ const filters = reactive({
 
 const availableGenres = computed(() => {
     const genres = new Set();
-    savedEntries.value.forEach(e => {
-        if (e.anilistData?.genres) {
-            e.anilistData.genres.forEach(g => genres.add(g));
-        }
-    });
+    if (Array.isArray(savedEntries.value)) {
+        savedEntries.value.forEach(e => {
+            if (e.anilistData?.genres) {
+                e.anilistData.genres.forEach(g => genres.add(g));
+            }
+        });
+    }
     return Array.from(genres).sort();
 });
 
@@ -276,15 +278,20 @@ const sortedEntries = computed(() => {
     return list;
 });
 
-const visibleListEntries = computed(() => {
-    return sortedEntries.value.slice(0, listVisibleCount.value);
+const visibleEntries = computed(() => {
+    return sortedEntries.value.slice(0, visibleCount.value);
 });
 
 const hasMoreEntries = computed(() => {
-    return listVisibleCount.value < sortedEntries.value.length;
+    return visibleCount.value < sortedEntries.value.length;
 });
 
-const loadMoreEntries = () => listVisibleCount.value += 5;
+const loadMoreEntries = () => visibleCount.value += LIBRARY_CONFIG.LOAD_MORE_INCREMENT;
+
+// Reset pagination when filters change
+watch([filters, cardViewSize], () => {
+    visibleCount.value = LIBRARY_CONFIG.INITIAL_LOAD;
+}, { deep: true });
 const toggleStats = () => showStats.value = !showStats.value;
 
 const clearFilters = () => {

@@ -20,8 +20,16 @@
                 >
                     <div class="feature-toggle-wrapper">
                         <div class="toggle-label-group">
-                            <label for="CustomBorderSize" class="toggle-main-label">Custom Borders</label>
-                            <span class="toggle-sub-label">Enable highlighting on sites</span>
+                            <label class="toggle-main-label">Custom Borders</label>
+                            <span class="toggle-sub-label">Adjust border thickness on sites</span>
+                        </div>
+                        <ToggleSwitch :id="TOGGLES.CUSTOM_BORDER_SIZE_ENABLED" v-model="customBorderSizeEnabled" />
+                    </div>
+
+                    <div class="feature-toggle-wrapper" style="margin-top: 10px;">
+                        <div class="toggle-label-group">
+                            <label class="toggle-main-label">Enable Highlighting</label>
+                            <span class="toggle-sub-label">Highlight found manga on sites</span>
                         </div>
                         <ToggleSwitch :id="TOGGLES.CUSTOM_SITE_HIGHLIGHT" v-model="highlightEnabled" />
                     </div>
@@ -115,7 +123,8 @@ const {
     libraryShowProgressBar,
     highlightEnabled,
     customSiteShowRibbons,
-    customSiteUseGlow
+    customSiteUseGlow,
+    customBorderSizeEnabled
 } = storeToRefs(settingsStore);
 
 const bindSetting = (refValue, key) => {
@@ -132,6 +141,7 @@ bindSetting(libraryHideNoHistory, 'libraryHideNoHistory');
 bindSetting(highlightEnabled, 'highlightEnabled');
 bindSetting(customSiteShowRibbons, 'customSiteShowRibbons');
 bindSetting(customSiteUseGlow, 'customSiteUseGlow');
+bindSetting(customBorderSizeEnabled, 'customBorderSizeEnabled');
 
 
 

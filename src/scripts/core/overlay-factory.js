@@ -29,6 +29,7 @@ export class OverlayFactory {
      * @param {Function} onSelect - Callback when status is selected
      */
     static mountStatusPicker(host, entry, customStatuses, onSelect) {
+        const safeCustomStatuses = Array.isArray(customStatuses) ? customStatuses : [];
         // Remove existing pickers first
         document.querySelectorAll('.bmh-vue-picker-container').forEach(p => p.remove());
 
@@ -115,7 +116,7 @@ export class OverlayFactory {
 
         const app = createApp(StatusPicker, {
             entry,
-            customStatuses,
+            customStatuses: safeCustomStatuses,
             onSelect: (status) => {
                 onSelect(status, entry);
                 cleanup();
@@ -740,6 +741,8 @@ export class OverlayFactory {
         const picker = document.createElement('div');
         picker.className = 'bmh-status-picker';
 
+        const safeCustomStatuses = Array.isArray(customStatuses) ? customStatuses : [];
+
         const defaultStatuses = [
             { name: 'Reading', color: '#4ade80' },
             { name: 'Completed', color: '#60a5fa' },
@@ -749,7 +752,7 @@ export class OverlayFactory {
             { name: 'Re-reading', color: '#a855f7' }
         ];
 
-        const allStatuses = [...defaultStatuses, ...customStatuses];
+        const allStatuses = [...defaultStatuses, ...safeCustomStatuses];
 
         picker.innerHTML = `
             <div class="bmh-picker-header">Change Status</div>

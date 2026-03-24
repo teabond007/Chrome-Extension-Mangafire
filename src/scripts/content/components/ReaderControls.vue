@@ -8,12 +8,12 @@
   >
     <button 
       class="bmh-as-toggle" 
-      :class="{ active: isRunning }" 
+      :class="{ active: localIsRunning }" 
       type="button"
       @click="toggle"
     >
-      <span class="bmh-as-icon">{{ isRunning ? '⏸' : '▶' }}</span>
-      {{ isRunning ? 'Stop' : 'Start' }}
+      <span class="bmh-as-icon">{{ localIsRunning ? '⏸' : '▶' }}</span>
+      {{ localIsRunning ? 'Stop' : 'Start' }}
     </button>
     
     <div class="bmh-as-speed-control">
@@ -58,12 +58,22 @@ const props = defineProps({
 const emit = defineEmits(['toggle', 'speed-change']);
 
 const speed = ref(props.speed);
+const localIsRunning = ref(props.isRunning);
 const isIdle = ref(false);
 let idleTimeout = null;
 
-// Keep local speed in sync with prop
+// Keep local state in sync with prop
 watch(() => props.speed, (newVal) => {
   speed.value = newVal;
+});
+watch(() => props.isRunning, (newVal) => {
+  localIsRunning.value = newVal;
+});
+
+// Expose setters for direct JS access (fixes Proxy set error)
+defineExpose({
+  isRunning: localIsRunning,
+  speed: speed
 });
 
 /**

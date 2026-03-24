@@ -7,7 +7,7 @@
             :class="{ compact: cardViewSize === 'compact' }"
         >
             <MangaCard 
-                v-for="entry in sortedEntries" 
+                v-for="entry in visibleEntries" 
                 :key="entry.title + (entry.anilistData?.id || '')"
                 :entry="entry"
                 :personal-data="personalData?.[getMangaId(entry)]"
@@ -16,27 +16,28 @@
                 @click="$emit('show-details', entry)"
                 @status-click="$emit('show-status-picker', entry)"
             />
-            <div v-if="sortedEntries.length === 0" class="empty-library">
-                No matches found.
-            </div>
         </div>
 
         <!-- Detailed List View -->
         <div v-else class="manga-list-view">
             <MangaDetailsLargeView 
-                v-for="entry in visibleListEntries"
+                v-for="entry in visibleEntries"
                 :key="'list-' + entry.title"
                 :entry="entry"
                 :personal-data="personalData?.[getMangaId(entry)]"
                 @click="$emit('show-details', entry)"
             />
+        </div>
+
+        <!-- Shared Status Messages & Pagination -->
+        <div class="library-footer">
             <div v-if="sortedEntries.length === 0" class="empty-library">
                 No matches found.
             </div>
             
             <div v-if="hasMoreEntries" class="load-more-container">
                 <button @click="$emit('load-more')" class="btn btn-primary btn-full">
-                    Load More
+                    Load More (showing {{ visibleEntries.length }} of {{ sortedEntries.length }})
                 </button>
             </div>
         </div>
@@ -50,7 +51,7 @@ import { getMangaId } from '../../../../scripts/core/library-service.ts';
 
 defineProps({
     sortedEntries: Array,
-    visibleListEntries: Array,
+    visibleEntries: Array,
     hasMoreEntries: Boolean,
     cardViewSize: String,
     customStatuses: Array,
@@ -94,12 +95,6 @@ defineEmits(['show-details', 'show-status-picker', 'load-more']);
     font-size: 10px;
 }
 
-.manga-grid.compact :deep(.card-status-dot) {
-    width: 10px;
-    height: 10px;
-    top: 6px;
-    right: 6px;
-}
 
 /* Responsive Grid */
 @media (min-width: 1600px) {

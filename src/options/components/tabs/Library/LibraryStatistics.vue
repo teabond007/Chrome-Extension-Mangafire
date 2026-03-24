@@ -210,7 +210,7 @@ const processedData = computed(() => {
         formats: { manga: 0, manhwa: 0, manhua: 0 }
     };
 
-    if (total === 0) return defaultRes;
+    if (!Array.isArray(props.entries) || props.entries.length === 0) return defaultRes;
 
     const now = Date.now();
     const oneWeek = 7 * 24 * 60 * 60 * 1000;

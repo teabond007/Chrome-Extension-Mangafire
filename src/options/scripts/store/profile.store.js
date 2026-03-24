@@ -105,9 +105,16 @@ export const useProfileStore = defineStore('profile', {
 
                 // Check auth status if configured
                 if (this.isOAuthConfigured) {
-                    this.isSignedIn = await gdriveAuth.isSignedIn();
-                    if (this.isSignedIn) {
-                        await this.loadUserProfile();
+                    const token = await gdriveAuth.getAuthToken(false).catch(() => null);
+                    if (token) {
+                        this.isSignedIn = true;
+                        // Parallelize user profile and cloud info fetching
+                        await Promise.all([
+                            this.loadUserProfile(),
+                            this.updateCloudBackupInfo()
+                        ]);
+                    } else {
+                        this.isSignedIn = false;
                     }
                 }
             } catch (error) {
@@ -351,7 +358,7 @@ export const useProfileStore = defineStore('profile', {
         /**
          * Exports data to a local JSON file.
          */
-        async exportLocalFile() {
+        async exportLocalData() {
             this.syncStatus = 'syncing';
             this.syncStatusMessage = 'Preparing export...';
             
@@ -382,7 +389,7 @@ export const useProfileStore = defineStore('profile', {
         /**
          * Imports data from a local file.
          */
-        async importLocalFile(file, isMerge) {
+        async importLocalData(file, isMerge) {
             this.syncStatus = 'syncing';
             this.syncStatusMessage = 'Parsing file...';
 
@@ -417,7 +424,7 @@ export const useProfileStore = defineStore('profile', {
         /**
          * Imports manga from a MangaDex list.
          */
-        async importFromMDList(inputValue) {
+        async importMDList(inputValue) {
             if (!inputValue) return;
 
             this.syncStatus = 'syncing';
@@ -436,6 +443,9 @@ export const useProfileStore = defineStore('profile', {
                 
                 const data = await chrome.storage.local.get([DATA.LIBRARY_ENTRIES]);
                 let savedEntries = Array.isArray(data[DATA.LIBRARY_ENTRIES]) ? data[DATA.LIBRARY_ENTRIES] : [];
+                
+                // Deep log for MD import
+                console.log('[ProfileStore] MD Import current entries count:', savedEntries.length);
                 
                 const existingTitles = new Set(savedEntries.map(e => e.title.toLowerCase()));
                 const existingMdIds = new Set(savedEntries.filter(e => e.anilistData?.mangadexId).map(e => e.anilistData.mangadexId));
@@ -464,7 +474,9 @@ export const useProfileStore = defineStore('profile', {
                     added++;
                 });
                 
-                await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: savedEntries });
+                // Use plain object for storage set
+                const plainEntries = JSON.parse(JSON.stringify(savedEntries));
+                await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: plainEntries });
                 
                 this.syncStatus = 'success';
                 this.lastSyncResult = { 

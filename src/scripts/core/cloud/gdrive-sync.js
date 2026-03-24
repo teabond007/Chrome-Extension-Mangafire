@@ -108,8 +108,8 @@ export async function downloadBackup() {
  * 
  * @returns {Promise<{id: string, size: string, modifiedTime: string, entryCount: number}|null>}
  */
-export async function getBackupInfo() {
-    const token = await getAuthToken();
+export async function getBackupInfo(providedToken = null) {
+    const token = providedToken || await getAuthToken();
     const file = await findBackupFile(token);
 
     if (!file) {
@@ -128,9 +128,19 @@ export async function getBackupInfo() {
 
     const metadata = await response.json();
 
-    // Get entry count by downloading just the structure
-    const data = await downloadBackup();
-    const entryCount = Array.isArray(data?.[DATA.LIBRARY_ENTRIES]) ? data[DATA.LIBRARY_ENTRIES].length : 0;
+    // To get entry count, we unfortunately have to download the file.
+    // But let's use the token we already have.
+    const downloadResponse = await fetch(`${DRIVE_API_BASE}/files/${file.id}?alt=media`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+
+    let entryCount = 0;
+    if (downloadResponse.ok) {
+        const data = await downloadResponse.json();
+        entryCount = Array.isArray(data?.[DATA.LIBRARY_ENTRIES]) ? data[DATA.LIBRARY_ENTRIES].length : 0;
+    }
 
     return {
         id: metadata.id,

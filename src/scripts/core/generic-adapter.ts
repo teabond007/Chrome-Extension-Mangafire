@@ -229,9 +229,9 @@ export class GenericAdapter {
      * Extracts manga title and chapter number from reader page DOM elements.
      * Uses the user-configured readerTitle and readerChapter selectors.
      * @param {string} _url - Unused, extraction is DOM-based for custom sites
-     * @returns {{ slug: string, title: string, chapterNo: number } | null}
+     * @returns {{ id?: string, slug: string, title: string, chapterNo: number } | null}
      */
-    parseUrl(_url: string): { slug: string; title: string; chapterNo: number } | null {
+    parseUrl(_url: string): { id?: string; slug: string; title: string; chapterNo: number } | null {
         if (!this.readerSelectors.readerTitle && !this.readerSelectors.readerChapter) {
             return null;
         }
@@ -288,8 +288,12 @@ export class GenericAdapter {
         }
 
         if (!title && !chapterNo) return null;
+        
+        // Extract ID from current URL if possible
+        const id = this.extractIdFromUrl(_url);
 
         return {
+            id,
             slug: this.slugify(title),
             title,
             chapterNo
@@ -333,14 +337,7 @@ export async function initCustomSite(config: any, settings: any) {
     const adapter = new GenericAdapter(config);
     console.log('[BMH-Custom] Adapter created. Combined selector:', adapter.selectors.card);
 
-    const enhancer = new CardEnhancer(adapter, {
-        highlighting: true,
-        progressBadges: true,
-        quickActions: settings[TOGGLES.CUSTOM_SITE_QUICK_ACTIONS] !== false,
-        CustomBorderSize: settings[TOGGLES.CUSTOM_BORDER_SIZE_ENABLED] ? settings[SETTINGS.HIGHLIGHT_THICKNESS] : 4,
-        CustomBookmarksfeatureEnabled: settings[TOGGLES.CUSTOM_STATUS_ENABLED],
-        customBookmarks: settings[DATA.CUSTOM_STATUSES]
-    });
+    const enhancer = new CardEnhancer(adapter, settings);
 
     const count = await enhancer.enhanceAll();
     console.log(`[BMH-Custom] Enhanced ${count} cards.`);

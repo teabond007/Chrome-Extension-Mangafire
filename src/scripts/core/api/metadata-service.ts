@@ -18,9 +18,17 @@ import { fetchMangaFromMangadex } from './mangadex-api.js';
 export async function getMergedMetadata(title: string): Promise<any | null> {
     if (!title) return null;
 
+    console.log(`[MetadataService] Starting fetch for: "${title}"`);
+
     try {
         let data: any = await fetchMangaFromAnilist(title);
         
+        if (data) {
+            console.log(`[MetadataService] AniList match found for: "${title}" (ID: ${data.id})`);
+        } else {
+            console.log(`[MetadataService] No AniList match for: "${title}"`);
+        }
+
         // Define what constitutes "incomplete" data from AniList
         const isAniListIncomplete = data && (
             !data.bannerImage || 
@@ -30,14 +38,21 @@ export async function getMergedMetadata(title: string): Promise<any | null> {
         );
 
         if (!data || isAniListIncomplete) {
+            if (isAniListIncomplete) {
+                console.log(`[MetadataService] AniList data incomplete for: "${title}", attempting MangaDex fallback`);
+            }
+            
             const mdData: any = await fetchMangaFromMangadex(title);
             
             if (mdData) {
+                console.log(`[MetadataService] MangaDex match found for: "${title}"`);
                 if (!data) {
                     // Full fallback to MangaDex
+                    console.log(`[MetadataService] Using full MangaDex data for: "${title}"`);
                     data = mdData;
                 } else {
                     // Merge MangaDex data into AniList data
+                    console.log(`[MetadataService] Merging MangaDex data for: "${title}"`);
                     if (!data.bannerImage) data.bannerImage = mdData.bannerImage;
                     if (!data.description) data.description = mdData.description;
                     
@@ -49,12 +64,20 @@ export async function getMergedMetadata(title: string): Promise<any | null> {
                         data.genres = mdData.genres;
                     }
                 }
+            } else {
+                console.log(`[MetadataService] No MangaDex match for: "${title}"`);
             }
+        }
+
+        if (!data) {
+            console.warn(`[MetadataService] Final: No metadata found for "${title}" from any source.`);
+        } else {
+            console.log(`[MetadataService] Final: Successfully resolved metadata for "${title}"`);
         }
 
         return data || null;
     } catch (error) {
-        console.error(`[MetadataService] Failed to get merged metadata for "${title}":`, error);
+        console.error(`[MetadataService] ERROR processing metadata for "${title}":`, error);
         return null; // Fail gracefully
     }
 }
