@@ -11,6 +11,13 @@
                         :class="{ active: isBulkMode }"
                     >Bulk</button>
                     <button 
+                        @click="$emit('toggle-stats')" 
+                        class="btn btn-ghost btn-sm"
+                        :class="{ active: showStats }"
+                    >
+                        <span style="margin-right: 4px;">📊</span>Stats
+                    </button>
+                    <button 
                         class="info-redirect-btn" 
                         title="How to use"
                         @click="handleGuideRedirect"
@@ -151,11 +158,12 @@ defineProps({
     customStatuses: Array,
     availableGenres: Array,
     isBulkMode: Boolean,
+    showStats: Boolean,
     cardViewSize: String,
     sortedEntriesCount: Number
 });
 
-defineEmits(['toggle-bulk', 'set-view-size', 'clear-filters', 'toggle-bingeworthy']);
+defineEmits(['toggle-bulk', 'toggle-stats', 'set-view-size', 'clear-filters', 'toggle-bingeworthy']);
 
 const settingsStore = useSettingsStore();
 

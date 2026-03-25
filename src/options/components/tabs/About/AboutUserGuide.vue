@@ -9,7 +9,7 @@
         <h3 class="guide-section-header">Core Functionality</h3>
         <div class="guide-grid">
             <GuideCard id="guide-library" title="Your Library" icon="📚">
-                The central hub for all your bookmarked content. Use the <b>Filter Bar</b> to search for specific titles, sort by activity, or filter by genre and status. Toggle <b>Bulk Mode</b> to perform updates on multiple entries simultaneously.
+                The central hub for all your bookmarked content. Use the <b>Filter Bar</b> to search for specific titles, sort by activity, or filter by genre and status. Easily switch between <b>Large, Compact, and List</b> views to match your preference.
             </GuideCard>
 
             <GuideCard id="guide-general" title="General Preferences" icon="⚙️">
@@ -17,7 +17,7 @@
             </GuideCard>
 
             <GuideCard id="guide-smart-automation" title="Smart Automation" icon="⚡">
-                Reduces manual work by automating metadata updates. <b>Sync & Mark Read</b> uses your browsing history to automatically update your library when you visit a chapter page. <b>Inactivity Fade</b> visually dims entries you haven't interacted with recently.
+                Reduces manual work by automating updates. <b>Sync & Mark Read</b> uses your browsing history to automatically update your library when you visit a chapter page. <b>Auto Read Stale</b> automatically moves "Reading" entries to "Read" after 30 days of inactivity.
             </GuideCard>
 
             <GuideCard id="guide-reader" title="Reader Enhancements" icon="📚">
@@ -29,7 +29,7 @@
             </GuideCard>
 
             <GuideCard id="guide-custom-list" title="Site Customization" icon="🌐">
-                Fine-tune how the extension looks on specific domains. Adjust <b>Highlight Thickness</b> to match the visual density of different sites, ensuring your status borders are clearly visible without obstructing the site's original UI.
+                Fine-tune how the extension looks on specific domains. Adjust <b>Highlight Thickness</b> and enable <b>Glowing Borders</b> or <b>Status Ribbons</b> to ensure your manga markers are clearly visible without obstructing the site's original UI.
             </GuideCard>
         </div>
 
@@ -45,7 +45,7 @@
             </GuideCard>
 
             <GuideCard id="guide-reader-selectors" title="Reader Tracking" icon="📖">
-                Configure <b>Reader Selectors</b> to enable progress tracking. By identifying a unique element on chapter pages, the extension can automatically detect when you are reading and save your position.
+                Configure <b>Reader Selectors</b> to enable progress tracking on custom sites. By identifying a unique element on chapter pages, the extension can automatically detect when you are reading and save your position.
             </GuideCard>
 
             <GuideCard id="guide-custom-share" title="Portability" icon="📤">
