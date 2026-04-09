@@ -9,6 +9,8 @@ import * as gdriveSync from '../../../scripts/core/cloud/gdrive-sync.js';
 import { fetchMDList } from '../../../scripts/core/api/mangadex-api.js';
 import { gatherStorageData, applyStorageData } from '../modules/storage-io.js';
 import { TOGGLES, SETTINGS, DATA } from '../../../config.js';
+import { authenticateAnilist } from '../../../scripts/core/api/anilist-sync';
+import { authenticateMal } from '../../../scripts/core/api/mal-sync';
 
 export const useProfileStore = defineStore('profile', {
     state: () => ({
@@ -32,6 +34,12 @@ export const useProfileStore = defineStore('profile', {
         syncSettings: true,
         syncCache: false,
         syncInterval: 1, // Default to 1 day
+        syncAnilistEnabled: false,
+        syncMalEnabled: false,
+        
+        // External account status
+        isAnilistConnected: false,
+        isMalConnected: false,
         
         
         // OAuth configuration status
@@ -87,7 +95,11 @@ export const useProfileStore = defineStore('profile', {
                     TOGGLES.SYNC_CACHE,
                     DATA.LAST_SYNC_CLOUD,
                     SETTINGS.SYNC_INTERVAL,
-                    DATA.LAST_BACKUP
+                    DATA.LAST_BACKUP,
+                    TOGGLES.SYNC_ANILIST_ENABLED,
+                    TOGGLES.SYNC_MAL_ENABLED,
+                    DATA.ANILIST_AUTH,
+                    DATA.MAL_AUTH
                 ]);
 
                 this.autoSyncEnabled = saved[TOGGLES.AUTO_SYNC] ?? false;
@@ -99,6 +111,11 @@ export const useProfileStore = defineStore('profile', {
                 this.syncInterval = saved[SETTINGS.SYNC_INTERVAL] ?? 1;
                 this.lastSyncTime = saved[DATA.LAST_SYNC_CLOUD] ?? null;
                 this.lastLocalBackup = saved[DATA.LAST_BACKUP] ?? null;
+                
+                this.syncAnilistEnabled = saved[TOGGLES.SYNC_ANILIST_ENABLED] ?? false;
+                this.syncMalEnabled = saved[TOGGLES.SYNC_MAL_ENABLED] ?? false;
+                this.isAnilistConnected = !!saved[DATA.ANILIST_AUTH]?.token;
+                this.isMalConnected = !!saved[DATA.MAL_AUTH]?.access_token;
 
                 // Check OAuth configuration
                 this.isOAuthConfigured = this.checkOAuthConfig();
@@ -175,6 +192,58 @@ export const useProfileStore = defineStore('profile', {
             } catch (error) {
                 console.error('[ProfileStore] Sign out error:', error);
             }
+        },
+
+        /**
+         * Connects AniList account via background flow.
+         */
+        async connectAnilist() {
+            try {
+                const token = await authenticateAnilist();
+                this.isAnilistConnected = true;
+                this.syncAnilistEnabled = true;
+                await this.savePreferences();
+                return token;
+            } catch (error) {
+                console.error('[ProfileStore] AniList connection failed:', error);
+                throw error;
+            }
+        },
+
+        /**
+         * Disconnects AniList account.
+         */
+        async disconnectAnilist() {
+            await chrome.storage.local.remove([DATA.ANILIST_AUTH]);
+            this.isAnilistConnected = false;
+            this.syncAnilistEnabled = false;
+            this.savePreferences();
+        },
+
+        /**
+         * Connects MyAnimeList account via background flow.
+         */
+        async connectMal() {
+            try {
+                const token = await authenticateMal();
+                this.isMalConnected = true;
+                this.syncMalEnabled = true;
+                await this.savePreferences();
+                return token;
+            } catch (error) {
+                console.error('[ProfileStore] MAL connection failed:', error);
+                throw error;
+            }
+        },
+
+        /**
+         * Disconnects MyAnimeList account.
+         */
+        async disconnectMal() {
+            await chrome.storage.local.remove([DATA.MAL_AUTH]);
+            this.isMalConnected = false;
+            this.syncMalEnabled = false;
+            this.savePreferences();
         },
 
         /**
@@ -334,7 +403,9 @@ export const useProfileStore = defineStore('profile', {
                 [TOGGLES.SYNC_PERSONAL]: this.syncPersonal,
                 [TOGGLES.SYNC_SETTINGS]: this.syncSettings,
                 [TOGGLES.SYNC_CACHE]: this.syncCache,
-                [SETTINGS.SYNC_INTERVAL]: this.syncInterval
+                [SETTINGS.SYNC_INTERVAL]: this.syncInterval,
+                [TOGGLES.SYNC_ANILIST_ENABLED]: this.syncAnilistEnabled,
+                [TOGGLES.SYNC_MAL_ENABLED]: this.syncMalEnabled
             });
         },
 

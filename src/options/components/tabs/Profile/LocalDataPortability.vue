@@ -77,13 +77,13 @@
                 type="file" 
                 ref="fileInput" 
                 @change="handleFileSelect" 
-                accept=".json,.xml" 
+                accept=".json" 
                 style="display: none;"
             >
             <div class="drop-zone-content">
                 <div class="drop-zone-icon" style="font-size: 24px;">📄</div>
                 <span class="drop-zone-text">Click to upload or drag and drop</span>
-                <span class="drop-zone-subtext">Supports .json or .xml files (max 10MB)</span>
+                <span class="drop-zone-subtext">Supports .json files (max 10MB)</span>
             </div>
         </div>
 
@@ -191,7 +191,7 @@ const handleFileSelect = async (event) => {
     const file = event.target.files[0];
     if (file) {
         syncDirection.value = 'import';
-        await profileStore.importLocalData(file);
+        await profileStore.importLocalData(file, isMergeImport.value);
         syncDirection.value = null;
         event.target.value = '';
     }
@@ -202,7 +202,7 @@ const handleFileDrop = async (event) => {
     const file = event.dataTransfer.files[0];
     if (file) {
         syncDirection.value = 'import';
-        await profileStore.importLocalData(file);
+        await profileStore.importLocalData(file, isMergeImport.value);
         syncDirection.value = null;
     }
 };

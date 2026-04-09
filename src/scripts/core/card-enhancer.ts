@@ -10,6 +10,7 @@
 
 import { STATUS_COLORS, TOGGLES, SETTINGS, DATA, LIBRARY_ENTRY_KEYS } from '../../config.js';
 import { OverlayFactory } from './overlay-factory.js';
+import { getMergedMetadata } from './api/metadata-service';
 
 interface PlatformAdapter {
     id: string;
@@ -129,6 +130,11 @@ export class CardEnhancer {
      * @returns {Promise<number>} Number of cards enhanced
      */
     async enhanceAll(): Promise<number> {
+        if (!chrome.runtime?.id) {
+            console.log('[CardEnhancer] Extension context invalidated, skipping enhancement.');
+            return 0;
+        }
+
         try {
             const cards = this.findCards();
             const library = await this.loadLibrary();
@@ -337,7 +343,7 @@ export class CardEnhancer {
             this.adapter.applyBorder(card.element, color, this.settings.border.size, style);
         } else {
             const target = (card.element.closest('li') || card.element) as HTMLElement;
-            
+
             if (this.settings.useGlow) {
                 const t = this.settings.border.size;
                 target.style.setProperty('border', 'none', 'important');
@@ -352,7 +358,7 @@ export class CardEnhancer {
                 target.style.setProperty('border', `${this.settings.border.size}px ${style} ${color}`, 'important');
                 target.style.setProperty('box-shadow', 'none', 'important');
             }
-            
+
             target.style.setProperty('border-radius', this.settings.border.radius, 'important');
             target.style.setProperty('box-sizing', 'border-box', 'important');
         }
@@ -442,7 +448,7 @@ export class CardEnhancer {
      */
     handleContinueReading(entry: LibraryEntry, card: CardObject) {
         const nextChapter = OverlayFactory.calculateNextChapter(entry);
-        
+
         // 1. Try adapter's custom method
         let url = this.adapter.buildChapterUrl?.(entry, nextChapter);
 
@@ -450,7 +456,7 @@ export class CardEnhancer {
         if (!url && entry[LIBRARY_ENTRY_KEYS.LAST_READER_URL]) {
             const lastUrl = entry[LIBRARY_ENTRY_KEYS.LAST_READER_URL];
             const lastChapter = parseFloat(entry[LIBRARY_ENTRY_KEYS.LAST_READ_CHAPTER] as string) || 0;
-            
+
             // Try to find the chapter number in the URL and replace it
             // Matches patterns like ".../chapter-123", ".../ch-123", ".../123/"
             const chapterRegex = new RegExp(`([/-])${lastChapter}(\\b|/|\\.|$)`);
@@ -554,6 +560,16 @@ export class CardEnhancer {
                     status: newStatus,
                     lastUpdated: Date.now()
                 };
+                
+                try {
+                    const metadata = await getMergedMetadata(entry.title);
+                    if (metadata) {
+                         newEntry.anilistData = metadata;
+                    }
+                } catch(e) {
+                     console.warn('[CardEnhancer] Failed to fetch metadata for quick action', e);
+                }
+
                 entries.push(newEntry);
                 console.log(`[CardEnhancer] Added new entry to library: ${entry.title}`);
             }
@@ -601,7 +617,7 @@ export class CardEnhancer {
                 }
                 entries[idx].personalData.rating = rating;
 
-                
+
                 // Ensure array integrity and plain object serialization
                 const finalEntries = Array.isArray(entries) ? entries : [];
                 await new Promise(resolve => {

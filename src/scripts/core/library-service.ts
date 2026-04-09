@@ -4,7 +4,10 @@
  * Shared between background scripts, content scripts, and options UI.
  */
 
-import { DATA, DEFAULT_STATUS, LIBRARY_ENTRY_KEYS } from '../../config.js';
+import { DATA, DEFAULT_STATUS, LIBRARY_ENTRY_KEYS, TOGGLES } from '../../config.js';
+import { syncQueue, SyncPlatform } from './api/sync-queue';
+import { syncAnilistProgress } from './api/anilist-sync';
+import { syncMalProgress, searchMangaOnMal } from './api/mal-sync';
 
 export interface MangaQuery {
     [key: string]: any;
@@ -51,7 +54,7 @@ function slugify(title: string): string {
 export function findEntry(library: any[], query: MangaQuery): any | undefined {
     const { title, slug, source, sourceId } = query;
     const normalizedTitle = slugify(title);
-    
+
     return library.find(e => {
         if (source && sourceId && e.source === source && e.sourceId === sourceId) return true;
         if (slug && (e.slug === slug || slug === e.mangaSlug?.split('.')[0])) return true;
@@ -68,7 +71,7 @@ export function fuzzyMatch(needle: string, haystack: string): boolean {
     const n = needle.toLowerCase();
     const h = haystack.toLowerCase();
     if (h.includes(n)) return true;
-    
+
     let ni = 0;
     for (let hi = 0; hi < h.length && ni < n.length; hi++) {
         if (h[hi] === n[ni]) ni++;
@@ -86,7 +89,7 @@ export function fuzzyScore(needle: string, haystack: string): number {
     if (h === n) return 1000;
     if (h.startsWith(n)) return 500;
     if (h.includes(n)) return 100;
-    
+
     let score = 0;
     let ni = 0;
     let lastMatch = -1;
@@ -118,7 +121,7 @@ export async function loadLibrary(): Promise<any[]> {
 export async function upsertEntry(entryData: any): Promise<any> {
     const library = await loadLibrary();
     const id2 = getMangaId(entryData);
-    
+
     const existingIdx = library.findIndex(e => {
         const id1 = getMangaId(e);
         return id1 === id2 || (e.title && e.title === entryData.title);
@@ -156,7 +159,7 @@ export async function upsertEntry(entryData: any): Promise<any> {
 export async function updateProgress(query: MangaQuery, progress: ProgressUpdate): Promise<any> {
     const library = await loadLibrary();
     const entry = findEntry(library, query);
-    
+
     if (!entry) {
         // Create new entry if not found
         return await upsertEntry({
@@ -176,13 +179,63 @@ export async function updateProgress(query: MangaQuery, progress: ProgressUpdate
         entry[LIBRARY_ENTRY_KEYS.LAST_READER_URL] = progress.url;
         entry[LIBRARY_ENTRY_KEYS.LAST_READ] = Date.now();
         entry[LIBRARY_ENTRY_KEYS.LAST_UPDATED] = Date.now();
-        
+
         // Ensure array integrity
         const finalLibrary = Array.isArray(library) ? library : [];
         await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: JSON.parse(JSON.stringify(finalLibrary)) });
+
+        // Trigger External Sync
+        triggerExternalSync(entry, incoming);
     }
 
     return entry;
+}
+
+/**
+ * Dispatches sync tasks to external trackers based on user settings.
+ */
+async function triggerExternalSync(entry: any, chapter: number) {
+    const data = await chrome.storage.local.get([
+        TOGGLES.SYNC_ANILIST_ENABLED,
+        TOGGLES.SYNC_MAL_ENABLED
+    ]) as any;
+
+    // AniList Sync
+    if (data[TOGGLES.SYNC_ANILIST_ENABLED] && entry.anilistData?.id) {
+        syncQueue.enqueue(
+            SyncPlatform.ANILIST,
+            () => syncAnilistProgress(entry.anilistData.id, chapter),
+            `anilist-${entry.anilistData.id}-${chapter}`
+        );
+    }
+
+    // MyAnimeList Sync
+    if (data[TOGGLES.SYNC_MAL_ENABLED]) {
+        let malId = entry.malId;
+
+        // Try to resolve MAL ID if missing
+        if (!malId) {
+            malId = await searchMangaOnMal(entry.title);
+            if (malId) {
+                entry.malId = malId;
+                // Save resolved ID back to library
+                const library = await loadLibrary();
+                const idx = library.findIndex(e => getMangaId(e) === getMangaId(entry));
+                if (idx !== -1) {
+                    library[idx].malId = malId;
+                    await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: JSON.parse(JSON.stringify(library)) });
+                }
+            }
+        }
+
+        if (malId) {
+            syncQueue.enqueue(
+                SyncPlatform.MAL,
+                () => syncMalProgress(malId, chapter),
+                `mal-${malId}-${chapter}`
+            );
+        }
+    }
 }
 
 /**
@@ -191,10 +244,10 @@ export async function updateProgress(query: MangaQuery, progress: ProgressUpdate
 export async function trackReadChapter(mangaQuery: MangaQuery, chapter: string): Promise<string[]> {
     const data = await chrome.storage.local.get([DATA.READING_HISTORY]);
     const history = (data[DATA.READING_HISTORY] || {}) as Record<string, string[]>;
-    
+
     // Use slug as the primary key for history if available, else standard ID
     const key = mangaQuery.slug || mangaQuery[LIBRARY_ENTRY_KEYS.MANGA_SLUG] || getMangaId(mangaQuery);
-    
+
     if (!history[key]) history[key] = [];
     if (!history[key].includes(chapter)) {
         history[key].push(chapter);
@@ -220,13 +273,13 @@ export async function loadPersonalData(): Promise<Record<string, PersonalDataEnt
 export async function savePersonalData(entry: any, updates: Partial<PersonalDataEntry>): Promise<PersonalDataEntry> {
     const allData = await loadPersonalData();
     const id = getMangaId(entry);
-    
+
     allData[id] = {
         ...(allData[id] || { notes: '', rating: 0 }),
         ...updates,
         lastModified: Date.now()
     } as PersonalDataEntry;
-    
+
     await chrome.storage.local.set({ [DATA.PERSONAL_DATA]: allData });
     return allData[id];
 }

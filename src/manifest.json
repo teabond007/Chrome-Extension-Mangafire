@@ -31,7 +31,9 @@
   "host_permissions": [
     "https://graphql.anilist.co/*",
     "https://api.mangadex.org/*",
-    "https://mangadex.org/*"
+    "https://mangadex.org/*",
+    "https://api.myanimelist.net/*",
+    "https://myanimelist.net/*"
   ],
   "optional_host_permissions": [
     "http://*/*",

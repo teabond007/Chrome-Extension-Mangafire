@@ -228,37 +228,42 @@ export const useLibraryStore = defineStore('library', {
 
         
         /**
-         * Forces a re-fetch of metadata for ALL entries in the library.
-         * Clears existing AniList match data to force a fresh lookup.
+         * Sync metadata for entries in the library.
+         * @param {boolean} wipeAll - If true, clears existing metadata to force a fresh lookup.
          */
-        async forceSync() {
+        async forceSync(wipeAll = false) {
             if (this.isSyncing) {
                 if (!confirm("A sync is already in progress. Do you want to restart it?")) return;
                 this.isSyncing = false;
             }
 
+            if (wipeAll) {
+                if (!confirm("WARNING: This will wipe all cached metadata and re-fetch from scratch. This can take a long time and hits rate limits. Are you sure?")) return;
+            }
+
             this.isSyncing = true;
-            console.log("Starting forced library sync...");
+            console.log(wipeAll ? "Starting full forced library sync..." : "Starting missing info sync...");
 
             try {
-                // Clear metadata for all entries
-                const updatedEntries = this.entries.map(e => ({
-                    ...e,
-                    anilistData: undefined,
-                    lastChecked: undefined
-                }));
+                let updatedEntries = [...this.entries];
 
-                // Clear caches
-                await wipeMangadexCache();
-                console.log("Cleared MangaDex cache.");
+                if (wipeAll) {
+                    updatedEntries = updatedEntries.map(e => ({
+                        ...e,
+                        anilistData: undefined,
+                        lastChecked: undefined
+                    }));
 
-                // Identify missing data (all of them now)
+                    await wipeMangadexCache();
+                    console.log("Cleared MangaDex cache.");
+                }
+
                 await this.fetchMissingMetadata(updatedEntries);
                 
-                alert("Library sync completed!");
+                alert(wipeAll ? "Full library sync completed!" : "Missing info sync completed!");
             } catch (e) {
-                console.error("Force sync failed:", e);
-                alert("Sync failed. Check console constraints.");
+                console.error("Sync failed:", e);
+                alert("Sync failed. Check console for details.");
             } finally {
                 this.isSyncing = false;
                 this.syncProgress = { current: 0, total: 0, title: '' };

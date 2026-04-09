@@ -288,7 +288,7 @@ export class GenericAdapter {
         }
 
         if (!title && !chapterNo) return null;
-        
+
         // Extract ID from current URL if possible
         const id = this.extractIdFromUrl(_url);
 
@@ -345,6 +345,12 @@ export async function initCustomSite(config: any, settings: any) {
     // Watch for dynamic content
     let debounceTimer: any;
     const observer = new MutationObserver(() => {
+        if (!chrome.runtime?.id) {
+            console.log('[BMH-Custom] Extension context invalidated, disconnecting observer.');
+            observer.disconnect();
+            return;
+        }
+
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => enhancer.enhanceAll(), 300);
     });

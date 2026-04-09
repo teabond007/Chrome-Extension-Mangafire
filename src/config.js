@@ -126,7 +126,9 @@ export const TOGGLES = {
     CUSTOM_SITE_SHOW_RIBBONS: 'customSiteStatusRibbon',
     CUSTOM_SITE_GLOW_EFFECT: 'customSiteGlowEffect',
     IS_CUSTOM_THEME: 'isCustomTheme',
-    AUTO_READ_STALE: 'autoReadStaleReading'
+    AUTO_READ_STALE: 'autoReadStaleReading',
+    SYNC_ANILIST_ENABLED: 'syncAnilistEnabled',
+    SYNC_MAL_ENABLED: 'syncMalEnabled'
 };
 
 /**
@@ -159,6 +161,8 @@ export const DATA = {
     MANGADEX_CACHE: 'mangadexCache',
     KEYBINDS_CONFIG: 'keybinds',
     KEYBINDS_CUSTOM: 'customKeybinds',
+    ANILIST_AUTH: 'anilistAuth',
+    MAL_AUTH: 'malAuth',
     
     // Timestamps
     LAST_BACKUP: 'LastBackupDate',
@@ -200,7 +204,16 @@ export const API_CONFIG = {
     },
     ANILIST: {
         BASE_URL: 'https://graphql.anilist.co',
+        AUTH_URL: 'https://anilist.co/api/v2/oauth/authorize',
+        CLIENT_ID: '22881', // Placeholder or standard extension client ID if known
         MIN_REQUEST_INTERVAL: 750
+    },
+    MAL: {
+        BASE_URL: 'https://api.myanimelist.net/v2',
+        AUTH_URL: 'https://myanimelist.net/v1/oauth2/authorize',
+        TOKEN_URL: 'https://myanimelist.net/v1/oauth2/token',
+        CLIENT_ID: 'YOUR_MAL_CLIENT_ID', // Replaced by user or handled via proxy
+        MIN_REQUEST_INTERVAL: 1000
     }
 };
 

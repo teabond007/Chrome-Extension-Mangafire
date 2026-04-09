@@ -6,7 +6,9 @@
                 <p class="subtitle">Browse and manage your manga library</p>
             </div>
             <div class="header-actions">
-                <button @click="freshSync" class="btn btn-warning-large">⚡Fresh Sync Entries</button>
+                <button @click="addNewManga" class="btn btn-secondary">➕ Add Manga</button>
+                <button @click="syncMissing" class="btn btn-warning-large" title="Fetch info for entries stuck on 'Loading info...'">⚡ Sync Missing Info</button>
+                <button @click="syncAll" class="btn" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600;" title="WARNING: Erase all info cache and refetch from scratch">🗑️ Erase & Sync All</button>
             </div>
         </header>
 
@@ -65,6 +67,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { storeToRefs } from 'pinia';
+import { getMergedMetadata } from '../../../../scripts/core/api/metadata-service';
 import LibraryStatistics from './LibraryStatistics.vue';
 import LibraryFilterBar from './LibraryFilterBar.vue';
 import LibraryBulkOpsBar from './LibraryBulkOpsBar.vue';
@@ -315,8 +318,44 @@ const showStatusPicker = (entry) => {
     if (window.showStatusPicker) window.showStatusPicker(entry);
 };
 
-const freshSync = async () => {
-    await libraryStore.forceSync();
+const addNewManga = async () => {
+    const title = prompt("Enter the exact manga title to add:");
+    if (!title?.trim()) return;
+
+    try {
+        const metadata = await getMergedMetadata(title.trim());
+        const displayTitle = metadata?.title?.english || metadata?.title?.romaji || title.trim();
+        
+        const newEntry = {
+            title: displayTitle,
+            status: 'Plan to Read',
+            lastUpdated: Date.now(),
+            anilistData: metadata || undefined,
+        };
+        
+        const exists = savedEntries.value.some(e => 
+            e.title.toLowerCase() === newEntry.title.toLowerCase()
+        );
+        
+        if (exists) {
+            alert("Manga is already in your library!");
+            return;
+        }
+
+        await libraryStore.upsertEntry(newEntry);
+        alert(`Successfully added "${displayTitle}" to your library.`);
+    } catch(e) {
+        console.error(e);
+        alert("Error adding manga.");
+    }
+};
+
+const syncMissing = async () => {
+    await libraryStore.forceSync(false);
+};
+
+const syncAll = async () => {
+    await libraryStore.forceSync(true);
 };
 
 const applyBulkUpdate = async (newStatus) => {

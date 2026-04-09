@@ -15,7 +15,7 @@ let panelContainer = null;
 let shadowRoot = null;
 
 /** Current field being assigned (card, title OR readerDetect, readerTitle, readerChapter) */
-let activeField = 'card';
+let activeField = '';
 
 /** Active group index (listing mode only) */
 let activeGroupIndex = 0;
@@ -73,6 +73,7 @@ export function createPanel(configId, readerMode = false) {
         if (shadowRoot) {
             shadowRoot.innerHTML = getPanelHTML();
             attachEventListeners();
+            setActiveField(isReaderMode ? 'readerDetect' : 'card');
             startPicking();
         }
     });
