@@ -163,9 +163,12 @@ const availableGenres = computed(() => {
     const genres = new Set();
     if (Array.isArray(savedEntries.value)) {
         savedEntries.value.forEach(e => {
-            if (e.anilistData?.genres) {
-                e.anilistData.genres.forEach(g => genres.add(g));
-            }
+            // ROBUSTNESS: Use genres and tags as available
+            const aniGenres = e.anilistData?.genres || [];
+            const aniTags = e.anilistData?.tags?.map(t => typeof t === 'string' ? t : t.name) || [];
+            
+            aniGenres.forEach(g => genres.add(g));
+            aniTags.forEach(t => genres.add(t));
         });
     }
     return Array.from(genres).sort();
@@ -176,8 +179,15 @@ const filteredEntries = computed(() => {
         const ani = entry.anilistData;
 
         // Family Friendly
-        if (familyFriendlyEnabled.value && ani?.genres) {
-            if (ani.genres.some(g => ['Ecchi', 'Hentai'].includes(g))) return false;
+        if (familyFriendlyEnabled.value) {
+            const genres = ani?.genres || [];
+            const tags = ani?.tags?.map(t => typeof t === 'string' ? t : t.name) || [];
+            const allIndicators = [...genres, ...tags].map(s => s.toLowerCase());
+            const blockList = ['ecchi', 'hentai', 'nsfw', 'pornographic', 'adult'];
+            
+            if (allIndicators.some(indicator => blockList.some(blocked => indicator.includes(blocked)))) {
+                return false;
+            }
         }
 
         // Status
@@ -201,7 +211,7 @@ const filteredEntries = computed(() => {
         }
 
         // Genre
-        if (filters.genre !== "All" && (!ani?.genres?.includes(filters.genre))) return false;
+        if (filters.genre !== "All" && (!Array.isArray(ani?.genres) || !ani.genres.includes(filters.genre))) return false;
 
          // Search
         if (filters.search !== "") {

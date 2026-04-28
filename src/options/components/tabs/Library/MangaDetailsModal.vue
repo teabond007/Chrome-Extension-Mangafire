@@ -66,17 +66,17 @@
                         <h2 id="modalTitle">{{ ani?.title?.english || ani?.title?.romaji || currentEntry.title }}</h2>
                         
                         <div id="modalSynonyms" class="modal-synonyms">
-                            <span v-for="s in ani?.synonyms?.slice(0, 5)" :key="s" class="modal-synonym-item">
+                            <span v-for="s in Array.isArray(ani?.synonyms) ? ani.synonyms.slice(0, 5) : []" :key="s" class="modal-synonym-item">
                                 {{ s }}
                             </span>
                         </div>
                         
                         <div id="modalGenres" class="modal-genres">
-                            <span v-for="g in ani?.genres" :key="g" class="modal-genre-tag">{{ g }}</span>
+                            <span v-for="g in Array.isArray(ani?.genres) ? ani.genres : []" :key="g" class="modal-genre-tag">{{ g }}</span>
                         </div>
                         
                         <div id="modalTags" class="modal-tags">
-                            <span v-for="t in ani?.tags?.slice(0, 10)" :key="t.name" class="modal-tag">{{ t.name }}</span>
+                            <span v-for="t in Array.isArray(ani?.tags) ? ani.tags.slice(0, 10) : []" :key="t.name" class="modal-tag">{{ t.name }}</span>
                         </div>
  
                         <!-- Personal Data Section -->
@@ -247,13 +247,15 @@ const filteredLinks = computed(() => {
     if (!ani.value?.externalLinks) return [];
     const links = ani.value.externalLinks;
     const sitesProcessed = new Map();
- 
-    links.forEach(link => {
-        if (!sitesProcessed.has(link.site)) {
-            sitesProcessed.set(link.site, []);
-        }
-        sitesProcessed.get(link.site).push(link);
-    });
+    
+    if (Array.isArray(links)) {
+        links.forEach(link => {
+            if (!sitesProcessed.has(link.site)) {
+                sitesProcessed.set(link.site, []);
+            }
+            sitesProcessed.get(link.site).push(link);
+        });
+    }
  
     const result = [];
     sitesProcessed.forEach((linksList) => {

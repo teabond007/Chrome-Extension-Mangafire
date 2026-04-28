@@ -41,7 +41,7 @@
                     <h2 class="card-title">{{ ani?.title?.english || ani?.title?.romaji || entry.title }}</h2>
                     
                     <div class="card-genres">
-                        <span v-for="g in ani?.genres?.slice(0, 5)" :key="g" class="genre-tag">{{ g }}</span>
+                        <span v-for="g in Array.isArray(ani?.genres) ? ani.genres.slice(0, 5) : []" :key="g" class="genre-tag">{{ g }}</span>
                     </div>
                     
                     <div class="card-description" v-html="truncatedDescription"></div>

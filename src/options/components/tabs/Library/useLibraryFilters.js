@@ -44,11 +44,15 @@ export function useLibraryFilters(savedEntries, customStatuses, personalData, fa
 
     const availableGenres = computed(() => {
         const genres = new Set();
-        savedEntries.value.forEach(e => {
-            if (e.anilistData?.genres) {
-                e.anilistData.genres.forEach(g => genres.add(g));
-            }
-        });
+        if (Array.isArray(savedEntries.value)) {
+            savedEntries.value.forEach(e => {
+                const aniGenres = e.anilistData?.genres || [];
+                const aniTags = e.anilistData?.tags?.map(t => typeof t === 'string' ? t : t.name) || [];
+                
+                aniGenres.forEach(g => genres.add(g));
+                aniTags.forEach(t => genres.add(t));
+            });
+        }
         return Array.from(genres).sort();
     });
 
@@ -57,8 +61,15 @@ export function useLibraryFilters(savedEntries, customStatuses, personalData, fa
             const ani = entry.anilistData;
 
             // Family Friendly
-            if (familyFriendlyEnabled.value && ani?.genres) {
-                if (ani.genres.some(g => ['Ecchi', 'Hentai'].includes(g))) return false;
+            if (familyFriendlyEnabled.value) {
+                const genres = ani?.genres || [];
+                const tags = ani?.tags?.map(t => typeof t === 'string' ? t : t.name) || [];
+                const allIndicators = [...genres, ...tags].map(s => s.toLowerCase());
+                const blockList = ['ecchi', 'hentai', 'nsfw', 'pornographic', 'adult'];
+                
+                if (allIndicators.some(indicator => blockList.some(blocked => indicator.includes(blocked)))) {
+                    return false;
+                }
             }
 
             // Status
@@ -82,7 +93,7 @@ export function useLibraryFilters(savedEntries, customStatuses, personalData, fa
             }
 
             // Genre
-            if (filters.genre !== "All" && (!ani?.genres?.includes(filters.genre))) return false;
+            if (filters.genre !== "All" && (!Array.isArray(ani?.genres) || !ani.genres.includes(filters.genre))) return false;
 
             // Search
             if (filters.search !== "") {

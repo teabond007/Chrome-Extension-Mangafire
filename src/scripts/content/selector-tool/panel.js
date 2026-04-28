@@ -628,7 +628,7 @@ function updatePathDisplay(forceGenIndex) {
     if (!el || !shadowRoot) return;
 
     const passedIndex = (forceGenIndex !== undefined) ? forceGenIndex : undefined;
-    const { segments, generalizedSelector, matchCount, genIndex } = highlighter.getDomPathSelector(el, passedIndex);
+    const { segments, generalizedSelector, matchCount, genIndex } = highlighter.getDomPathSelector(el, passedIndex, isReaderMode);
     const container = shadowRoot.getElementById('pathDisplay');
     if (!container) return;
 

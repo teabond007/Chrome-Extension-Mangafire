@@ -31,9 +31,7 @@
   "host_permissions": [
     "https://graphql.anilist.co/*",
     "https://api.mangadex.org/*",
-    "https://mangadex.org/*",
-    "https://api.myanimelist.net/*",
-    "https://myanimelist.net/*"
+    "https://api.myanimelist.net/*"
   ],
   "optional_host_permissions": [
     "http://*/*",
@@ -46,7 +44,7 @@
   "content_scripts": [
     {
       "js": [
-        "assets/main.ts-loader-c456aae5.js"
+        "assets/main.ts-loader-422c47d0.js"
       ],
       "matches": [
         "*://fallback.custom-sites.local/*"
@@ -78,7 +76,7 @@
         "assets/_plugin-vue_export-helper-cf809683.js",
         "assets/metadata-service-5762e7c7.js",
         "assets/library-service-90c91b98.js",
-        "assets/main.ts-32cd76e4.js"
+        "assets/main.ts-0583f18a.js"
       ],
       "use_dynamic_url": false
     }

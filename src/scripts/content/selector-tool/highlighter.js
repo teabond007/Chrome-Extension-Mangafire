@@ -179,11 +179,14 @@ function pathToSelector(segments) {
  */
 function generalizePath(fullPathSegments, targetIndex) {
     if (fullPathSegments.length === 0) return '';
+    if (targetIndex >= fullPathSegments.length) {
+        return pathToSelector(fullPathSegments); // Exact match
+    }
 
     const clamped = Math.max(0, Math.min(targetIndex, fullPathSegments.length - 1));
     // Take segments up to and including the target
     const trimmed = fullPathSegments.slice(0, clamped + 1);
-    // Strip classes from the target segment, keep only the tag
+    // Strip classes from target segment
     const targetSegment = trimmed[trimmed.length - 1];
     trimmed[trimmed.length - 1] = targetSegment.split('.')[0];
 
@@ -211,10 +214,15 @@ function countMatches(selector) {
  * @param {number} [genIndex] - Segment index to generalize at. Defaults to last segment.
  * @returns {{ segments: string[], generalizedSelector: string, matchCount: number, genIndex: number }}
  */
-export function getDomPathSelector(element, genIndex) {
+export function getDomPathSelector(element, genIndex, isReaderMode = false) {
     const segments = buildDomPath(element);
-    const idx = (genIndex !== undefined) ? genIndex : segments.length - 1;
-    const clampedIdx = Math.max(0, Math.min(idx, segments.length - 1));
+    
+    let idx = genIndex;
+    if (idx === undefined) {
+        idx = isReaderMode ? segments.length : segments.length - 1;
+    }
+    
+    const clampedIdx = Math.max(0, Math.min(idx, segments.length));
     const generalizedSelector = generalizePath(segments, clampedIdx);
     const matchCount = countMatches(generalizedSelector);
 

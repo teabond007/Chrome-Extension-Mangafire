@@ -201,24 +201,28 @@ const normalizeStatus = (status) => (status || '').toLowerCase().trim().replace(
 
 const processedData = computed(() => {
     const total = props.entries.length;
-    const defaultRes = {
-        total: 0, reading: 0, completed: 0, planning: 0, onhold: 0, dropped: 0,
+    
+    // Explicitly initialize state for every recalculation to avoid shallow-copy reference leaks
+    const res = {
+        total: total,
+        reading: 0, completed: 0, planning: 0, onhold: 0, dropped: 0,
         totalChapters: 0, avgScore: 0, completionRate: 0,
-        customStatusCounts: {}, genres: {},
+        customStatusCounts: {},
+        genres: {},
         activity: { readThisWeek: 0, readThisMonth: 0, addedThisWeek: 0, withHistory: 0 },
         sources: { anilist: 0, mangadex: 0, noData: 0 },
         formats: { manga: 0, manhwa: 0, manhua: 0 }
     };
 
-    if (!Array.isArray(props.entries) || props.entries.length === 0) return defaultRes;
+    if (!Array.isArray(props.entries) || props.entries.length === 0) return res;
 
     const now = Date.now();
     const oneWeek = 7 * 24 * 60 * 60 * 1000;
     const oneMonth = 30 * 24 * 60 * 60 * 1000;
 
-    const res = { ...defaultRes, total };
     let totalScore = 0;
     let scoredCount = 0;
+    let entriesWithGenres = 0;
 
     props.entries.forEach(e => {
         // Core status counts
@@ -242,9 +246,20 @@ const processedData = computed(() => {
         }
 
         // Genre accumulation
-        if (e.anilistData?.genres) {
-            e.anilistData.genres.forEach(g => {
-                res.genres[g] = (res.genres[g] || 0) + 1;
+        // We check anilistData first, then fallback to e.genres if available (resiliency)
+        // ROBUSTNESS: If standard genres are missing, fallback to tags as they often overlap
+        let genres = e.anilistData?.genres || e.genres;
+        if ((!Array.isArray(genres) || genres.length === 0) && Array.isArray(e.anilistData?.tags)) {
+            genres = e.anilistData.tags.map(t => typeof t === 'string' ? t : t.name);
+        }
+
+        if (Array.isArray(genres) && genres.length > 0) {
+            entriesWithGenres++;
+            genres.forEach(g => {
+                const genreName = typeof g === 'string' ? g : g.name;
+                if (genreName) {
+                    res.genres[genreName] = (res.genres[genreName] || 0) + 1;
+                }
             });
         }
 
@@ -278,8 +293,12 @@ const processedData = computed(() => {
         else res.formats.manga++;
     });
 
+    if (total > 0) {
+        console.log(`[Stats] Genre Trace - Total: ${total}, With Genres: ${entriesWithGenres}, Unique Genres: ${Object.keys(res.genres).length}`);
+    }
+
     res.avgScore = scoredCount > 0 ? Math.round(totalScore / scoredCount) : 0;
-    res.completionRate = Math.round((res.completed / total) * 100);
+    res.completionRate = total > 0 ? Math.round((res.completed / total) * 100) : 0;
 
     return res;
 });
@@ -377,8 +396,8 @@ const runEntranceAnimations = async () => {
         return;
     }
 
-    const pieSlices = root.value.querySelectorAll('.pie-slice');
-    const barFills = root.value.querySelectorAll('.bar-fill');
+    const pieSlices = Array.from(root.value.querySelectorAll('.pie-slice'));
+    const barFills = Array.from(root.value.querySelectorAll('.bar-fill'));
     const ring = root.value.querySelector('.progress-ring-fill');
     
     console.log('[Stats] Found elements - pieSlices:', pieSlices.length, 'barFills:', barFills.length, 'ring:', !!ring);
@@ -406,33 +425,37 @@ const runEntranceAnimations = async () => {
     setTimeout(() => {
         const animeRef = typeof anime !== 'undefined' ? anime : window.anime;
         if (!animeRef) return;
-        statusDistribution.value.forEach((d, i) => {
-            const slice = pieSlices[i];
-            if (!slice) return;
-            animeRef({
-                targets: slice,
-                strokeDasharray: [`0 ${circumference}`, `${d.dashLen} ${circumference - d.dashLen}`],
-                duration: 1000,
-                delay: i * 100,
-                easing: 'easeOutQuart'
+        if (Array.isArray(statusDistribution.value)) {
+            statusDistribution.value.forEach((d, i) => {
+                const slice = pieSlices[i];
+                if (!slice) return;
+                animeRef({
+                    targets: slice,
+                    strokeDasharray: [`0 ${circumference}`, `${d.dashLen} ${circumference - d.dashLen}`],
+                    duration: 1000,
+                    delay: i * 100,
+                    easing: 'easeOutQuart'
+                });
             });
-        });
+        }
     }, 300);
 
     setTimeout(() => {
         const animeRef = typeof anime !== 'undefined' ? anime : window.anime;
         if (!animeRef) return;
-        topGenres.value.forEach((g, i) => {
-            const bar = barFills[i];
-            if (!bar) return;
-            animeRef({
-                targets: bar,
-                width: ['0%', g.percent + '%'],
-                duration: 800,
-                delay: i * 80,
-                easing: 'easeOutQuart'
+        if (Array.isArray(topGenres.value)) {
+            topGenres.value.forEach((g, i) => {
+                const bar = barFills[i];
+                if (!bar) return;
+                animeRef({
+                    targets: bar,
+                    width: ['0%', g.percent + '%'],
+                    duration: 800,
+                    delay: i * 80,
+                    easing: 'easeOutQuart'
+                });
             });
-        });
+        }
     }, 500);
 
     setTimeout(() => {
