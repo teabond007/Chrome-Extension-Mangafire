@@ -54,7 +54,6 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 import { storeToRefs } from 'pinia';
-import anime from 'animejs';
 import { useSettingsStore } from '../scripts/store/settings.store.js';
 
 const settingsStore = useSettingsStore();
@@ -75,34 +74,15 @@ const setActiveTab = (tab) => {
     activeTab.value = tab;
 };
 
-// Animation logic
+// Removed animejs animation logic.
+// The sidebar expanding/collapsing is handled by the `.collapsed` CSS class and transition.
 const animateSidebar = (open) => {
-    // Animate Text Opacity & Transform
-    const textTargets = sidebarRef.value.querySelectorAll('.nav-text, .brand-name, .version-info, .sidebar-footer .label');
-    
-    if (open) {
-        // Open Animation
-        anime({
-            targets: textTargets,
-            opacity: [0, 1],
-            translateX: [-10, 0],
-            duration: 600,
-            easing: 'easeOutExpo',
-            delay: anime.stagger(50, { start: 100 })
-        });
-    } else {
-        // Close Animation - Quick fade out
-        anime({
-            targets: textTargets,
-            opacity: 0,
-            duration: 200,
-            easing: 'easeOutQuad'
-        });
-    }
+    // Relying entirely on CSS transitions now.
 };
 
 watch(isOpen, (newVal) => {
-    animateSidebar(newVal);
+    // updateIndicator relies on the new layout.
+    setTimeout(updateIndicator, 300);
 });
 
 const updateIndicator = () => {
@@ -123,46 +103,8 @@ watch(activeTab, () => {
 }, { immediate: false });
 
 onMounted(() => {
-    // Initial Entrance Animation
-    const navItems = navMenuRef.value.querySelectorAll('.nav-item');
-    
-    // Reset initial state for animation
-    anime.set(navItems, { opacity: 0, translateY: 20 });
-    anime.set([brandNameRef.value, footerRef.value], { opacity: 0 });
-
-    const timeline = anime.timeline({
-        easing: 'easeOutExpo',
-    });
-
-    timeline
-    .add({
-        targets: sidebarRef.value,
-        translateX: [-50, 0],
-        opacity: [0, 1],
-        duration: 800,
-    })
-    .add({
-        targets: brandNameRef.value,
-        opacity: [0, 1],
-        translateY: [-10, 0],
-        duration: 800,
-    }, '-=600')
-    .add({
-        targets: navItems,
-        opacity: [0, 1],
-        translateY: [20, 0],
-        delay: anime.stagger(100), // Staggering: 100ms between each item
-        duration: 1000,
-    }, '-=700')
-    .add({
-        targets: footerRef.value,
-        opacity: [0, 1],
-        translateY: [10, 0],
-        duration: 800
-    }, '-=800');
-
     // Set initial indicator position
-    updateIndicator();
+    setTimeout(updateIndicator, 100);
 });
 </script>
 

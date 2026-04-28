@@ -358,102 +358,46 @@ const handleGuideRedirect = () => {
 };
 
 const runEntranceAnimations = async () => {
-    // Use window.anime as fallback for global anime.js
-    const animeLib = typeof anime !== 'undefined' ? anime : window.anime;
-    
-    console.log('[Stats] Animation trigger - anime available:', !!animeLib);
-    
-    if (!animeLib) {
-        console.warn('[Stats] anime.js not found, skipping animations');
-        return;
-    }
-    
     await nextTick();
-    
-    console.log('[Stats] After nextTick - root.value:', !!root.value);
-    
-    if (!root.value) {
-        console.warn('[Stats] root ref is null after nextTick');
-        return;
-    }
+    if (!root.value) return;
 
     const pieSlices = root.value.querySelectorAll('.pie-slice');
     const barFills = root.value.querySelectorAll('.bar-fill');
     const ring = root.value.querySelector('.progress-ring-fill');
-    
-    console.log('[Stats] Found elements - pieSlices:', pieSlices.length, 'barFills:', barFills.length, 'ring:', !!ring);
 
     // Reset elements state before animating
     pieSlices.forEach(slice => {
-        slice.setAttribute('stroke-dasharray', `0 ${circumference}`);
+        slice.style.strokeDasharray = `0 ${circumference}`;
     });
     barFills.forEach(bar => {
         bar.style.width = '0%';
     });
     if (ring) {
-        ring.setAttribute('stroke-dashoffset', ringCircumference);
+        ring.style.strokeDashoffset = ringCircumference;
     }
 
-    animeLib({
-        targets: root.value.querySelectorAll('.stat-item-compact, .stat-group, .stat-bar-item, .chart-container, .bar-chart-container, .progress-ring-container'),
-        opacity: [0, 1],
-        translateY: [15, 0],
-        delay: animeLib.stagger(40),
-        duration: 600,
-        easing: 'easeOutQuart'
-    });
-
     setTimeout(() => {
-        const animeRef = typeof anime !== 'undefined' ? anime : window.anime;
-        if (!animeRef) return;
         statusDistribution.value.forEach((d, i) => {
             const slice = pieSlices[i];
             if (!slice) return;
-            animeRef({
-                targets: slice,
-                strokeDasharray: [`0 ${circumference}`, `${d.dashLen} ${circumference - d.dashLen}`],
-                duration: 1000,
-                delay: i * 100,
-                easing: 'easeOutQuart'
-            });
+            slice.style.strokeDasharray = `${d.dashLen} ${circumference - d.dashLen}`;
         });
-    }, 300);
 
-    setTimeout(() => {
-        const animeRef = typeof anime !== 'undefined' ? anime : window.anime;
-        if (!animeRef) return;
         topGenres.value.forEach((g, i) => {
             const bar = barFills[i];
             if (!bar) return;
-            animeRef({
-                targets: bar,
-                width: ['0%', g.percent + '%'],
-                duration: 800,
-                delay: i * 80,
-                easing: 'easeOutQuart'
-            });
+            bar.style.width = g.percent + '%';
         });
-    }, 500);
 
-    setTimeout(() => {
         if (ring) {
-            const animeRef = typeof anime !== 'undefined' ? anime : window.anime;
-            if (!animeRef) return;
             const targetOffset = ringCircumference - (ringCircumference * stats.value.completionRate / 100);
-            animeRef({
-                targets: ring,
-                strokeDashoffset: [ringCircumference, targetOffset],
-                duration: 1200,
-                easing: 'easeOutQuart'
-            });
+            ring.style.strokeDashoffset = targetOffset;
         }
-    }, 400);
+    }, 50);
 };
 
 const runExitAnimations = () => {
-    const animeLib = typeof anime !== 'undefined' ? anime : window.anime;
-    
-    if (!animeLib || !root.value) {
+    if (!root.value) {
         isClosing.value = false;
         return;
     }
@@ -462,40 +406,21 @@ const runExitAnimations = () => {
     const barFills = root.value.querySelectorAll('.bar-fill');
     const ring = root.value.querySelector('.progress-ring-fill');
 
-    animeLib({
-        targets: barFills,
-        width: '0%',
-        duration: 300,
-        easing: 'easeInQuart'
+    barFills.forEach(bar => {
+        bar.style.width = '0%';
     });
 
-    animeLib({
-        targets: pieSlices,
-        strokeDasharray: `0 ${circumference}`,
-        duration: 400,
-        easing: 'easeInQuart'
+    pieSlices.forEach(slice => {
+        slice.style.strokeDasharray = `0 ${circumference}`;
     });
 
     if (ring) {
-        animeLib({
-            targets: ring,
-            strokeDashoffset: ringCircumference,
-            duration: 400,
-            easing: 'easeInQuart'
-        });
+        ring.style.strokeDashoffset = ringCircumference;
     }
 
-    animeLib({
-        targets: root.value.querySelectorAll('.stat-item-compact, .stat-group, .stat-bar-item, .chart-container, .bar-chart-container, .progress-ring-container'),
-        opacity: [1, 0],
-        translateY: [0, -10],
-        delay: animeLib.stagger(20, { direction: 'reverse' }),
-        duration: 300,
-        easing: 'easeInQuart',
-        complete: () => {
-            isClosing.value = false;
-        }
-    });
+    setTimeout(() => {
+        isClosing.value = false;
+    }, 300);
 };
 
 watch(() => props.isVisible, (newVal, oldVal) => {

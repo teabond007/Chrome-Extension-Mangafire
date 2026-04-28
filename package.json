@@ -29,7 +29,6 @@
     "license": "MIT",
     "dependencies": {
         "@medv/finder": "^4.0.2",
-        "animejs": "^3.2.1",
         "pinia": "^3.0.4"
     }
 }

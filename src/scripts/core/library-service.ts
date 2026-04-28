@@ -5,9 +5,6 @@
  */
 
 import { DATA, DEFAULT_STATUS, LIBRARY_ENTRY_KEYS, TOGGLES } from '../../config.js';
-import { syncQueue, SyncPlatform } from './api/sync-queue';
-import { syncAnilistProgress } from './api/anilist-sync';
-import { syncMalProgress, searchMangaOnMal } from './api/mal-sync';
 
 export interface MangaQuery {
     [key: string]: any;
@@ -112,7 +109,28 @@ export function fuzzyScore(needle: string, haystack: string): number {
 export async function loadLibrary(): Promise<any[]> {
     const data = await chrome.storage.local.get([DATA.LIBRARY_ENTRIES]);
     const list = data[DATA.LIBRARY_ENTRIES];
-    return Array.isArray(list) ? list : [];
+    
+    if (!Array.isArray(list)) return [];
+
+    // Sanitize entries to ensure data integrity
+    list.forEach(entry => {
+        if (entry.anilistData) {
+            // Ensure genres is an array
+            if (entry.anilistData.genres !== undefined && !Array.isArray(entry.anilistData.genres)) {
+                entry.anilistData.genres = typeof entry.anilistData.genres === 'string' ? [entry.anilistData.genres] : [];
+            }
+            // Ensure synonyms is an array
+            if (entry.anilistData.synonyms !== undefined && !Array.isArray(entry.anilistData.synonyms)) {
+                entry.anilistData.synonyms = typeof entry.anilistData.synonyms === 'string' ? [entry.anilistData.synonyms] : [];
+            }
+            // Ensure tags is an array
+            if (entry.anilistData.tags !== undefined && !Array.isArray(entry.anilistData.tags)) {
+                entry.anilistData.tags = typeof entry.anilistData.tags === 'string' ? [{ name: entry.anilistData.tags }] : [];
+            }
+        }
+    });
+
+    return list;
 }
 
 /**
@@ -183,59 +201,9 @@ export async function updateProgress(query: MangaQuery, progress: ProgressUpdate
         // Ensure array integrity
         const finalLibrary = Array.isArray(library) ? library : [];
         await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: JSON.parse(JSON.stringify(finalLibrary)) });
-
-        // Trigger External Sync
-        triggerExternalSync(entry, incoming);
     }
 
     return entry;
-}
-
-/**
- * Dispatches sync tasks to external trackers based on user settings.
- */
-async function triggerExternalSync(entry: any, chapter: number) {
-    const data = await chrome.storage.local.get([
-        TOGGLES.SYNC_ANILIST_ENABLED,
-        TOGGLES.SYNC_MAL_ENABLED
-    ]) as any;
-
-    // AniList Sync
-    if (data[TOGGLES.SYNC_ANILIST_ENABLED] && entry.anilistData?.id) {
-        syncQueue.enqueue(
-            SyncPlatform.ANILIST,
-            () => syncAnilistProgress(entry.anilistData.id, chapter),
-            `anilist-${entry.anilistData.id}-${chapter}`
-        );
-    }
-
-    // MyAnimeList Sync
-    if (data[TOGGLES.SYNC_MAL_ENABLED]) {
-        let malId = entry.malId;
-
-        // Try to resolve MAL ID if missing
-        if (!malId) {
-            malId = await searchMangaOnMal(entry.title);
-            if (malId) {
-                entry.malId = malId;
-                // Save resolved ID back to library
-                const library = await loadLibrary();
-                const idx = library.findIndex(e => getMangaId(e) === getMangaId(entry));
-                if (idx !== -1) {
-                    library[idx].malId = malId;
-                    await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: JSON.parse(JSON.stringify(library)) });
-                }
-            }
-        }
-
-        if (malId) {
-            syncQueue.enqueue(
-                SyncPlatform.MAL,
-                () => syncMalProgress(malId, chapter),
-                `mal-${malId}-${chapter}`
-            );
-        }
-    }
 }
 
 /**

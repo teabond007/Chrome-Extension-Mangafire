@@ -140,7 +140,6 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { getFormatName, getStatusInfo } from '../../../scripts/ui/manga-card-utils.js';
 import * as LibraryService from '../../../../scripts/core/library-service.ts';
 import { useLibraryStore } from '../../../scripts/store/library.store.js';
-import anime from 'animejs';
 import { DATA, LIBRARY_ENTRY_KEYS } from '../../../../config.js';
 
 // Shared Components
@@ -284,31 +283,29 @@ const sortedChapters = computed(() => {
  
 // Animation Helpers
 const animateModalEntry = (modalContent) => {
-    if (typeof anime === 'undefined') return;
-    anime.set(modalContent, { scale: 0.8, opacity: 0, rotateX: 10 });
-    anime({
-        targets: modalContent,
-        scale: 1,
-        opacity: 1,
-        rotateX: 0,
-        duration: 800,
-        easing: 'easeOutElastic(1, .6)'
+    modalContent.style.transform = 'scale(0.8) rotateX(10deg)';
+    modalContent.style.opacity = '0';
+    modalContent.style.transition = 'transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.8s ease-out';
+    
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            modalContent.style.transform = 'scale(1) rotateX(0)';
+            modalContent.style.opacity = '1';
+        });
     });
 };
  
 const playSuccessAnimation = (targetContainer) => {
-    if (typeof anime === 'undefined') return;
-    
-    const existing = targetContainer.querySelector('.anime-success-checkmark');
+    const existing = targetContainer.querySelector('.success-checkmark-svg');
     if (existing) existing.remove();
     
     targetContainer.style.position = "relative";
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.classList.add('anime-success-checkmark');
+    svg.classList.add('success-checkmark-svg');
     svg.setAttribute("width", "40");
     svg.setAttribute("height", "40");
     svg.setAttribute("viewBox", "0 0 52 52");
-    svg.style.cssText = "position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; pointer-events: none;";
+    svg.style.cssText = "position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; pointer-events: none; opacity: 1; transition: opacity 0.5s linear;";
     
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     path.setAttribute("d", "M14.1 27.2l7.1 7.2 16.7-16.8");
@@ -317,25 +314,19 @@ const playSuccessAnimation = (targetContainer) => {
     path.setAttribute("stroke-width", "4");
     path.setAttribute("stroke-linecap", "round");
     path.setAttribute("stroke-linejoin", "round");
+    path.style.cssText = "stroke-dasharray: 48; stroke-dashoffset: 48; transition: stroke-dashoffset 0.8s ease-in-out;";
     
     svg.appendChild(path);
     targetContainer.appendChild(svg);
     
-    anime({
-        targets: path,
-        strokeDashoffset: [anime.setDashoffset, 0],
-        easing: 'easeInOutQuad',
-        duration: 800,
-        complete: () => {
-            anime({
-                targets: svg,
-                opacity: 0,
-                delay: 1000,
-                duration: 500,
-                easing: 'linear',
-                complete: () => svg.remove()
-            });
-        }
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            path.style.strokeDashoffset = '0';
+            setTimeout(() => {
+                svg.style.opacity = '0';
+                setTimeout(() => svg.remove(), 500);
+            }, 1000);
+        });
     });
 };
  

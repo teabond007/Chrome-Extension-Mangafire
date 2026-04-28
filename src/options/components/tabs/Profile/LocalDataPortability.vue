@@ -115,48 +115,6 @@
         </div>
     </SettingsCard>
 
-    <!-- MangaDex MDList Import -->
-    <SettingsCard 
-        title="Import from MangaDex List" 
-        icon="📊"
-        icon-bg="rgba(255, 103, 64, 0.15)"
-        icon-color="#FF6740"
-        guide-target="guide-mangadex-import"
-        class="sync-actions-card"
-    >
-        <div class="inner-info-card" style="flex-direction: column; gap: 12px; width: 100%;">
-            <div class="format-info" style="width: 100%;">
-                <span class="label-info">Paste MDList URL or ID:</span>
-                <p class="sub-description">Example: https://mangadex.org/list/abc123... or just the UUID</p>
-            </div>
-            <div style="display: flex; gap: 10px; width: 100%; align-items: center;">
-                <input 
-                    type="text" 
-                    v-model="mdListInput" 
-                    placeholder="https://mangadex.org/list/..." 
-                    class="input-field" 
-                    style="flex: 1;"
-                    @keyup.enter="performMDListImport"
-                >
-                <button 
-                    class="btn btn-primary btn-with-icon"
-                    @click="performMDListImport"
-                    :disabled="syncStatus === 'syncing' || !mdListInput"
-                >
-                    <span v-if="syncStatus === 'syncing' && syncDirection === 'mdlist'" class="spinner"></span>
-                    <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="7 10 12 15 17 10"></polyline>
-                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                    </svg>
-                    Import
-                </button>
-            </div>
-        </div>
-        <div class="card-footer-info" style="margin-top: 12px; font-size: 12px; color: var(--text-secondary);">
-            <span>📋 Imported manga will be added with "Plan to Read" status</span>
-        </div>
-    </SettingsCard>
 </template>
 
 <script setup>
@@ -174,7 +132,6 @@ const {
 const syncDirection = ref(null);
 const isDragging = ref(false);
 const fileInput = ref(null);
-const mdListInput = ref('');
 
 const lastLocalBackupFormatted = computed(() => {
     if (!lastLocalBackup.value) return 'Never';
@@ -207,13 +164,6 @@ const handleFileDrop = async (event) => {
     }
 };
 
-async function performMDListImport() {
-    if (!mdListInput.value) return;
-    syncDirection.value = 'mdlist';
-    await profileStore.importMDList(mdListInput.value);
-    mdListInput.value = '';
-    syncDirection.value = null;
-}
 </script>
 
 <style scoped lang="scss">

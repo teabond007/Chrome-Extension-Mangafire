@@ -6,11 +6,8 @@
 import { defineStore } from 'pinia';
 import * as gdriveAuth from '../../../scripts/core/cloud/gdrive-auth.js';
 import * as gdriveSync from '../../../scripts/core/cloud/gdrive-sync.js';
-import { fetchMDList } from '../../../scripts/core/api/mangadex-api.js';
 import { gatherStorageData, applyStorageData } from '../modules/storage-io.js';
 import { TOGGLES, SETTINGS, DATA } from '../../../config.js';
-import { authenticateAnilist } from '../../../scripts/core/api/anilist-sync';
-import { authenticateMal } from '../../../scripts/core/api/mal-sync';
 
 export const useProfileStore = defineStore('profile', {
     state: () => ({
@@ -34,13 +31,6 @@ export const useProfileStore = defineStore('profile', {
         syncSettings: true,
         syncCache: false,
         syncInterval: 1, // Default to 1 day
-        syncAnilistEnabled: false,
-        syncMalEnabled: false,
-        
-        // External account status
-        isAnilistConnected: false,
-        isMalConnected: false,
-        
         
         // OAuth configuration status
         isOAuthConfigured: false,
@@ -94,12 +84,7 @@ export const useProfileStore = defineStore('profile', {
                     TOGGLES.SYNC_SETTINGS,
                     TOGGLES.SYNC_CACHE,
                     DATA.LAST_SYNC_CLOUD,
-                    SETTINGS.SYNC_INTERVAL,
-                    DATA.LAST_BACKUP,
-                    TOGGLES.SYNC_ANILIST_ENABLED,
-                    TOGGLES.SYNC_MAL_ENABLED,
-                    DATA.ANILIST_AUTH,
-                    DATA.MAL_AUTH
+                    DATA.LAST_BACKUP
                 ]);
 
                 this.autoSyncEnabled = saved[TOGGLES.AUTO_SYNC] ?? false;
@@ -111,11 +96,6 @@ export const useProfileStore = defineStore('profile', {
                 this.syncInterval = saved[SETTINGS.SYNC_INTERVAL] ?? 1;
                 this.lastSyncTime = saved[DATA.LAST_SYNC_CLOUD] ?? null;
                 this.lastLocalBackup = saved[DATA.LAST_BACKUP] ?? null;
-                
-                this.syncAnilistEnabled = saved[TOGGLES.SYNC_ANILIST_ENABLED] ?? false;
-                this.syncMalEnabled = saved[TOGGLES.SYNC_MAL_ENABLED] ?? false;
-                this.isAnilistConnected = !!saved[DATA.ANILIST_AUTH]?.token;
-                this.isMalConnected = !!saved[DATA.MAL_AUTH]?.access_token;
 
                 // Check OAuth configuration
                 this.isOAuthConfigured = this.checkOAuthConfig();
@@ -194,57 +174,7 @@ export const useProfileStore = defineStore('profile', {
             }
         },
 
-        /**
-         * Connects AniList account via background flow.
-         */
-        async connectAnilist() {
-            try {
-                const token = await authenticateAnilist();
-                this.isAnilistConnected = true;
-                this.syncAnilistEnabled = true;
-                await this.savePreferences();
-                return token;
-            } catch (error) {
-                console.error('[ProfileStore] AniList connection failed:', error);
-                throw error;
-            }
-        },
-
-        /**
-         * Disconnects AniList account.
-         */
-        async disconnectAnilist() {
-            await chrome.storage.local.remove([DATA.ANILIST_AUTH]);
-            this.isAnilistConnected = false;
-            this.syncAnilistEnabled = false;
-            this.savePreferences();
-        },
-
-        /**
-         * Connects MyAnimeList account via background flow.
-         */
-        async connectMal() {
-            try {
-                const token = await authenticateMal();
-                this.isMalConnected = true;
-                this.syncMalEnabled = true;
-                await this.savePreferences();
-                return token;
-            } catch (error) {
-                console.error('[ProfileStore] MAL connection failed:', error);
-                throw error;
-            }
-        },
-
-        /**
-         * Disconnects MyAnimeList account.
-         */
-        async disconnectMal() {
-            await chrome.storage.local.remove([DATA.MAL_AUTH]);
-            this.isMalConnected = false;
-            this.syncMalEnabled = false;
-            this.savePreferences();
-        },
+        
 
         /**
          * Loads user profile from Google.
@@ -403,9 +333,7 @@ export const useProfileStore = defineStore('profile', {
                 [TOGGLES.SYNC_PERSONAL]: this.syncPersonal,
                 [TOGGLES.SYNC_SETTINGS]: this.syncSettings,
                 [TOGGLES.SYNC_CACHE]: this.syncCache,
-                [SETTINGS.SYNC_INTERVAL]: this.syncInterval,
-                [TOGGLES.SYNC_ANILIST_ENABLED]: this.syncAnilistEnabled,
-                [TOGGLES.SYNC_MAL_ENABLED]: this.syncMalEnabled
+                [SETTINGS.SYNC_INTERVAL]: this.syncInterval
             });
         },
 
@@ -492,75 +420,5 @@ export const useProfileStore = defineStore('profile', {
             });
         },
 
-        /**
-         * Imports manga from a MangaDex list.
-         */
-        async importMDList(inputValue) {
-            if (!inputValue) return;
-
-            this.syncStatus = 'syncing';
-            this.syncStatusMessage = 'Fetching MangaDex list...';
-
-            try {
-                const result = await fetchMDList(inputValue);
-                
-                if (!result.success) {
-                    throw new Error(result.error);
-                }
-                
-                if (result.manga.length === 0) {
-                    throw new Error('No manga found in this list.');
-                }
-                
-                const data = await chrome.storage.local.get([DATA.LIBRARY_ENTRIES]);
-                let savedEntries = Array.isArray(data[DATA.LIBRARY_ENTRIES]) ? data[DATA.LIBRARY_ENTRIES] : [];
-                
-                // Deep log for MD import
-                console.log('[ProfileStore] MD Import current entries count:', savedEntries.length);
-                
-                const existingTitles = new Set(savedEntries.map(e => e.title.toLowerCase()));
-                const existingMdIds = new Set(savedEntries.filter(e => e.anilistData?.mangadexId).map(e => e.anilistData.mangadexId));
-                
-                let added = 0;
-                let skipped = 0;
-                
-                result.manga.forEach(manga => {
-                    const title = manga.title?.english || manga.title?.romaji || 'Unknown';
-                    const mdId = manga.mangadexId;
-                    
-                    if (existingTitles.has(title.toLowerCase()) || existingMdIds.has(mdId)) {
-                        skipped++;
-                        return;
-                    }
-                    
-                    savedEntries.push({
-                        title: title,
-                        status: 'Plan to Read',
-                        readChapters: [],
-                        anilistData: manga,
-                        customStatus: null,
-                        lastUpdated: Date.now(),
-                        importedFrom: 'MDList'
-                    });
-                    added++;
-                });
-                
-                // Use plain object for storage set
-                const plainEntries = JSON.parse(JSON.stringify(savedEntries));
-                await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: plainEntries });
-                
-                this.syncStatus = 'success';
-                this.lastSyncResult = { 
-                    type: 'success', 
-                    message: `Imported ${added} manga from "${result.listName}". ${skipped} duplicates skipped.` 
-                };
-                
-                // Trigger refresh
-                window.dispatchEvent(new CustomEvent('sync-data-updated'));
-            } catch (error) {
-                this.syncStatus = 'error';
-                this.lastSyncResult = { type: 'error', message: `MD Import failed: ${error.message}` };
-            }
-        }
     }
 });

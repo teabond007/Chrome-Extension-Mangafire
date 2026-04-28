@@ -105,18 +105,6 @@ onMounted(async () => {
     setupMessageListeners();
     setupStorageListener();
     setupScrollTopListener();
-
-    // 5. Initial Animation
-    if (typeof anime !== 'undefined') {
-        anime({
-            targets: '.tab-pane.active .card',
-            opacity: [0, 1],
-            translateY: [20, 0],
-            delay: anime.stagger(100),
-            duration: 800,
-            easing: 'easeOutExpo'
-        });
-    }
 });
 
 /**

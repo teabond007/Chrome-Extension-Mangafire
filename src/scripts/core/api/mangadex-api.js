@@ -187,6 +187,8 @@ function transformToAnilistFormat(mdManga) {
     format: format,
     countryOfOrigin: countryMap[attrs.originalLanguage] || 'JP',
     genres: tags.filter(t => t.attributes?.group === 'genre').map(t => t.attributes.name.en),
+    synonyms: [],
+    tags: [],
     chapters: attrs.lastChapter ? parseInt(attrs.lastChapter) : null,
     averageScore: null, // MangaDex doesn't provide scores via public API
     popularity: null,
@@ -349,105 +351,3 @@ export async function wipeMangadexCache() {
   });
 }
 
-/**
- * Extracts MDList ID from URL or returns the ID directly.
- * Supports formats: UUID, full URL (https://mangadex.org/list/UUID)
- * @param {string} input - User input (URL or ID).
- * @returns {string|null} The extracted MDList UUID or null if invalid.
- */
-function extractMDListId(input) {
-  if (!input) return null;
-  
-  const trimmed = input.trim();
-  
-  // UUID format (36 chars with dashes)
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (uuidRegex.test(trimmed)) {
-    return trimmed;
-  }
-  
-  // URL format: https://mangadex.org/list/UUID or https://mangadex.org/list/UUID/name
-  const urlMatch = trimmed.match(/mangadex\.org\/list\/([0-9a-f-]{36})/i);
-  if (urlMatch) {
-    return urlMatch[1];
-  }
-  
-  return null;
-}
-
-/**
- * Fetches all manga from a public MangaDex reading list (MDList).
- * @async
- * @param {string} listIdOrUrl - The MDList ID or full URL.
- * @returns {Promise<{success: boolean, manga: Array, error?: string}>} Result object with manga array or error.
- */
-export async function fetchMDList(listIdOrUrl) {
-  const listId = extractMDListId(listIdOrUrl);
-  
-  if (!listId) {
-    return { success: false, manga: [], error: 'Invalid MDList ID or URL format.' };
-  }
-  
-  console.log(`[MangaDex] 📋 Fetching MDList: ${listId}`);
-  
-  try {
-    // First, get the list info
-    const listUrl = `${MANGADEX_API_URL}/list/${listId}`;
-    const listResponse = await fetch(listUrl, {
-      headers: { 'Accept': 'application/json' }
-    });
-    
-    if (!listResponse.ok) {
-      if (listResponse.status === 404) {
-        return { success: false, manga: [], error: 'MDList not found. Make sure the list is public.' };
-      }
-      return { success: false, manga: [], error: `API error: ${listResponse.status}` };
-    }
-    
-    const listData = await listResponse.json();
-    
-    // Extract manga IDs from the list relationships
-    const mangaRelations = listData.data?.relationships?.filter(r => r.type === 'manga') || [];
-    
-    if (mangaRelations.length === 0) {
-      return { success: false, manga: [], error: 'MDList is empty or has no manga.' };
-    }
-    
-    console.log(`[MangaDex] 📚 Found ${mangaRelations.length} manga in list`);
-    
-    // Fetch manga details in batches (MangaDex allows up to 100 IDs per request)
-    const mangaIds = mangaRelations.map(r => r.id);
-    const batchSize = 100;
-    const allManga = [];
-    
-    for (let i = 0; i < mangaIds.length; i += batchSize) {
-      const batch = mangaIds.slice(i, i + batchSize);
-      const idsParam = batch.map(id => `ids[]=${id}`).join('&');
-      const mangaUrl = `${MANGADEX_API_URL}/manga?${idsParam}&includes[]=cover_art&includes[]=author&limit=${batchSize}`;
-      
-      // Rate limiting
-      await sleep(MIN_REQUEST_INTERVAL);
-      
-      const mangaResponse = await fetch(mangaUrl, {
-        headers: { 'Accept': 'application/json' }
-      });
-      
-      if (mangaResponse.ok) {
-        const mangaData = await mangaResponse.json();
-        const transformed = mangaData.data.map(m => transformToAnilistFormat(m));
-        allManga.push(...transformed);
-        console.log(`[MangaDex] ✅ Fetched batch ${Math.floor(i/batchSize) + 1}: ${transformed.length} manga`);
-      }
-    }
-    
-    return { 
-      success: true, 
-      manga: allManga,
-      listName: listData.data?.attributes?.name || 'Unnamed List'
-    };
-    
-  } catch (error) {
-    console.error('[MangaDex] MDList fetch error:', error);
-    return { success: false, manga: [], error: error.message };
-  }
-}

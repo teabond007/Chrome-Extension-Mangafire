@@ -71,56 +71,7 @@
                 </label>
             </div>
 
-            <div class="divider-line"></div>
             
-            <p class="section-label">External Ecosystems:</p>
-            <div class="external-sync-section">
-                <!-- AniList -->
-                <div class="external-sync-item" :class="{ connected: isAnilistConnected }">
-                    <div class="external-info">
-                        <img src="https://anilist.co/img/icons/icon.svg" class="external-icon" alt="AniList">
-                        <div class="external-text">
-                            <span class="external-name">AniList</span>
-                            <span class="external-status">{{ isAnilistConnected ? 'Connected' : 'Not Connected' }}</span>
-                        </div>
-                    </div>
-                    <div class="external-actions">
-                        <button v-if="!isAnilistConnected" @click="handleConnectAnilist" class="btn btn-sm btn-primary">Connect</button>
-                        <template v-else>
-                            <SwitchControl 
-                                id="SyncAnilist"
-                                label="Auto-Sync" 
-                                v-model="syncAnilistEnabled"
-                                compact
-                            />
-                            <button @click="profileStore.disconnectAnilist" class="btn btn-sm btn-ghost" title="Disconnect">&times;</button>
-                        </template>
-                    </div>
-                </div>
-
-                <!-- MyAnimeList -->
-                <div class="external-sync-item" :class="{ connected: isMalConnected }">
-                    <div class="external-info">
-                        <img src="https://myanimelist.net/favicon.ico" class="external-icon" alt="MAL">
-                        <div class="external-text">
-                            <span class="external-name">MyAnimeList</span>
-                            <span class="external-status">{{ isMalConnected ? 'Connected' : 'Not Connected' }}</span>
-                        </div>
-                    </div>
-                    <div class="external-actions">
-                        <button v-if="!isMalConnected" @click="handleConnectMal" class="btn btn-sm btn-primary">Connect</button>
-                        <template v-else>
-                            <SwitchControl 
-                                id="SyncMal"
-                                label="Auto-Sync" 
-                                v-model="syncMalEnabled"
-                                compact
-                            />
-                            <button @click="profileStore.disconnectMal" class="btn btn-sm btn-ghost" title="Disconnect">&times;</button>
-                        </template>
-                    </div>
-                </div>
-            </div>
         </div>
     </SettingsCard>
 </template>
@@ -134,8 +85,7 @@ import { useProfileStore } from '../../../scripts/store/profile.store.js';
 
 const profileStore = useProfileStore();
 const { 
-    isSignedIn, autoSyncEnabled, syncLibrary, syncHistory, syncPersonal, syncSettings, syncCache, syncInterval,
-    syncAnilistEnabled, syncMalEnabled, isAnilistConnected, isMalConnected
+    isSignedIn, autoSyncEnabled, syncLibrary, syncHistory, syncPersonal, syncSettings, syncCache, syncInterval
 } = storeToRefs(profileStore);
 
 const syncIntervalLocal = ref(1);
@@ -165,26 +115,9 @@ const resetSyncInterval = () => {
     profileStore.setSyncInterval(1);
 };
 
-const handleConnectAnilist = async () => {
-    try {
-        await profileStore.connectAnilist();
-    } catch (e) {
-        alert('AniList Connection Failed: ' + e.message);
-    }
-};
-
-const handleConnectMal = async () => {
-    try {
-        await profileStore.connectMal();
-    } catch (e) {
-        alert('MyAnimeList Connection Failed: ' + e.message);
-    }
-};
-
 // Auto-persist other settings when changed
 watch([
-    autoSyncEnabled, syncLibrary, syncHistory, syncPersonal, syncSettings, syncCache,
-    syncAnilistEnabled, syncMalEnabled
+    autoSyncEnabled, syncLibrary, syncHistory, syncPersonal, syncSettings, syncCache
 ], () => {
     profileStore.savePreferences();
 });
