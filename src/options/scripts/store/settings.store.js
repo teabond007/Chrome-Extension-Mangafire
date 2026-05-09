@@ -41,7 +41,6 @@ export const useSettingsStore = defineStore('settings', {
         // Reader Enhancements
         progressTracking: true,
         familyFriendlyEnabled: false,
-        autoReadStale: false,
 
         // Custom Statuses (marker-manager)
         /** @type {Array<{name: string, color: string, style: string}>} */
@@ -73,7 +72,6 @@ export const useSettingsStore = defineStore('settings', {
                 TOGGLES.LIBRARY_PROGRESS_BARS,
                 TOGGLES.CUSTOM_SITE_HIGHLIGHT,
                 TOGGLES.FAMILY_FRIENDLY,
-                TOGGLES.AUTO_READ_STALE,
                 TOGGLES.LIBRARY_SHOW_RIBBONS,
                 TOGGLES.CUSTOM_SITE_SHOW_RIBBONS,
                 TOGGLES.CUSTOM_SITE_QUICK_ACTIONS
@@ -102,7 +100,6 @@ export const useSettingsStore = defineStore('settings', {
             this.libraryAnimatedBorders = !!data[TOGGLES.LIBRARY_ANIMATED_BORDERS];
             this.highlightEnabled = data[TOGGLES.CUSTOM_SITE_HIGHLIGHT] !== false;
             this.familyFriendlyEnabled = !!data[TOGGLES.FAMILY_FRIENDLY];
-            this.autoReadStale = !!data[TOGGLES.AUTO_READ_STALE];
             this.libraryShowRibbons = data[TOGGLES.LIBRARY_SHOW_RIBBONS] !== false;
             this.customSiteShowRibbons = data[TOGGLES.CUSTOM_SITE_SHOW_RIBBONS] !== false;
  
@@ -143,7 +140,6 @@ export const useSettingsStore = defineStore('settings', {
                 case 'libraryAnimatedBorders': storagePayload[TOGGLES.LIBRARY_ANIMATED_BORDERS] = value; break;
                 case 'highlightEnabled':      storagePayload[TOGGLES.CUSTOM_SITE_HIGHLIGHT] = value; break;
                 case 'familyFriendlyEnabled': storagePayload[TOGGLES.FAMILY_FRIENDLY] = value; break;
-                case 'autoReadStale':         storagePayload[TOGGLES.AUTO_READ_STALE] = value; break;
                 case 'libraryShowRibbons':    storagePayload[TOGGLES.LIBRARY_SHOW_RIBBONS] = value; break;
                 case 'customSiteShowRibbons': storagePayload[TOGGLES.CUSTOM_SITE_SHOW_RIBBONS] = value; break;
            
@@ -220,7 +216,6 @@ export const useSettingsStore = defineStore('settings', {
             if (changes[TOGGLES.LIBRARY_ANIMATED_BORDERS]) this.libraryAnimatedBorders = changes[TOGGLES.LIBRARY_ANIMATED_BORDERS].newValue;
             if (changes[TOGGLES.CUSTOM_SITE_HIGHLIGHT]) this.highlightEnabled = changes[TOGGLES.CUSTOM_SITE_HIGHLIGHT].newValue;
             if (changes[TOGGLES.FAMILY_FRIENDLY]) this.familyFriendlyEnabled = changes[TOGGLES.FAMILY_FRIENDLY].newValue;
-            if (changes[TOGGLES.AUTO_READ_STALE]) this.autoReadStale = changes[TOGGLES.AUTO_READ_STALE].newValue;
             if (changes[TOGGLES.LIBRARY_SHOW_RIBBONS]) this.libraryShowRibbons = changes[TOGGLES.LIBRARY_SHOW_RIBBONS].newValue;
             if (changes[TOGGLES.CUSTOM_SITE_SHOW_RIBBONS]) this.customSiteShowRibbons = changes[TOGGLES.CUSTOM_SITE_SHOW_RIBBONS].newValue;
            

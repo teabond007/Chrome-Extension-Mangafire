@@ -6,13 +6,7 @@
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <h2>Your Library</h2>
                   
-                    <button 
-                        @click="$emit('toggle-stats')" 
-                        class="btn btn-ghost btn-sm"
-                        :class="{ active: showStats }"
-                    >
-                        <span style="margin-right: 4px;">📊</span>Stats
-                    </button>
+                    
                     <button 
                         class="info-redirect-btn" 
                         title="How to use"
@@ -26,6 +20,23 @@
         </div>
         
         <div class="library-controls">
+        
+                <div class="chapter-range-wrapper">
+                    <input type="number" v-model.number="filters.chapterMin" class="input-field input-sm" placeholder="Min" style="width: 70px;">
+                    <span class="range-separator">–</span>
+                    <input type="number" v-model.number="filters.chapterMax" class="input-field input-sm" placeholder="Max" style="width: 70px;">
+                </div>
+            
+        
+                <select v-model="filters.lastUpdated" class="select-field select-sm">
+                    <option value="all">Any Time</option>
+                    <option value="7d">Last 7 Days</option>
+                    <option value="30d">Last 30 Days</option>
+                    <option value="90d">Last 90 Days</option>
+                    <option value="year">Last Year</option>
+                </select>
+        
+
             <select v-model="filters.sort" class="select-field" style="width: 140px;">
                 <option value="last-read-desc">Recently Read</option>
                 <option value="added-desc">Recently Added</option>
@@ -109,44 +120,16 @@
             </div>
         </div>
 
-        <div class="library-controls-advanced">
-            <FilterGroup label="Chapters:">
-                <div class="chapter-range-wrapper">
-                    <input type="number" v-model.number="filters.chapterMin" class="input-field input-sm" placeholder="Min" style="width: 70px;">
-                    <span class="range-separator">–</span>
-                    <input type="number" v-model.number="filters.chapterMax" class="input-field input-sm" placeholder="Max" style="width: 70px;">
-                </div>
-            </FilterGroup>
-            
-            <FilterGroup label="Updated:">
-                <select v-model="filters.lastUpdated" class="select-field select-sm">
-                    <option value="all">Any Time</option>
-                    <option value="7d">Last 7 Days</option>
-                    <option value="30d">Last 30 Days</option>
-                    <option value="90d">Last 90 Days</option>
-                    <option value="year">Last Year</option>
-                </select>
-            </FilterGroup>
+       
 
-            <FilterGroup custom-class="quick-filters">
-                <button 
-                    @click="$emit('toggle-bingeworthy')" 
-                    class="btn btn-ghost btn-sm filter-preset-btn"
-                    :class="{ active: filters.chapterMin >= 100 }"
-                >🔥 Binge-worthy</button>
-                <button 
-                    @click="filters.newChaptersOnly = !filters.newChaptersOnly" 
-                    class="btn btn-ghost btn-sm filter-preset-btn"
-                    :class="{ active: filters.newChaptersOnly }"
-                >✨ New Chapters</button>
-                <button @click="$emit('clear-filters')" class="btn btn-ghost btn-sm filter-preset-btn">✕ Clear</button>
-            </FilterGroup>
-        </div>
+
+            <button @click="$emit('clear-filters')" class="btn btn-ghost btn-sm filter-preset-btn" style="margin-left: auto;">✕ Clear</button>
+        
     </div>
 </template>
 
 <script setup>
-import FilterGroup from '../../common/FilterGroup.vue';
+
 import { useSettingsStore } from '../../../scripts/store/settings.store.js';
 
 defineProps({
@@ -158,7 +141,7 @@ defineProps({
     sortedEntriesCount: Number
 });
 
-defineEmits(['toggle-stats', 'set-view-size', 'clear-filters', 'toggle-bingeworthy']);
+defineEmits(['toggle-stats', 'set-view-size', 'clear-filters']);
 
 const settingsStore = useSettingsStore();
 
@@ -309,16 +292,6 @@ const handleGuideRedirect = () => {
 
 .view-toggle-btn.active:hover {
     background: var(--accent-hover);
-}
-
-.library-controls-advanced {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin-top: 0.75rem;
-    padding-top: 0.75rem;
-    border-top: 1px solid var(--border-color, #333);
-    width: 100%;
 }
 
 .chapter-range-wrapper {

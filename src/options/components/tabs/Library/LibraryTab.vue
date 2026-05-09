@@ -13,12 +13,7 @@
         </header>
 
         <div class="content-grid" style="max-width: 100%;">
-            <!-- Stats Section (Vue Component) -->
-            <LibraryStatistics 
-                :entries="savedEntries" 
-                :custom-statuses="customStatuses"
-                :is-visible="showStats" 
-            />
+
 
 
 
@@ -33,7 +28,6 @@
                 @toggle-stats="toggleStats"
                 @set-view-size="setViewSize"
                 @clear-filters="clearFilters"
-                @toggle-bingeworthy="toggleBingeworthy"
             />
 
             <!-- Sync Progress Bar -->
@@ -60,7 +54,7 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { getMergedMetadata } from '../../../../scripts/core/api/metadata-service';
-import LibraryStatistics from './LibraryStatistics.vue';
+
 import LibraryFilterBar from './LibraryFilterBar.vue';
 import LibrarySyncProgress from './LibrarySyncProgress.vue';
 import LibraryGrid from './LibraryGrid.vue';
@@ -96,7 +90,6 @@ const {
     familyFriendlyEnabled,
     customStatuses,
     showReadingBadges,
-    autoReadStale: smartInactivity,
     highlightThickness,
     libraryHideNoHistory,
     libraryShowRibbons,
@@ -111,11 +104,10 @@ const librarySettings = computed(() => ({
 
     animatedBorders: libraryAnimatedBorders.value,
     showReadingBadges: showReadingBadges.value,
-    showRibbons: libraryShowRibbons.value,
-    smartInactivity: smartInactivity.value
+    showRibbons: libraryShowRibbons.value
 }));
 
-const showStats = ref(false);
+
 const visibleCount = ref(LIBRARY_CONFIG.INITIAL_LOAD);
 
 const syncState = computed(() => ({
@@ -145,8 +137,7 @@ const filters = reactive({
     search: '',
     chapterMin: null,
     chapterMax: null,
-    lastUpdated: 'all',
-    newChaptersOnly: false
+    lastUpdated: 'all'
 });
 
 const availableGenres = computed(() => {
@@ -232,13 +223,6 @@ const filteredEntries = computed(() => {
             if (lastRead < cutoff) return false;
         }
 
-        // New Chapters Only
-        if (filters.newChaptersOnly) {
-            const totalChapters = ani?.chapters || 0;
-            const readChapters = entry.readChapters || 0;
-            if (!(totalChapters > 0 && readChapters < totalChapters)) return false;
-        }
-
         return true;
     });
 });
@@ -287,22 +271,18 @@ const loadMoreEntries = () => visibleCount.value += LIBRARY_CONFIG.LOAD_MORE_INC
 watch([filters, cardViewSize], () => {
     visibleCount.value = LIBRARY_CONFIG.INITIAL_LOAD;
 }, { deep: true });
-const toggleStats = () => showStats.value = !showStats.value;
+
 
 const clearFilters = () => {
     filters.chapterMin = null;
     filters.chapterMax = null;
     filters.lastUpdated = 'all';
-    filters.newChaptersOnly = false;
     filters.status = 'All';
     filters.genre = 'All';
     filters.format = 'All';
     filters.demographic = 'All';
 };
 
-const toggleBingeworthy = () => {
-    filters.chapterMin = filters.chapterMin >= 100 ? null : 100;
-};
 
 const showStatusPicker = (entry) => {
     if (window.showStatusPicker) window.showStatusPicker(entry);

@@ -103,8 +103,7 @@ export const TOGGLES = {
     LIBRARY_SHOW_RIBBONS: 'libraryShowStatusRibbon',
     CUSTOM_SITE_SHOW_RIBBONS: 'customSiteStatusRibbon',
     
-    IS_CUSTOM_THEME: 'isCustomTheme',
-    AUTO_READ_STALE: 'autoReadStaleReading'
+    IS_CUSTOM_THEME: 'isCustomTheme'
 };
 
 /**

@@ -50,16 +50,6 @@ export const useLibraryStore = defineStore('library', {
                 this.personalData = data[DATA.PERSONAL_DATA] || {};
                 this.lastSync = data[DATA.LAST_SYNC_TIME] || null;
 
-                // Auto-maintenance: Read stale entries
-                const settingsStore = useSettingsStore();
-                if (settingsStore.autoReadStale && this.entries.length > 0) {
-                    const { updatedLibrary, changedCount } = LibraryService.autoReadStaleEntries(this.entries);
-                    if (changedCount > 0) {
-                        console.log(`[LibraryStore] Auto-read ${changedCount} stale entries.`);
-                        this.entries = updatedLibrary;
-                        await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: this.entries });
-                    }
-                }
             } catch (err) {
                 console.error('Failed to load library:', err);
             } finally {

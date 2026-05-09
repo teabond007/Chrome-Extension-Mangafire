@@ -3,8 +3,7 @@
         class="manga-card" 
         :class="{ 
             
-            'has-custom-status': !!entry.customStatus,
-            'stale-entry': isStale
+            'has-custom-status': !!entry.customStatus
         }"
         :style="cardStyle"
         @click="$emit('click', entry)"
@@ -87,11 +86,10 @@
 <script setup>
 import { computed, ref, onMounted } from 'vue';
 import { getStatusInfo, getFormatName, getDemographic } from '../../scripts/ui/manga-card-utils.js';
-import { BORDER_DEFAULTS, DEFAULT_STATUS, LIBRARY_ENTRY_KEYS } from '../../../config.js';
-import * as LibraryService from '../../../scripts/core/library-service.js';
+import { BORDER_DEFAULTS, LIBRARY_ENTRY_KEYS } from '../../../config.js';
 
 // Fallback placeholder - base64 encoded or remote fallback
-const FALLBACK_COVER = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzY2NiI+PHBhdGggZD0iTTIxIDR2MTJIMy4wMVYySDFWMTZoMjBWNGgtMlptLTEuOTEgMTMuNUw0IDE4djJoMTIuMTdsLjg0LS44NCAxLjA4IDEuNi42Ni0uMjItLjk3LTEuNDNjLjEyLS4xNi4yMi0uMzUuMzEtLjU1eiIvPjwvc3ZnPg==';
+const FALLBACK_COVER = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzY2NiI+PHBhdGggZD0iTTIxIDR2MTJIMy4wMVYySDFWMTZoMjBWNGgtMlptLTEuOTEgMTMuNUw0IDE4djJoMTIuMT7bLjg0LS44NCAxLjA4IDEuNi42Ni0uMjItLjk3LTEuNDNjLjEyLS4xNi4yMi0uMzUuMzEtLjU1eiIvPjwvc3ZnPg==';
 
 const props = defineProps({
     entry: {
@@ -113,8 +111,7 @@ const props = defineProps({
             borderThickness: BORDER_DEFAULTS.size,
         
             showReadingBadges: true,
-            showRibbons: true,
-            smartInactivity: false
+            showRibbons: true
         })
     }
 });
@@ -141,15 +138,6 @@ const cardStyle = computed(() => {
 });
 
 
-
-const isStale = computed(() => {
-    if (props.librarySettings.smartInactivity && props.entry.status === DEFAULT_STATUS && props.entry.lastRead) {
-        const diff = Date.now() - props.entry.lastRead;
-        const days = diff / (1000 * 60 * 60 * 24);
-        return days > 30;
-    }
-    return false;
-});
 
 const coverUrl = computed(() => {
     if (props.entry.anilistData?.coverImage?.large || props.entry.anilistData?.coverImage?.medium) {
@@ -199,18 +187,6 @@ const demographic = computed(() => {
 
         .manga-card-actions {
             opacity: 1;
-        }
-    }
-
-    /* Smart Inactivity Dimming */
-    &.stale-entry {
-        opacity: 0.6;
-        filter: grayscale(0.8);
-        transition: all 0.3s ease;
-
-        &:hover {
-            opacity: 1;
-            filter: grayscale(0);
         }
     }
 

@@ -17,7 +17,7 @@
             </GuideCard>
 
             <GuideCard id="guide-smart-automation" title="Smart Automation" icon="⚡">
-                Reduces manual work by automating updates. <b>Sync & Mark Read</b> uses your browsing history to automatically update your library when you visit a chapter page. <b>Auto Read Stale</b> automatically moves "Reading" entries to "Read" after 30 days of inactivity.
+                Reduces manual work by automating updates. <b>Sync & Mark Read</b> uses your browsing history to automatically update your library when you visit a chapter page.
             </GuideCard>
 
             <GuideCard id="guide-reader" title="Reader Enhancements" icon="📚">

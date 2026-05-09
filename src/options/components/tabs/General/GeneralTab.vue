@@ -38,13 +38,6 @@
                             margin-top
                         />
                         <SwitchControl 
-                            :id="TOGGLES.AUTO_READ_STALE" 
-                            label="Auto-Read Stale Entries" 
-                            sub-label="Convert 'Reading' entries to 'Read' if inactive for 30+ days"
-                            v-model="autoReadStale"
-                            margin-top
-                        />
-                        <SwitchControl 
                             :id="TOGGLES.LIBRARY_SHOW_RIBBONS" 
                             label="Show Status Ribbons" 
                             sub-label="Show corner status banners (Read, Completed, etc) on cards"
@@ -96,7 +89,6 @@ const {
     showReadingBadges,
     progressTracking,
     familyFriendlyEnabled,
-    autoReadStale,
     libraryShowRibbons
 } = storeToRefs(settingsStore);
 
@@ -108,7 +100,6 @@ bindSetting(quickActions, 'quickActions');
 bindSetting(showReadingBadges, 'showReadingBadges');
 bindSetting(progressTracking, 'progressTracking');
 bindSetting(familyFriendlyEnabled, 'familyFriendlyEnabled');
-bindSetting(autoReadStale, 'autoReadStale');
 bindSetting(libraryShowRibbons, 'libraryShowRibbons');
 </script>
 
