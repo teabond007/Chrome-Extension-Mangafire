@@ -1,12 +1,10 @@
 /**
  * @fileoverview Unified reader enhancements module.
- * Combines auto-scroll, keyboard shortcuts, and progress tracking for reader pages.
+ * Focuses on progress tracking for reader pages.
  */
 
-import AutoScrollController from './auto-scroll.js';
-import KeybindManager from './keybinds.js';
 import ProgressTracker from './progress-tracker.js';
-import { TOGGLES, SETTINGS } from '../../../config.js';
+import { TOGGLES } from '../../../config.js';
 
 /**
  * ReaderEnhancements bundles all reading enhancement features.
@@ -17,20 +15,14 @@ class ReaderEnhancements {
      * Creates a new ReaderEnhancements instance.
      * @param {Object} adapter - Platform adapter with navigation and parsing methods
      * @param {Object} options - Configuration options
-     * @param {boolean} [options.autoScroll=true] - Enable auto-scroll feature
-     * @param {boolean} [options.keybinds=true] - Enable keyboard shortcuts
      * @param {boolean} [options.progressTracking=true] - Enable progress tracking
      */
     constructor(adapter, options = {}) {
         this.adapter = adapter;
         this.options = {
-            autoScroll: options.autoScroll !== false,
-            keybinds: options.keybinds !== false,
             progressTracking: options.progressTracking !== false
         };
 
-        this.autoScroll = null;
-        this.keybinds = null;
         this.progressTracker = null;
         this.isInitialized = false;
     }
@@ -67,22 +59,6 @@ class ReaderEnhancements {
         // Check user preferences
         const settings = await this.loadSettings();
 
-        // Initialize auto-scroll
-        if (this.options.autoScroll && settings[TOGGLES.AUTO_SCROLL] !== false) {
-            this.autoScroll = new AutoScrollController({
-                speed: settings[SETTINGS.AUTO_SCROLL_SPEED] || 50,
-                showPanel: true,
-                adapter: this.adapter
-            });
-            this.autoScroll.init();
-        }
-
-        // Initialize keyboard shortcuts
-        if (this.options.keybinds && settings[TOGGLES.KEYBINDS_ENABLED] !== false) {
-            this.keybinds = new KeybindManager(this.adapter);
-            await this.keybinds.init();
-        }
-
         // Initialize progress tracking
         if (this.options.progressTracking && settings[TOGGLES.PROGRESS_TRACKING] !== false) {
             this.progressTracker = new ProgressTracker(this.adapter);
@@ -100,9 +76,6 @@ class ReaderEnhancements {
     async loadSettings() {
         try {
             const data = await chrome.storage.local.get([
-                TOGGLES.AUTO_SCROLL,
-                SETTINGS.AUTO_SCROLL_SPEED,
-                TOGGLES.KEYBINDS_ENABLED,
                 TOGGLES.PROGRESS_TRACKING
             ]);
             return data;
@@ -116,16 +89,11 @@ class ReaderEnhancements {
      * Cleans up all enhancements.
      */
     destroy() {
-        this.autoScroll?.destroy();
-        this.keybinds?.destroy();
         this.progressTracker?.destroy();
-        
-        this.autoScroll = null;
-        this.keybinds = null;
         this.progressTracker = null;
         this.isInitialized = false;
     }
 }
 
 export default ReaderEnhancements;
-export { AutoScrollController, KeybindManager, ProgressTracker };
+export { ProgressTracker };

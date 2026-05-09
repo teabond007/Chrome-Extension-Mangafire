@@ -32,7 +32,7 @@
             <h4>🎨 Enhancement Suite</h4>
             <ul class="feature-list">
                 <li><strong>Smart Highlighting</strong>: Visualize your saved entries with custom colored borders,  corner status ribbons, and interactive markers.</li>
-                <li><strong>Auto-Scroll & Reader Tools</strong>: Floating controls for hands-free reading on any page identified as a "Reader Page".</li>
+                <li><strong>Reader Enhancement</strong>: Support for specialized tools on pages identified as a "Reader Page".</li>
                 <li><strong>Progress Persistence</strong>: Remembers your exact scroll position and chapter history across different domains.</li>
             </ul>
 

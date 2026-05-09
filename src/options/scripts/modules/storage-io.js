@@ -17,14 +17,11 @@ export const EXPORT_CATEGORIES = {
     settings: {
         keys: [
             TOGGLES.AUTO_SYNC,
-            TOGGLES.AUTO_SCROLL,
-            TOGGLES.KEYBINDS_ENABLED,
             TOGGLES.PROGRESS_TRACKING,
             SETTINGS.VIEW_MODE,
             SETTINGS.THEME,
             TOGGLES.LIBRARY_BORDERS,
             SETTINGS.LIBRARY_THICKNESS,
-         
             TOGGLES.LIBRARY_ANIMATED_BORDERS,
             TOGGLES.LIBRARY_PROGRESS_BARS,
             DATA.CUSTOM_STATUSES,

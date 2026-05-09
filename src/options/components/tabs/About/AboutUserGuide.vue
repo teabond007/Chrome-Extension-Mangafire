@@ -21,7 +21,7 @@
             </GuideCard>
 
             <GuideCard id="guide-reader" title="Reader Enhancements" icon="📚">
-                Specialized tools for reading pages. <b>Auto-Scroll</b> provides hands-free navigation with precise speed control, while <b>Progress Tracking</b> saves your exact vertical position, allowing you to resume reading instantly on any device.
+                Specialized tools for reading pages. <b>Progress Tracking</b> saves your exact vertical position, allowing you to resume reading instantly on any device by remembering exactly where you left off.
             </GuideCard>
 
             <GuideCard id="guide-statuses" title="Custom Statuses" icon="🎨">
@@ -29,7 +29,7 @@
             </GuideCard>
 
             <GuideCard id="guide-custom-list" title="Site Customization" icon="🌐">
-                Fine-tune how the extension looks on specific domains. Adjust <b>Highlight Thickness</b> and enable  or <b>Status Ribbons</b> to ensure your manga markers are clearly visible without obstructing the site's original UI.
+                Fine-tune how the extension looks on specific domains. Adjust <b>Highlight Thickness</b> and enable or <b>Status Ribbons</b> to ensure your manga markers are clearly visible without obstructing the site's original UI.
             </GuideCard>
         </div>
 

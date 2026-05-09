@@ -66,24 +66,10 @@
                     full-height
                 >
                     <SwitchControl 
-                        :id="TOGGLES.AUTO_SCROLL" 
-                        label="Auto-Scroll Panel" 
-                        sub-label="Show floating auto-scroll controls on reader pages"
-                        v-model="autoScroll"
-                    />
-                    <SwitchControl 
-                        :id="TOGGLES.KEYBINDS_ENABLED" 
-                        label="Keyboard Shortcuts" 
-                        sub-label="Arrow keys, Space (auto-scroll), F (fullscreen)"
-                        v-model="keybinds"
-                        margin-top
-                    />
-                    <SwitchControl 
                         :id="TOGGLES.PROGRESS_TRACKING" 
                         label="Auto-Save Progress" 
                         sub-label="Automatically save chapter progress while reading"
                         v-model="progressTracking"
-                        margin-top
                     />
                 </SettingsCard>
             </div>
@@ -108,8 +94,6 @@ const settingsStore = useSettingsStore();
 const { 
     quickActions, 
     showReadingBadges,
-    autoScroll,
-    keybinds,
     progressTracking,
     familyFriendlyEnabled,
     autoReadStale,
@@ -122,8 +106,6 @@ const bindSetting = (refValue, key) => {
 
 bindSetting(quickActions, 'quickActions');
 bindSetting(showReadingBadges, 'showReadingBadges');
-bindSetting(autoScroll, 'autoScroll');
-bindSetting(keybinds, 'keybinds');
 bindSetting(progressTracking, 'progressTracking');
 bindSetting(familyFriendlyEnabled, 'familyFriendlyEnabled');
 bindSetting(autoReadStale, 'autoReadStale');

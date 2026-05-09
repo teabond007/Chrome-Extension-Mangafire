@@ -39,8 +39,6 @@ export const useSettingsStore = defineStore('settings', {
      
 
         // Reader Enhancements
-        autoScroll: false,
-        keybinds: false,
         progressTracking: true,
         familyFriendlyEnabled: false,
         autoReadStale: false,
@@ -66,14 +64,11 @@ export const useSettingsStore = defineStore('settings', {
                 TOGGLES.QUICK_ACTIONS,
                 TOGGLES.SHOW_READING_BADGES,
                 TOGGLES.HISTORY_TRACKING,
-                TOGGLES.AUTO_SCROLL,
-                TOGGLES.KEYBINDS_ENABLED,
                 TOGGLES.PROGRESS_TRACKING,
                 SETTINGS.VIEW_MODE,
                 TOGGLES.LIBRARY_HIDE_NO_HISTORY,
                 DATA.CUSTOM_STATUSES,
                 TOGGLES.CUSTOM_STATUS_ENABLED,
-              
                 TOGGLES.LIBRARY_ANIMATED_BORDERS,
                 TOGGLES.LIBRARY_PROGRESS_BARS,
                 TOGGLES.CUSTOM_SITE_HIGHLIGHT,
@@ -81,9 +76,7 @@ export const useSettingsStore = defineStore('settings', {
                 TOGGLES.AUTO_READ_STALE,
                 TOGGLES.LIBRARY_SHOW_RIBBONS,
                 TOGGLES.CUSTOM_SITE_SHOW_RIBBONS,
-         
-                TOGGLES.CUSTOM_SITE_QUICK_ACTIONS,
-               
+                TOGGLES.CUSTOM_SITE_QUICK_ACTIONS
             ]);
 
             this.theme = data[SETTINGS.THEME] || 'dark';
@@ -98,8 +91,6 @@ export const useSettingsStore = defineStore('settings', {
             this.quickActions = data[TOGGLES.QUICK_ACTIONS] !== false;
             this.showReadingBadges = data[TOGGLES.SHOW_READING_BADGES] !== false;
             this.syncAndMarkRead = data[TOGGLES.HISTORY_TRACKING] !== false;
-            this.autoScroll = !!data[TOGGLES.AUTO_SCROLL];
-            this.keybinds = !!data[TOGGLES.KEYBINDS_ENABLED];
             this.progressTracking = data[TOGGLES.PROGRESS_TRACKING] !== false;
             
             this.cardViewSize = data[SETTINGS.VIEW_MODE] || 'large';
@@ -141,8 +132,6 @@ export const useSettingsStore = defineStore('settings', {
                 case 'quickActions':          storagePayload[TOGGLES.QUICK_ACTIONS] = value; break;
                 case 'showReadingBadges':     storagePayload[TOGGLES.SHOW_READING_BADGES] = value; break;
                 case 'syncAndMarkRead':       storagePayload[TOGGLES.HISTORY_TRACKING] = value; break;
-                case 'autoScroll':            storagePayload[TOGGLES.AUTO_SCROLL] = value; break;
-                case 'keybinds':              storagePayload[TOGGLES.KEYBINDS_ENABLED] = value; break;
                 case 'progressTracking':      storagePayload[TOGGLES.PROGRESS_TRACKING] = value; break;
                 case 'libraryBordersEnabled': storagePayload[TOGGLES.LIBRARY_BORDERS] = value; break;
                 case 'cardViewSize':          storagePayload[SETTINGS.VIEW_MODE] = value; break;
@@ -221,8 +210,6 @@ export const useSettingsStore = defineStore('settings', {
             if (changes[TOGGLES.QUICK_ACTIONS]) this.quickActions = changes[TOGGLES.QUICK_ACTIONS].newValue;
             if (changes[TOGGLES.SHOW_READING_BADGES]) this.showReadingBadges = changes[TOGGLES.SHOW_READING_BADGES].newValue;
             if (changes[TOGGLES.HISTORY_TRACKING])    this.syncAndMarkRead = changes[TOGGLES.HISTORY_TRACKING].newValue;
-            if (changes[TOGGLES.AUTO_SCROLL])  this.autoScroll = changes[TOGGLES.AUTO_SCROLL].newValue;
-            if (changes[TOGGLES.KEYBINDS_ENABLED])    this.keybinds = changes[TOGGLES.KEYBINDS_ENABLED].newValue;
             if (changes[TOGGLES.PROGRESS_TRACKING]) this.progressTracking = changes[TOGGLES.PROGRESS_TRACKING].newValue;
             if (changes[DATA.CUSTOM_STATUSES]) {
                 const val = changes[DATA.CUSTOM_STATUSES].newValue;

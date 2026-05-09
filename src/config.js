@@ -51,27 +51,7 @@ export const FEATURE_DEFAULTS = {
     progressBadges: true,
     quickActions: true,
     notifications: true,
-    autoScroll: true,
-    keyboardShortcuts: true,
     newChapterBadge: true
-};
-
-/**
- * Default keyboard shortcuts for reader mode.
- * @type {Object<string, string>}
- */
-export const DEFAULT_KEYBINDS = {
-    'ArrowRight': 'nextPage',
-    'ArrowLeft': 'prevPage',
-    'ArrowDown': 'scrollDown',
-    'ArrowUp': 'scrollUp',
-    'Space': 'toggleAutoScroll',
-    'Escape': 'exitReader',
-    'f': 'toggleFullscreen',
-    'b': 'toggleBookmark',
-    's': 'toggleSubscribe',
-    'n': 'nextChapter',
-    'p': 'prevChapter'
 };
 
 /**
@@ -105,8 +85,6 @@ export const TOGGLES = {
     FAMILY_FRIENDLY: 'FamilyFriendlyfeatureEnabled',
     HISTORY_TRACKING: 'SyncandMarkReadfeatureEnabled',
     PROGRESS_TRACKING: 'progressTrackingEnabled',
-    AUTO_SCROLL: 'autoScrollEnabled',
-    KEYBINDS_ENABLED: 'keybindsEnabled',
 
     // Custom Sites
     CUSTOM_SITE_HIGHLIGHT: 'CustomSiteHighlightEnabled',
@@ -140,8 +118,7 @@ export const SETTINGS = {
     LIBRARY_THICKNESS: 'LibraryBorderSize',
     BORDER_STYLE: 'GlobalBorderStyle',
     VIEW_MODE: 'cardViewSize', // Unified from cardViewSize/libraryViewMode
-    SYNC_INTERVAL: 'profileSyncInterval',
-    AUTO_SCROLL_SPEED: 'autoScrollSpeed'
+    SYNC_INTERVAL: 'profileSyncInterval'
 };
 
 /**
@@ -157,8 +134,6 @@ export const DATA = {
     CUSTOM_STATUSES: 'customBookmarks',
     ANILIST_CACHE: 'anilistCache',
     MANGADEX_CACHE: 'mangadexCache',
-    KEYBINDS_CONFIG: 'keybinds',
-    KEYBINDS_CUSTOM: 'customKeybinds',
     
     // Timestamps
     LAST_BACKUP: 'LastBackupDate',

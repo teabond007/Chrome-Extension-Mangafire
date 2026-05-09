@@ -23,13 +23,11 @@ if ((window as any).__BMH_INITIALIZED__) {
         // Load ALL settings needed by various adapters
         const settingsKeys = [
             SETTINGS.HIGHLIGHT_THICKNESS,
-
             TOGGLES.CUSTOM_STATUS_ENABLED,
             DATA.CUSTOM_STATUSES,
             DATA.CUSTOM_SITES,
             TOGGLES.CUSTOM_SITE_QUICK_ACTIONS,
             TOGGLES.CUSTOM_SITE_HIGHLIGHT,
-
             TOGGLES.CUSTOM_SITE_SHOW_RIBBONS
         ];
 
