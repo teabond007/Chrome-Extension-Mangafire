@@ -5,7 +5,7 @@
 
 // Selector tool - auto-initializes when ?bmh-selector-mode=true is in URL
 import './selector-tool';
-import { initCustomSite, GenericAdapter } from '../core/generic-adapter';
+import { initCustomSite, GenericAdapter } from '../core/generic-adapter.js';
 import ReaderEnhancements from '../core/reader/reader-enhancements';
 import { TOGGLES, SETTINGS, DATA } from '../../config.js';
 

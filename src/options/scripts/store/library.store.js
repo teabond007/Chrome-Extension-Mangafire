@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { wipeMangadexCache } from '../../../scripts/core/api/mangadex-api.js';
 import { getMergedMetadata } from '../../../scripts/core/api/metadata-service';
 import { DATA } from '../../../config.js';
-import * as LibraryService from '../../../scripts/core/library-service.ts';
+import * as LibraryService from '../../../scripts/core/library-service.js';
 import { useSettingsStore } from './settings.store.js';
 
 export const useLibraryStore = defineStore('library', {

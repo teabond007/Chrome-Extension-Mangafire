@@ -4,7 +4,7 @@
  */
 
 import { PROGRESS_CONFIG, LIBRARY_ENTRY_KEYS } from '../../../config.js';
-import * as LibraryService from '../library-service.ts';
+import * as LibraryService from '../library-service.js';
 
 /**
  * ProgressTracker monitors reading activity and saves progress.

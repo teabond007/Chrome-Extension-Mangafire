@@ -47,7 +47,7 @@
 <script setup>
 import MangaCard from '../../common/MangaCard.vue';
 import MangaDetailsLargeView from './MangaDetailsLargeView.vue';
-import { getMangaId } from '../../../../scripts/core/library-service.ts';
+import { getMangaId } from '../../../../scripts/core/library-service.js';
 
 defineProps({
     sortedEntries: Array,

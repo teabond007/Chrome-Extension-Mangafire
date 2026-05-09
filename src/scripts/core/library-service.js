@@ -4,32 +4,14 @@
  * Shared between background scripts, content scripts, and options UI.
  */
 
-import { DATA, DEFAULT_STATUS, LIBRARY_ENTRY_KEYS, TOGGLES } from '../../config.js';
-
-export interface MangaQuery {
-    [key: string]: any;
-    title: string;
-    slug?: string;
-    source?: string;
-    sourceId?: string;
-    mangaSlug?: string;
-}
-
-export interface ProgressUpdate {
-    chapter: string;
-    url: string;
-}
-
-export interface PersonalDataEntry {
-    notes: string;
-    rating: number;
-    lastModified?: number;
-}
+import { DATA, DEFAULT_STATUS, LIBRARY_ENTRY_KEYS } from '../../config.js';
 
 /**
- * Gets a unique ID for a manga.
+ * Gets a unique ID for a manga entry.
+ * @param {Object} entry - Library entry object
+ * @returns {string} Unique identifier string
  */
-export function getMangaId(entry: any): string {
+export function getMangaId(entry) {
     if (entry.anilistData?.id) return `anilist:${entry.anilistData.id}`;
     if (entry.mangadexId) return `mangadex:${entry.mangadexId}`;
     if (entry[LIBRARY_ENTRY_KEYS.MANGA_SLUG]) return `slug:${entry[LIBRARY_ENTRY_KEYS.MANGA_SLUG]}`;
@@ -39,16 +21,21 @@ export function getMangaId(entry: any): string {
 
 /**
  * Slugifies a title for search/ID purposes.
+ * @param {string} title
+ * @returns {string}
  */
-function slugify(title: string): string {
+function slugify(title) {
     if (!title) return '';
     return title.toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
 /**
- * Finds a matching entry in the library.
+ * Finds a matching entry in the library using source ID, slug, or title.
+ * @param {Array} library - Full library array
+ * @param {Object} query - Search query with title, slug, source, sourceId fields
+ * @returns {Object|undefined}
  */
-export function findEntry(library: any[], query: MangaQuery): any | undefined {
+export function findEntry(library, query) {
     const { title, slug, source, sourceId } = query;
     const normalizedTitle = slugify(title);
 
@@ -61,9 +48,12 @@ export function findEntry(library: any[], query: MangaQuery): any | undefined {
 }
 
 /**
- * Performs a fuzzy match for search.
+ * Performs a fuzzy match — true if all needle characters appear in order in haystack.
+ * @param {string} needle
+ * @param {string} haystack
+ * @returns {boolean}
  */
-export function fuzzyMatch(needle: string, haystack: string): boolean {
+export function fuzzyMatch(needle, haystack) {
     if (!needle || !haystack) return false;
     const n = needle.toLowerCase();
     const h = haystack.toLowerCase();
@@ -77,9 +67,13 @@ export function fuzzyMatch(needle: string, haystack: string): boolean {
 }
 
 /**
- * Scores a fuzzy match.
+ * Returns a numeric relevance score for a fuzzy match.
+ * Higher scores mean better matches.
+ * @param {string} needle
+ * @param {string} haystack
+ * @returns {number}
  */
-export function fuzzyScore(needle: string, haystack: string): number {
+export function fuzzyScore(needle, haystack) {
     if (!needle || !haystack) return 0;
     const n = needle.toLowerCase();
     const h = haystack.toLowerCase();
@@ -93,7 +87,7 @@ export function fuzzyScore(needle: string, haystack: string): number {
     for (let hi = 0; hi < h.length && ni < n.length; hi++) {
         if (h[hi] === n[ni]) {
             score += 10;
-            if (lastMatch === hi - 1) score += 5;
+            if (lastMatch === hi - 1) score += 5; // bonus for consecutive matches
             lastMatch = hi;
             ni++;
         }
@@ -104,12 +98,13 @@ export function fuzzyScore(needle: string, haystack: string): number {
 // ============ PERSISTENCE ============
 
 /**
- * Loads library entries.
+ * Loads and sanitizes library entries from Chrome storage.
+ * @returns {Promise<Array>}
  */
-export async function loadLibrary(): Promise<any[]> {
+export async function loadLibrary() {
     const data = await chrome.storage.local.get([DATA.LIBRARY_ENTRIES]);
     const list = data[DATA.LIBRARY_ENTRIES];
-    
+
     if (!Array.isArray(list)) return [];
 
     // Sanitize entries to ensure data integrity
@@ -134,9 +129,11 @@ export async function loadLibrary(): Promise<any[]> {
 }
 
 /**
- * Upserts an entry into the library.
+ * Upserts an entry into the library. Merges with existing by ID or title match.
+ * @param {Object} entryData - Partial or full entry data
+ * @returns {Promise<Object>} The final merged entry
  */
-export async function upsertEntry(entryData: any): Promise<any> {
+export async function upsertEntry(entryData) {
     const library = await loadLibrary();
     const id2 = getMangaId(entryData);
 
@@ -146,7 +143,7 @@ export async function upsertEntry(entryData: any): Promise<any> {
     });
 
     const now = Date.now();
-    let updatedEntry: any;
+    let updatedEntry;
 
     if (existingIdx !== -1) {
         updatedEntry = {
@@ -165,21 +162,23 @@ export async function upsertEntry(entryData: any): Promise<any> {
         library.push(updatedEntry);
     }
 
-    // Ensure array integrity
     const finalLibrary = Array.isArray(library) ? library : [];
     await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: JSON.parse(JSON.stringify(finalLibrary)) });
     return updatedEntry;
 }
 
 /**
- * Updates reading progress for an entry.
+ * Updates reading progress (chapter + URL) for a matched entry.
+ * Creates a new entry if no match is found.
+ * @param {Object} query - MangaQuery object
+ * @param {Object} progress - { chapter: string, url: string }
+ * @returns {Promise<Object>}
  */
-export async function updateProgress(query: MangaQuery, progress: ProgressUpdate): Promise<any> {
+export async function updateProgress(query, progress) {
     const library = await loadLibrary();
     const entry = findEntry(library, query);
 
     if (!entry) {
-        // Create new entry if not found
         return await upsertEntry({
             ...query,
             [LIBRARY_ENTRY_KEYS.LAST_READ_CHAPTER]: progress.chapter,
@@ -198,7 +197,6 @@ export async function updateProgress(query: MangaQuery, progress: ProgressUpdate
         entry[LIBRARY_ENTRY_KEYS.LAST_READ] = Date.now();
         entry[LIBRARY_ENTRY_KEYS.LAST_UPDATED] = Date.now();
 
-        // Ensure array integrity
         const finalLibrary = Array.isArray(library) ? library : [];
         await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: JSON.parse(JSON.stringify(finalLibrary)) });
     }
@@ -207,11 +205,14 @@ export async function updateProgress(query: MangaQuery, progress: ProgressUpdate
 }
 
 /**
- * Tracks a read chapter in the history.
+ * Tracks a read chapter in the per-manga reading history.
+ * @param {Object} mangaQuery - MangaQuery object
+ * @param {string} chapter - Chapter string to record
+ * @returns {Promise<string[]>} Updated chapter history for this manga
  */
-export async function trackReadChapter(mangaQuery: MangaQuery, chapter: string): Promise<string[]> {
+export async function trackReadChapter(mangaQuery, chapter) {
     const data = await chrome.storage.local.get([DATA.READING_HISTORY]);
-    const history = (data[DATA.READING_HISTORY] || {}) as Record<string, string[]>;
+    const history = data[DATA.READING_HISTORY] || {};
 
     // Use slug as the primary key for history if available, else standard ID
     const key = mangaQuery.slug || mangaQuery[LIBRARY_ENTRY_KEYS.MANGA_SLUG] || getMangaId(mangaQuery);
@@ -219,7 +220,7 @@ export async function trackReadChapter(mangaQuery: MangaQuery, chapter: string):
     if (!history[key]) history[key] = [];
     if (!history[key].includes(chapter)) {
         history[key].push(chapter);
-        history[key].sort((a: string, b: string) => parseFloat(a) - parseFloat(b));
+        history[key].sort((a, b) => parseFloat(a) - parseFloat(b));
         await chrome.storage.local.set({ [DATA.READING_HISTORY]: history });
     }
     return history[key];
@@ -228,17 +229,21 @@ export async function trackReadChapter(mangaQuery: MangaQuery, chapter: string):
 // ============ PERSONAL DATA ============
 
 /**
- * Loads personal data map.
+ * Loads the full personal data map (notes + ratings) from storage.
+ * @returns {Promise<Object>} Map of mangaId → { notes, rating, lastModified }
  */
-export async function loadPersonalData(): Promise<Record<string, PersonalDataEntry>> {
+export async function loadPersonalData() {
     const data = await chrome.storage.local.get([DATA.PERSONAL_DATA]);
-    return (data[DATA.PERSONAL_DATA] || {}) as Record<string, PersonalDataEntry>;
+    return data[DATA.PERSONAL_DATA] || {};
 }
 
 /**
- * Saves personal data for an entry.
+ * Saves personal data fields for a specific entry.
+ * @param {Object} entry - Library entry
+ * @param {Object} updates - Partial updates: { notes?, rating? }
+ * @returns {Promise<Object>} Updated personal data entry
  */
-export async function savePersonalData(entry: any, updates: Partial<PersonalDataEntry>): Promise<PersonalDataEntry> {
+export async function savePersonalData(entry, updates) {
     const allData = await loadPersonalData();
     const id = getMangaId(entry);
 
@@ -246,38 +251,51 @@ export async function savePersonalData(entry: any, updates: Partial<PersonalData
         ...(allData[id] || { notes: '', rating: 0 }),
         ...updates,
         lastModified: Date.now()
-    } as PersonalDataEntry;
+    };
 
     await chrome.storage.local.set({ [DATA.PERSONAL_DATA]: allData });
     return allData[id];
 }
 
 /**
- * Notes / Ratings shortcuts
+ * Saves a clamped rating (0–10) for an entry.
+ * @param {Object} entry
+ * @param {number} rating
+ * @returns {Promise<Object>}
  */
-export async function saveRating(entry: any, rating: number): Promise<PersonalDataEntry> {
+export async function saveRating(entry, rating) {
     return await savePersonalData(entry, { rating: Math.max(0, Math.min(10, rating)) });
 }
 
-export async function saveNotes(entry: any, notes: string): Promise<PersonalDataEntry> {
+/**
+ * Saves trimmed notes for an entry.
+ * @param {Object} entry
+ * @param {string} notes
+ * @returns {Promise<Object>}
+ */
+export async function saveNotes(entry, notes) {
     return await savePersonalData(entry, { notes: notes.trim() });
 }
 
 // ============ FILTER PRESETS ============
 
 /**
- * Loads filter presets.
+ * Loads saved filter presets from storage.
+ * @returns {Promise<Array>}
  */
-export async function loadFilterPresets(): Promise<any[]> {
+export async function loadFilterPresets() {
     const data = await chrome.storage.local.get([DATA.FILTER_PRESETS]);
     const presets = data[DATA.FILTER_PRESETS];
     return Array.isArray(presets) ? presets : [];
 }
 
 /**
- * Saves a filter preset.
+ * Saves or updates a named filter preset.
+ * @param {string} name - Preset name (used as key)
+ * @param {Object} filters - Filter state to persist
+ * @returns {Promise<Array>} All presets after save
  */
-export async function saveFilterPreset(name: string, filters: any): Promise<any[]> {
+export async function saveFilterPreset(name, filters) {
     const presets = await loadFilterPresets();
     const idx = presets.findIndex(p => p.name === name);
     if (idx >= 0) {
@@ -290,9 +308,11 @@ export async function saveFilterPreset(name: string, filters: any): Promise<any[
 }
 
 /**
- * Deletes a filter preset.
+ * Deletes a named filter preset.
+ * @param {string} name - Preset name to remove
+ * @returns {Promise<Array>} All presets after deletion
  */
-export async function deleteFilterPreset(name: string): Promise<any[]> {
+export async function deleteFilterPreset(name) {
     let presets = await loadFilterPresets();
     presets = presets.filter(p => p.name !== name);
     await chrome.storage.local.set({ [DATA.FILTER_PRESETS]: presets });
@@ -302,10 +322,10 @@ export async function deleteFilterPreset(name: string): Promise<any[]> {
 /**
  * Maintenance: Converts 'Reading' entries to 'Read' if inactive for >30 days.
  * @param {Array} library - Loaded library entries
- * @returns {Object} { updatedLibrary: Array, changedCount: number }
+ * @returns {{ updatedLibrary: Array, changedCount: number }}
  */
-export function autoReadStaleEntries(library: any[]): { updatedLibrary: any[], changedCount: number } {
-    const STALE_THRESHOLD = 30 * 24 * 60 * 60 * 1000; // 30 days
+export function autoReadStaleEntries(library) {
+    const STALE_THRESHOLD = 30 * 24 * 60 * 60 * 1000; // 30 days in ms
     const now = Date.now();
     let changedCount = 0;
 

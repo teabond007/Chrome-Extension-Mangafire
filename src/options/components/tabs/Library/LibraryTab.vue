@@ -66,7 +66,7 @@ import LibrarySyncProgress from './LibrarySyncProgress.vue';
 import LibraryGrid from './LibraryGrid.vue';
 
 import { getFormatName } from '../../../scripts/ui/manga-card-utils.js';
-import * as LibraryService from '../../../../scripts/core/library-service.ts';
+import * as LibraryService from '../../../../scripts/core/library-service.js';
 import { useLibraryStore } from '../../../scripts/store/library.store.js';
 import { 
     TOGGLES,

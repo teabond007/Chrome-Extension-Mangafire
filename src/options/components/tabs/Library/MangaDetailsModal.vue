@@ -138,7 +138,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import { getFormatName, getStatusInfo } from '../../../scripts/ui/manga-card-utils.js';
-import * as LibraryService from '../../../../scripts/core/library-service.ts';
+import * as LibraryService from '../../../../scripts/core/library-service.js';
 import { useLibraryStore } from '../../../scripts/store/library.store.js';
 import { DATA, LIBRARY_ENTRY_KEYS } from '../../../../config.js';
 

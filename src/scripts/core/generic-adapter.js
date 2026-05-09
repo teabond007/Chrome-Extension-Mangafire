@@ -2,7 +2,7 @@
  * @fileoverview Generic Adapter for Custom Sites + initCustomSite() function
  * A data-driven adapter that uses CustomSiteConfig to enhance manga cards
  * on user-defined websites.
- * 
+ *
  * @module core/generic-adapter
  */
 
@@ -15,39 +15,29 @@ import { TOGGLES, SETTINGS, DATA } from '../../config.js';
  * but uses runtime configuration instead of hardcoded values.
  */
 export class GenericAdapter {
-    id: string;
-    name: string;
-    unitName: string;
-    PREFIX: string;
-    displayName: string;
-    hosts: string[];
-    selectorGroups: {
-        card: string;
-        title: string;
-    }[];
-    readerSelectors: {
-        readerDetect: string;
-        readerTitle: string;
-        readerChapter: string;
-    };
-
-    private config: any;
-
     /**
      * Creates a GenericAdapter from a CustomSiteConfig.
-     * @param {CustomSiteConfig} config - User-defined site configuration
+     * @param {Object} config - User-defined site configuration
      */
-    constructor(config: any) {
+    constructor(config) {
+        /** @type {Object} */
         this.config = config;
+        /** @type {string} */
         this.id = `custom-${config.id}`;
+        /** @type {string} */
         this.name = config.name;
+        /** @type {string} */
         this.unitName = 'chapter';
+        /** @type {string} */
         this.PREFIX = `custom:${config.hostname}:`;
+        /** @type {string} */
         this.displayName = config.name;
+        /** @type {string[]} */
         this.hosts = [config.hostname];
 
         // Normalize selectors to groups
         if (Array.isArray(config.selectors)) {
+            /** @type {{ card: string, title: string }[]} */
             this.selectorGroups = config.selectors;
         } else {
             // Legacy format support
@@ -58,6 +48,7 @@ export class GenericAdapter {
         }
 
         // Reader page selectors for progress tracking
+        /** @type {{ readerDetect: string, readerTitle: string, readerChapter: string }} */
         this.readerSelectors = {
             readerDetect: config.readerSelectors?.readerDetect || '',
             readerTitle: config.readerSelectors?.readerTitle || '',
@@ -77,9 +68,9 @@ export class GenericAdapter {
     /**
      * Extracts manga data from a card element using configured selectors.
      * @param {HTMLElement} cardElement - The manga card DOM element
-     * @returns {Object} Extracted card data
+     * @returns {{ id: string, title: string, slug: string, url: string }}
      */
-    extractCardData(cardElement: HTMLElement) {
+    extractCardData(cardElement) {
         let title = '';
         let url = '';
         let id = '';
@@ -145,14 +136,13 @@ export class GenericAdapter {
         };
     }
 
-
     /**
      * Extracts a manga ID from a URL.
      * Attempts common patterns used by manga sites.
      * @param {string} url - The manga page URL
      * @returns {string} Extracted ID or empty string
      */
-    extractIdFromUrl(url: string): string {
+    extractIdFromUrl(url) {
         if (!url) return '';
 
         try {
@@ -164,7 +154,7 @@ export class GenericAdapter {
             const patterns = [
                 /\/(manga|series|title|comic|read)\/([^\/]+)/i,
                 /\/([a-f0-9-]{36})/i, // UUID
-                /\/(\d+)/i // Numeric ID
+                /\/(\d+)/i            // Numeric ID
             ];
 
             for (const pattern of patterns) {
@@ -188,7 +178,7 @@ export class GenericAdapter {
      * @param {string} title - Manga title
      * @returns {string} Slugified string
      */
-    slugify(title: string): string {
+    slugify(title) {
         if (!title) return '';
         return title.toLowerCase()
             .replace(/\s+/g, '-')
@@ -196,20 +186,11 @@ export class GenericAdapter {
     }
 
     /**
-     * Applies highlight border to a manga card element.
-     * Applies directly to the card rather than inner elements for reliability.
-
-     /**
-     * Attempts to build a chapter URL. 
-     * Returns null by default as custom sites have unpredictable URL structures.
-     */
-
-    /**
      * Checks if current page is a reader page.
      * Uses the user-configured readerDetect selector to find a signature element.
      * @returns {boolean}
      */
-    isReaderPage(): boolean {
+    isReaderPage() {
         if (this.readerSelectors.readerDetect) {
             try {
                 return !!document.querySelector(this.readerSelectors.readerDetect);
@@ -228,10 +209,10 @@ export class GenericAdapter {
     /**
      * Extracts manga title and chapter number from reader page DOM elements.
      * Uses the user-configured readerTitle and readerChapter selectors.
-     * @param {string} _url - Unused, extraction is DOM-based for custom sites
+     * @param {string} _url - Unused; extraction is DOM-based for custom sites
      * @returns {{ id?: string, slug: string, title: string, chapterNo: number } | null}
      */
-    parseUrl(_url: string): { id?: string; slug: string; title: string; chapterNo: number } | null {
+    parseUrl(_url) {
         if (!this.readerSelectors.readerTitle && !this.readerSelectors.readerChapter) {
             return null;
         }
@@ -300,6 +281,7 @@ export class GenericAdapter {
         };
     }
 
+    /** Navigates back to exit the reader. */
     exitReader() {
         window.history.back();
     }
@@ -310,14 +292,14 @@ export class GenericAdapter {
  * @param {Object} config - CustomSiteConfig from storage
  * @param {Object} settings - User settings
  */
-export async function initCustomSite(config: any, settings: any) {
+export async function initCustomSite(config, settings) {
     console.log(`[BMH-Custom] Initializing adapter for ${config.name || config.hostname}...`);
     console.log('[BMH-Custom] Config:', config);
     console.log('[BMH-Custom] Selectors:', config.selectors);
 
     // Validate that we have minimum required selectors
     const hasCard = Array.isArray(config.selectors)
-        ? config.selectors.some((s: any) => s.card)
+        ? config.selectors.some(s => s.card)
         : config.selectors?.card;
 
     if (!hasCard) {
@@ -343,7 +325,7 @@ export async function initCustomSite(config: any, settings: any) {
     console.log(`[BMH-Custom] Enhanced ${count} cards.`);
 
     // Watch for dynamic content
-    let debounceTimer: any;
+    let debounceTimer;
     const observer = new MutationObserver(() => {
         if (!chrome.runtime?.id) {
             console.log('[BMH-Custom] Extension context invalidated, disconnecting observer.');

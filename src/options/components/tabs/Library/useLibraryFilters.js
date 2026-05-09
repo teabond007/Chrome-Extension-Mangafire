@@ -1,6 +1,6 @@
 import { reactive, computed, ref } from 'vue';
 import { getFormatName } from '../../../scripts/ui/manga-card-utils.js';
-import * as LibraryService from '../../../../scripts/core/library-service.ts';
+import * as LibraryService from '../../../../scripts/core/library-service.js';
 
 export function useLibraryFilters(savedEntries, customStatuses, personalData, familyFriendlyEnabled) {
     const cardViewSize = ref('large');
