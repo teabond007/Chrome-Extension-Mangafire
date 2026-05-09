@@ -6,7 +6,7 @@
  * @module core/generic-adapter
  */
 
-import { CardEnhancer } from './card-enhancer';
+import { CardEnhancer } from './card-enhancer.js';
 import { OverlayFactory } from './overlay-factory.js';
 import { TOGGLES, SETTINGS, DATA } from '../../config.js';
 
