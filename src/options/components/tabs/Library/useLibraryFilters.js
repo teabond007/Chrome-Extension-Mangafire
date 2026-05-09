@@ -5,9 +5,7 @@ import * as LibraryService from '../../../../scripts/core/library-service.ts';
 export function useLibraryFilters(savedEntries, customStatuses, personalData, familyFriendlyEnabled) {
     const cardViewSize = ref('large');
     const listVisibleCount = ref(5);
-    const isBulkMode = ref(false);
-    const bulkStatus = ref('Reading');
-
+    
     const filters = reactive({
         sort: 'last-read-desc',
         demographic: 'All',
@@ -57,8 +55,10 @@ export function useLibraryFilters(savedEntries, customStatuses, personalData, fa
             const ani = entry.anilistData;
 
             // Family Friendly
-            if (familyFriendlyEnabled.value && ani?.genres) {
-                if (ani.genres.some(g => ['Ecchi', 'Hentai'].includes(g))) return false;
+            if (familyFriendlyEnabled.value) {
+                if (ani?.isAdult) return false;
+                if (ani?.genres?.some(g => ['Ecchi', 'Hentai'].includes(g))) return false;
+                if (ani?.tags?.some(t => ['Nudity', 'Sexual Content', 'Netorare', 'Incest', 'Rape'].includes(t.name))) return false;
             }
 
             // Status
@@ -179,8 +179,8 @@ export function useLibraryFilters(savedEntries, customStatuses, personalData, fa
     return {
         cardViewSize,
         listVisibleCount,
-        isBulkMode,
-        bulkStatus,
+     
+       
         filters,
         availableGenres,
         filteredEntries,

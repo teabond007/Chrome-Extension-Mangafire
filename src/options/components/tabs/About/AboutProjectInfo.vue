@@ -39,7 +39,7 @@
             <h4>📊 Library Management</h4>
             <ul class="feature-list">
                 <li><strong>Advanced Statistics</strong>: Visualize your library trends with detailed breakdown charts and consumption metrics.</li>
-                <li><strong>Mass Actions</strong>: Bulk-update statuses, merge duplicates, or export specific subsets of your data.</li>
+                <li><strong>Mass Actions</strong>: merge duplicates, or export specific subsets of your data.</li>
             </ul>
 
             <hr class="divider">

@@ -55,6 +55,7 @@ export interface AniListManga {
   startDate: AniListDate;
   endDate: AniListDate;
   externalLinks: AniListExternalLink[];
+  isAdult: boolean;
 }
 
 interface AniListResponse {
@@ -111,6 +112,7 @@ query ($search: String) {
         site
         language
       }
+      isAdult
     }
   }
 }

@@ -144,6 +144,9 @@ function transformToAnilistFormat(mdManga) {
     'cancelled': 'CANCELLED'
   };
 
+  // Determine isAdult from content rating
+  const isAdult = attrs.contentRating === 'erotica' || attrs.contentRating === 'pornographic';
+
   // Map content rating / demographic to format
   const formatMap = {
     'shounen': 'MANGA',
@@ -188,7 +191,8 @@ function transformToAnilistFormat(mdManga) {
     countryOfOrigin: countryMap[attrs.originalLanguage] || 'JP',
     genres: tags.filter(t => t.attributes?.group === 'genre').map(t => t.attributes.name.en),
     synonyms: [],
-    tags: [],
+    tags: tags.map(t => ({ name: t.attributes?.name?.en || 'Unknown' })),
+    isAdult: isAdult,
     chapters: attrs.lastChapter ? parseInt(attrs.lastChapter) : null,
     averageScore: null, // MangaDex doesn't provide scores via public API
     popularity: null,

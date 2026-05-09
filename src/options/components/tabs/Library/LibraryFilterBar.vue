@@ -5,11 +5,7 @@
             <div class="library-title-text">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <h2>Your Library</h2>
-                    <button 
-                        @click="$emit('toggle-bulk')" 
-                        class="btn btn-ghost btn-sm"
-                        :class="{ active: isBulkMode }"
-                    >Bulk</button>
+                  
                     <button 
                         @click="$emit('toggle-stats')" 
                         class="btn btn-ghost btn-sm"
@@ -157,13 +153,12 @@ defineProps({
     filters: Object,
     customStatuses: Array,
     availableGenres: Array,
-    isBulkMode: Boolean,
     showStats: Boolean,
     cardViewSize: String,
     sortedEntriesCount: Number
 });
 
-defineEmits(['toggle-bulk', 'toggle-stats', 'set-view-size', 'clear-filters', 'toggle-bingeworthy']);
+defineEmits(['toggle-stats', 'set-view-size', 'clear-filters', 'toggle-bingeworthy']);
 
 const settingsStore = useSettingsStore();
 

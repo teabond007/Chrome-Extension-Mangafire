@@ -20,24 +20,16 @@
                 :is-visible="showStats" 
             />
 
-            <!-- Bulk Operations Bar -->
-            <LibraryBulkOpsBar 
-                :is-bulk-mode="isBulkMode" 
-                :selected-count="sortedEntries.length"
-                @apply="applyBulkUpdate"
-                @close="isBulkMode = false"
-            />
+
 
             <!-- Library Header with Filters -->
             <LibraryFilterBar 
                 :filters="filters"
                 :custom-statuses="customStatuses"
                 :available-genres="availableGenres"
-                :is-bulk-mode="isBulkMode"
                 :show-stats="showStats"
                 :card-view-size="cardViewSize"
                 :sorted-entries-count="sortedEntries.length"
-                @toggle-bulk="isBulkMode = !isBulkMode"
                 @toggle-stats="toggleStats"
                 @set-view-size="setViewSize"
                 @clear-filters="clearFilters"
@@ -70,7 +62,6 @@ import { storeToRefs } from 'pinia';
 import { getMergedMetadata } from '../../../../scripts/core/api/metadata-service';
 import LibraryStatistics from './LibraryStatistics.vue';
 import LibraryFilterBar from './LibraryFilterBar.vue';
-import LibraryBulkOpsBar from './LibraryBulkOpsBar.vue';
 import LibrarySyncProgress from './LibrarySyncProgress.vue';
 import LibraryGrid from './LibraryGrid.vue';
 
@@ -125,7 +116,6 @@ const librarySettings = computed(() => ({
 }));
 
 const showStats = ref(false);
-const isBulkMode = ref(false);
 const visibleCount = ref(LIBRARY_CONFIG.INITIAL_LOAD);
 
 const syncState = computed(() => ({
@@ -177,7 +167,7 @@ const filteredEntries = computed(() => {
 
         // Family Friendly
         if (familyFriendlyEnabled.value && ani?.genres) {
-            if (ani.genres.some(g => ['Ecchi', 'Hentai'].includes(g))) return false;
+            if (ani.genres.some(genre => ['Ecchi', 'Hentai'].includes(genre))) return false;
         }
 
         // Status
@@ -358,25 +348,7 @@ const syncAll = async () => {
     await libraryStore.forceSync(true);
 };
 
-const applyBulkUpdate = async (newStatus) => {
-    const count = sortedEntries.value.length;
-    if (count === 0) return;
-    
-    if (confirm(`Update all ${count} filtered items to "${newStatus}"?`)) {
-        const updated = savedEntries.value.map(e => {
-            const isMatch = sortedEntries.value.some(match => match.title === e.title);
-            if (isMatch) {
-                return { ...e, status: newStatus, customStatus: null };
-            }
-            return e;
-        });
-        
-        chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: updated }, () => {
-            alert(`Updated ${count} items.`);
-            isBulkMode.value = false;
-        });
-    }
-};
+
 
 onMounted(() => {
     libraryStore.loadLibrary();
