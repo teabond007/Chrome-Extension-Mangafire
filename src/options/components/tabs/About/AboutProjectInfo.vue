@@ -9,7 +9,7 @@
             <strong>Universal Content Manager</strong> solves this by:</p>
             <ul>
                 <li><strong>Standardizing your library</strong>: A single, persistent database for all your entries, regardless of which site they come from, with dynamic pagination.</li>
-                <li><strong>Visual Context</strong>: Injecting custom UI elements (like glowing borders, reading badges, and status ribbons) directly into the websites you browse.</li>
+                <li><strong>Visual Context</strong>: Injecting custom UI elements ( reading badges, and status ribbons) directly into the websites you browse.</li>
                 <li><strong>Zero-Lock-in Sync</strong>: Seamless cross-device synchronization using your own <strong>Google Drive</strong>, keeping you in full control of your data.</li>
             </ul>
 
@@ -31,7 +31,7 @@
 
             <h4>🎨 Enhancement Suite</h4>
             <ul class="feature-list">
-                <li><strong>Smart Highlighting</strong>: Visualize your saved entries with custom colored borders, glow effects, corner status ribbons, and interactive markers.</li>
+                <li><strong>Smart Highlighting</strong>: Visualize your saved entries with custom colored borders,  corner status ribbons, and interactive markers.</li>
                 <li><strong>Auto-Scroll & Reader Tools</strong>: Floating controls for hands-free reading on any page identified as a "Reader Page".</li>
                 <li><strong>Progress Persistence</strong>: Remembers your exact scroll position and chapter history across different domains.</li>
             </ul>

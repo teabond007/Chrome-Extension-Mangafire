@@ -2,7 +2,7 @@
     <div 
         class="manga-card" 
         :class="{ 
-            'glow-effect': useGlow, 
+            
             'has-custom-status': !!entry.customStatus,
             'stale-entry': isStale
         }"
@@ -111,7 +111,7 @@ const props = defineProps({
         default: () => ({
             bordersEnabled: true,
             borderThickness: BORDER_DEFAULTS.size,
-            useGlowEffect: false,
+        
             showReadingBadges: true,
             showRibbons: true,
             smartInactivity: false
@@ -125,21 +125,12 @@ const statusInfo = computed(() => {
     return getStatusInfo(props.entry.status, props.entry.customStatus, props.customStatuses);
 });
 
-const useGlow = computed(() => props.librarySettings.bordersEnabled && props.librarySettings.useGlowEffect);
+
 
 const cardStyle = computed(() => {
     if (!props.librarySettings.bordersEnabled) return { border: 'none' };
     
-    if (useGlow.value) {
-        const t = props.librarySettings.borderThickness || BORDER_DEFAULTS.size;
-        return { 
-            '--glow-color': `${statusInfo.value.borderColor}80`,
-            '--glow-spread-1': `${t * 2.5}px`,
-            '--glow-spread-2': `${t * 5}px`,
-            '--glow-spread-3': `${t * 8}px`,
-            border: 'none'
-        };
-    }
+    
     
     const thicknessValue = props.librarySettings.borderThickness || BORDER_DEFAULTS.size;
     const thickness = `${thicknessValue}px`;
@@ -340,23 +331,7 @@ const demographic = computed(() => {
 
 /* Visual Enhancements */
 
-/* Glow effect alternative to borders */
-.glow-effect {
-    border: none !important;
-    box-shadow: 
-        0 0 var(--glow-spread-1, 10px) var(--glow-color, rgba(76, 175, 80, 0.4)),
-        0 0 var(--glow-spread-2, 20px) var(--glow-color, rgba(76, 175, 80, 0.2)),
-        0 0 var(--glow-spread-3, 35px) var(--glow-color, rgba(76, 175, 80, 0.1)),
-        inset 0 0 15px rgba(255, 255, 255, 0.05) !important;
-    
-    &:hover {
-        box-shadow: 
-            0 0 calc(var(--glow-spread-1, 10px) * 1.5) var(--glow-color, rgba(76, 175, 80, 0.6)),
-            0 0 calc(var(--glow-spread-2, 20px) * 1.5) var(--glow-color, rgba(76, 175, 80, 0.4)),
-            0 0 calc(var(--glow-spread-3, 35px) * 1.5) var(--glow-color, rgba(76, 175, 80, 0.2)),
-            inset 0 0 15px rgba(255, 255, 255, 0.1) !important;
-    }
-}
+
 
 /* Corner ribbon status */
 .manga-card-ribbon {

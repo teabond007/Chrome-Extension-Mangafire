@@ -29,7 +29,7 @@
             </GuideCard>
 
             <GuideCard id="guide-custom-list" title="Site Customization" icon="🌐">
-                Fine-tune how the extension looks on specific domains. Adjust <b>Highlight Thickness</b> and enable <b>Glowing Borders</b> or <b>Status Ribbons</b> to ensure your manga markers are clearly visible without obstructing the site's original UI.
+                Fine-tune how the extension looks on specific domains. Adjust <b>Highlight Thickness</b> and enable  or <b>Status Ribbons</b> to ensure your manga markers are clearly visible without obstructing the site's original UI.
             </GuideCard>
         </div>
 

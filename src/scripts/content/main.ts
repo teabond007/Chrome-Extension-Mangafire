@@ -23,13 +23,13 @@ if ((window as any).__BMH_INITIALIZED__) {
         // Load ALL settings needed by various adapters
         const settingsKeys = [
             SETTINGS.HIGHLIGHT_THICKNESS,
-            TOGGLES.CUSTOM_BORDER_SIZE_ENABLED,
+
             TOGGLES.CUSTOM_STATUS_ENABLED,
             DATA.CUSTOM_STATUSES,
             DATA.CUSTOM_SITES,
             TOGGLES.CUSTOM_SITE_QUICK_ACTIONS,
             TOGGLES.CUSTOM_SITE_HIGHLIGHT,
-            TOGGLES.CUSTOM_SITE_GLOW_EFFECT,
+
             TOGGLES.CUSTOM_SITE_SHOW_RIBBONS
         ];
 
@@ -49,7 +49,7 @@ if ((window as any).__BMH_INITIALIZED__) {
             if (customConfig) {
                 console.log('[BMH] Matched custom config:', customConfig);
                 const adapter = new GenericAdapter(customConfig);
-                
+
                 // Check if this is a reader page first
                 const isReader = adapter.isReaderPage();
 

@@ -18,13 +18,7 @@
                     guide-target="guide-styles"
                     full-height
                 >
-                    <div class="feature-toggle-wrapper">
-                        <div class="toggle-label-group">
-                            <label class="toggle-main-label">Custom Borders</label>
-                            <span class="toggle-sub-label">Adjust border thickness on sites</span>
-                        </div>
-                        <ToggleSwitch :id="TOGGLES.CUSTOM_BORDER_SIZE_ENABLED" v-model="customBorderSizeEnabled" />
-                    </div>
+
 
                     <div class="feature-toggle-wrapper" style="margin-top: 10px;">
                         <div class="toggle-label-group">
@@ -34,13 +28,7 @@
                         <ToggleSwitch :id="TOGGLES.CUSTOM_SITE_HIGHLIGHT" v-model="highlightEnabled" />
                     </div>
 
-                    <div class="feature-toggle-wrapper" style="margin-top: 10px;">
-                        <div class="toggle-label-group">
-                            <label class="toggle-main-label">Glow Effect</label>
-                            <span class="toggle-sub-label">Use status glow for custom sites</span>
-                        </div>
-                        <ToggleSwitch :id="TOGGLES.CUSTOM_SITE_GLOW_EFFECT" v-model="customSiteUseGlow" />
-                    </div>
+                    
 
                     <div class="feature-toggle-wrapper" style="margin-top: 10px;">
                         <div class="toggle-label-group">
@@ -83,17 +71,6 @@
 
 
 
-                    <div class="divider"></div>
-                    <p class="section-label">✨ Visual Effects</p>
-
-                    <SwitchControl 
-                        :id="TOGGLES.LIBRARY_GLOW_EFFECT" 
-                        label="Glow Effect" 
-                        sub-label="Use glow instead of solid borders" 
-                        v-model="libraryUseGlow"
-                    />
-
-
                 </SettingsCard>
             </div>
         </div>
@@ -118,13 +95,13 @@ const {
     borderStyle,
     libraryBordersEnabled,
     libraryHideNoHistory,
-    libraryUseGlow,
+ 
     libraryAnimatedBorders,
     libraryShowProgressBar,
     highlightEnabled,
     customSiteShowRibbons,
-    customSiteUseGlow,
-    customBorderSizeEnabled
+
+
 } = storeToRefs(settingsStore);
 
 const bindSetting = (refValue, key) => {
@@ -134,14 +111,14 @@ const bindSetting = (refValue, key) => {
 };
 
 bindSetting(libraryBordersEnabled, 'libraryBordersEnabled');
-bindSetting(libraryUseGlow, 'libraryUseGlow');
+
 bindSetting(libraryAnimatedBorders, 'libraryAnimatedBorders');
 
 bindSetting(libraryHideNoHistory, 'libraryHideNoHistory');
 bindSetting(highlightEnabled, 'highlightEnabled');
 bindSetting(customSiteShowRibbons, 'customSiteShowRibbons');
-bindSetting(customSiteUseGlow, 'customSiteUseGlow');
-bindSetting(customBorderSizeEnabled, 'customBorderSizeEnabled');
+
+
 
 
 

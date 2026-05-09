@@ -44,7 +44,7 @@
   "content_scripts": [
     {
       "js": [
-        "assets/main.ts-loader-48728403.js"
+        "assets/main.ts-loader-4ecc7435.js"
       ],
       "matches": [
         "*://fallback.custom-sites.local/*"
@@ -72,11 +72,11 @@
         "*://fallback.custom-sites.local/*"
       ],
       "resources": [
-        "assets/config-b84888d2.js",
+        "assets/config-4540ff39.js",
         "assets/_plugin-vue_export-helper-f599e824.js",
-        "assets/metadata-service-7c68e674.js",
-        "assets/library-service-b185a39c.js",
-        "assets/main.ts-44e4fdbd.js"
+        "assets/metadata-service-4775af25.js",
+        "assets/library-service-f2ea7f52.js",
+        "assets/main.ts-1f6830d0.js"
       ],
       "use_dynamic_url": false
     }

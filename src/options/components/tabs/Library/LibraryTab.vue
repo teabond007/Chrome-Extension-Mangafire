@@ -91,7 +91,7 @@ const {
 
 const { 
     libraryBordersEnabled, 
-    libraryUseGlow, 
+
     libraryAnimatedBorders, 
     familyFriendlyEnabled,
     customStatuses,
@@ -108,7 +108,7 @@ const librarySettings = computed(() => ({
     bordersEnabled: libraryBordersEnabled.value,
     borderThickness: highlightThickness.value,
     hideNoHistory: libraryHideNoHistory.value,
-    useGlowEffect: libraryUseGlow.value,
+
     animatedBorders: libraryAnimatedBorders.value,
     showReadingBadges: showReadingBadges.value,
     showRibbons: libraryShowRibbons.value,

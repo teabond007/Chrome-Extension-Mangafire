@@ -111,12 +111,12 @@ export const TOGGLES = {
     // Custom Sites
     CUSTOM_SITE_HIGHLIGHT: 'CustomSiteHighlightEnabled',
     CUSTOM_SITE_QUICK_ACTIONS: 'CustomSiteQuickActionsEnabled',
-    CUSTOM_BORDER_SIZE_ENABLED: 'CustomBorderSizefeatureEnabled',
+   
     CUSTOM_STATUS_ENABLED: 'CustomBookmarksfeatureEnabled',
 
     // UI Enhancements
     LIBRARY_BORDERS: 'LibraryCardBordersEnabled',
-    LIBRARY_GLOW_EFFECT: 'LibraryGlowEffect',
+  
     LIBRARY_ANIMATED_BORDERS: 'LibraryAnimatedBorders',
     LIBRARY_PROGRESS_BARS: 'LibraryProgressBars',
     LIBRARY_HIDE_NO_HISTORY: 'libraryHideNoHistory',
@@ -124,7 +124,7 @@ export const TOGGLES = {
     SHOW_READING_BADGES: 'showReadingBadges',
     LIBRARY_SHOW_RIBBONS: 'libraryShowStatusRibbon',
     CUSTOM_SITE_SHOW_RIBBONS: 'customSiteStatusRibbon',
-    CUSTOM_SITE_GLOW_EFFECT: 'customSiteGlowEffect',
+    
     IS_CUSTOM_THEME: 'isCustomTheme',
     AUTO_READ_STALE: 'autoReadStaleReading'
 };

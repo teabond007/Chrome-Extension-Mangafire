@@ -22,11 +22,10 @@ export class CardEnhancer {
     constructor(adapter, settings = {}) {
         this.adapter = adapter;
 
-        // Resolve border size — zero if custom border toggle is off
-        let borderSize = 0;
-        if (settings[TOGGLES.CUSTOM_BORDER_SIZE_ENABLED] !== false) {
-            borderSize = settings[SETTINGS.HIGHLIGHT_THICKNESS] || 4;
-        }
+        
+       
+           let borderSize = settings[SETTINGS.HIGHLIGHT_THICKNESS] || 4;
+        
 
         this.settings = {
             highlighting: settings[TOGGLES.CUSTOM_SITE_HIGHLIGHT] !== false,
@@ -34,7 +33,7 @@ export class CardEnhancer {
             quickActions: settings[TOGGLES.CUSTOM_SITE_QUICK_ACTIONS] !== false,
             newChapterBadges: settings.newChapterBadges !== false,
             showRibbons: settings[TOGGLES.CUSTOM_SITE_SHOW_RIBBONS] !== false,
-            useGlow: !!settings[TOGGLES.CUSTOM_SITE_GLOW_EFFECT],
+           
             border: {
                 size: borderSize,
                 style: settings[SETTINGS.BORDER_STYLE] || 'solid',
@@ -296,7 +295,7 @@ export class CardEnhancer {
     }
 
     /**
-     * Apply a colored border or glow effect to a card based on its library status.
+     * Apply a colored border to a card based on its library status.
      * @param {{ element: HTMLElement, data: Object }} card
      * @param {Object} entry - Library entry
      */
@@ -316,20 +315,10 @@ export class CardEnhancer {
         // Default: apply directly to the card's li wrapper (or the card itself)
         const target = card.element.closest('li') || card.element;
 
-        if (this.settings.useGlow) {
-            const t = this.settings.border.size;
-            target.style.setProperty('border', 'none', 'important');
-            target.style.setProperty('--glow-color', color + '80');
-            target.style.setProperty('box-shadow', `
-                0 0 ${t * 2.5}px var(--glow-color),
-                0 0 ${t * 5}px var(--glow-color),
-                0 0 ${t * 8}px var(--glow-color),
-                inset 0 0 15px rgba(255, 255, 255, 0.05)
-            `, 'important');
-        } else {
+       
             target.style.setProperty('border', `${this.settings.border.size}px ${style} ${color}`, 'important');
             target.style.setProperty('box-shadow', 'none', 'important');
-        }
+        
 
         target.style.setProperty('border-radius', this.settings.border.radius, 'important');
         target.style.setProperty('box-sizing', 'border-box', 'important');

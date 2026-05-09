@@ -24,7 +24,7 @@ export const useSettingsStore = defineStore('settings', {
         // General Preferences
         libraryBordersEnabled: true,
         libraryHideNoHistory: false,
-        libraryUseGlow: false,
+      
         libraryAnimatedBorders: false,
         cardViewSize: 'large', // 'compact', 'large', 'list'
         
@@ -36,7 +36,7 @@ export const useSettingsStore = defineStore('settings', {
 
         // Custom Sites (Card Enhancer)
         customSiteShowRibbons: true,
-        customSiteUseGlow: false,
+     
 
         // Reader Enhancements
         autoScroll: false,
@@ -73,7 +73,7 @@ export const useSettingsStore = defineStore('settings', {
                 TOGGLES.LIBRARY_HIDE_NO_HISTORY,
                 DATA.CUSTOM_STATUSES,
                 TOGGLES.CUSTOM_STATUS_ENABLED,
-                TOGGLES.LIBRARY_GLOW_EFFECT,
+              
                 TOGGLES.LIBRARY_ANIMATED_BORDERS,
                 TOGGLES.LIBRARY_PROGRESS_BARS,
                 TOGGLES.CUSTOM_SITE_HIGHLIGHT,
@@ -81,9 +81,9 @@ export const useSettingsStore = defineStore('settings', {
                 TOGGLES.AUTO_READ_STALE,
                 TOGGLES.LIBRARY_SHOW_RIBBONS,
                 TOGGLES.CUSTOM_SITE_SHOW_RIBBONS,
-                TOGGLES.CUSTOM_SITE_GLOW_EFFECT,
+         
                 TOGGLES.CUSTOM_SITE_QUICK_ACTIONS,
-                TOGGLES.CUSTOM_BORDER_SIZE_ENABLED
+               
             ]);
 
             this.theme = data[SETTINGS.THEME] || 'dark';
@@ -107,16 +107,16 @@ export const useSettingsStore = defineStore('settings', {
             this.customStatuses = Array.isArray(data[DATA.CUSTOM_STATUSES]) ? data[DATA.CUSTOM_STATUSES] : [];
             this.customStatusEnabled = !!data[TOGGLES.CUSTOM_STATUS_ENABLED];
             
-            this.libraryUseGlow = !!data[TOGGLES.LIBRARY_GLOW_EFFECT];
+          
             this.libraryAnimatedBorders = !!data[TOGGLES.LIBRARY_ANIMATED_BORDERS];
             this.highlightEnabled = data[TOGGLES.CUSTOM_SITE_HIGHLIGHT] !== false;
             this.familyFriendlyEnabled = !!data[TOGGLES.FAMILY_FRIENDLY];
             this.autoReadStale = !!data[TOGGLES.AUTO_READ_STALE];
             this.libraryShowRibbons = data[TOGGLES.LIBRARY_SHOW_RIBBONS] !== false;
             this.customSiteShowRibbons = data[TOGGLES.CUSTOM_SITE_SHOW_RIBBONS] !== false;
-            this.customSiteUseGlow = !!data[TOGGLES.CUSTOM_SITE_GLOW_EFFECT];
+ 
             this.quickActions = data[TOGGLES.CUSTOM_SITE_QUICK_ACTIONS] !== false;
-            this.customBorderSizeEnabled = !!data[TOGGLES.CUSTOM_BORDER_SIZE_ENABLED];
+          
 
             this.isLoaded = true;
         },
@@ -150,15 +150,14 @@ export const useSettingsStore = defineStore('settings', {
                 case 'isCustomTheme':         storagePayload[TOGGLES.IS_CUSTOM_THEME] = value; break;
                 case 'customTheme':           storagePayload[SETTINGS.CUSTOM_THEME_DATA] = value; break;
                 case 'customStatusEnabled':   storagePayload[TOGGLES.CUSTOM_STATUS_ENABLED] = value; break;
-                case 'libraryUseGlow':        storagePayload[TOGGLES.LIBRARY_GLOW_EFFECT] = value; break;
+               
                 case 'libraryAnimatedBorders': storagePayload[TOGGLES.LIBRARY_ANIMATED_BORDERS] = value; break;
                 case 'highlightEnabled':      storagePayload[TOGGLES.CUSTOM_SITE_HIGHLIGHT] = value; break;
                 case 'familyFriendlyEnabled': storagePayload[TOGGLES.FAMILY_FRIENDLY] = value; break;
                 case 'autoReadStale':         storagePayload[TOGGLES.AUTO_READ_STALE] = value; break;
                 case 'libraryShowRibbons':    storagePayload[TOGGLES.LIBRARY_SHOW_RIBBONS] = value; break;
                 case 'customSiteShowRibbons': storagePayload[TOGGLES.CUSTOM_SITE_SHOW_RIBBONS] = value; break;
-                case 'customSiteUseGlow':     storagePayload[TOGGLES.CUSTOM_SITE_GLOW_EFFECT] = value; break;
-                case 'customBorderSizeEnabled': storagePayload[TOGGLES.CUSTOM_BORDER_SIZE_ENABLED] = value; break;
+           
             }
 
             if (Object.keys(storagePayload).length > 0) {
@@ -230,15 +229,15 @@ export const useSettingsStore = defineStore('settings', {
                 this.customStatuses = Array.isArray(val) ? val : [];
             }
             if (changes[TOGGLES.CUSTOM_STATUS_ENABLED]) this.customStatusEnabled = changes[TOGGLES.CUSTOM_STATUS_ENABLED].newValue;
-            if (changes[TOGGLES.LIBRARY_GLOW_EFFECT]) this.libraryUseGlow = changes[TOGGLES.LIBRARY_GLOW_EFFECT].newValue;
+            
             if (changes[TOGGLES.LIBRARY_ANIMATED_BORDERS]) this.libraryAnimatedBorders = changes[TOGGLES.LIBRARY_ANIMATED_BORDERS].newValue;
             if (changes[TOGGLES.CUSTOM_SITE_HIGHLIGHT]) this.highlightEnabled = changes[TOGGLES.CUSTOM_SITE_HIGHLIGHT].newValue;
             if (changes[TOGGLES.FAMILY_FRIENDLY]) this.familyFriendlyEnabled = changes[TOGGLES.FAMILY_FRIENDLY].newValue;
             if (changes[TOGGLES.AUTO_READ_STALE]) this.autoReadStale = changes[TOGGLES.AUTO_READ_STALE].newValue;
             if (changes[TOGGLES.LIBRARY_SHOW_RIBBONS]) this.libraryShowRibbons = changes[TOGGLES.LIBRARY_SHOW_RIBBONS].newValue;
             if (changes[TOGGLES.CUSTOM_SITE_SHOW_RIBBONS]) this.customSiteShowRibbons = changes[TOGGLES.CUSTOM_SITE_SHOW_RIBBONS].newValue;
-            if (changes[TOGGLES.CUSTOM_SITE_GLOW_EFFECT]) this.customSiteUseGlow = changes[TOGGLES.CUSTOM_SITE_GLOW_EFFECT].newValue;
-            if (changes[TOGGLES.CUSTOM_BORDER_SIZE_ENABLED]) this.customBorderSizeEnabled = changes[TOGGLES.CUSTOM_BORDER_SIZE_ENABLED].newValue;
+           
+           
             if (changes[SETTINGS.VIEW_MODE]) this.cardViewSize = changes[SETTINGS.VIEW_MODE].newValue;
             if (changes[DATA.CUSTOM_SITES]) {
                 // Background usually handles this but we want to stay in sync if needed
