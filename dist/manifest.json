@@ -11,8 +11,7 @@
     "128": "icons/favicon128.png"
   },
   "action": {
-    "default_icon": "icons/favicon128.png",
-    "default_popup": "src/popup/popup.html"
+    "default_icon": "icons/favicon128.png"
   },
   "permissions": [
     "scripting",
@@ -44,7 +43,7 @@
   "content_scripts": [
     {
       "js": [
-        "assets/main.ts-loader-0a8e1446.js"
+        "assets/main.ts-loader-bd9b4ae6.js"
       ],
       "matches": [
         "*://fallback.custom-sites.local/*"
@@ -72,11 +71,9 @@
         "*://fallback.custom-sites.local/*"
       ],
       "resources": [
-        "assets/config-78d64d0a.js",
-        "assets/_plugin-vue_export-helper-954cfd23.js",
-        "assets/metadata-service-74cbc53a.js",
-        "assets/library-service-4f951c33.js",
-        "assets/main.ts-81266556.js"
+        "assets/metadata-service-36d0958b.js",
+        "assets/library-service-6acf1c2c.js",
+        "assets/main.ts-93f863d0.js"
       ],
       "use_dynamic_url": false
     }

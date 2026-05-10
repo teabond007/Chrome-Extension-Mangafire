@@ -8,7 +8,7 @@ import { DATA } from '../config.js';
 
 // Open options page when extension icon clicked
 chrome.action.onClicked.addListener(() => {
-  chrome.tabs.create({ url: chrome.runtime.getURL("src/options/options.html") });
+  chrome.runtime.openOptionsPage();
 });
 
 /**

@@ -176,20 +176,7 @@ const setupScrollTopListener = () => {
     }
 };
 
-/**
- * Trigger manual sync process via background script
- */
-const triggerManualSync = () => {
-    console.log("[App] Requesting bookmark sync...");
-    chrome.runtime.sendMessage({ type: "scrapeBookmarks", value: 1 }, (response) => {
-        if (chrome.runtime.lastError) {
-            console.error("[App] Sync Error: " + chrome.runtime.lastError.message);
-        }
-    });
-};
 
-// Expose globally for legacy HTML buttons if any remain
-window.triggerManualSync = triggerManualSync;
 </script>
 
 <style lang="scss">

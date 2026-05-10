@@ -57,7 +57,7 @@
         <h3 class="guide-section-header">Appearance & Data</h3>
         <div class="guide-grid">
             <GuideCard id="guide-personalization" title="Extension Appearance" icon="🌙">
-                Customize the extension's own interface (Popup and Options page). These settings are purely cosmetic and ensure the extension fits your aesthetic preferences without altering the appearance of the websites you visit.
+                Customize the extension's own interface (Options page). These settings are purely cosmetic and ensure the extension fits your aesthetic preferences without altering the appearance of the websites you visit.
             </GuideCard>
 
             <GuideCard id="guide-styles" title="Highlight Styles" icon="🖼️">
