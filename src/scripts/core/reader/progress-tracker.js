@@ -43,13 +43,12 @@ class ProgressTracker {
             return;
         }
 
-        this.currentQuery = {
-            [LIBRARY_ENTRY_KEYS.SOURCE]: this.adapter.id || this.adapter.PREFIX,
-            slug: urlData.slug,
-            title: urlData.title || '',
-            [LIBRARY_ENTRY_KEYS.SOURCE_ID]: urlData.id,
-            [LIBRARY_ENTRY_KEYS.MANGA_SLUG]: urlData.slug
-        };
+        this.currentQuery = {};
+        this.currentQuery.source = this.adapter.id || this.adapter.PREFIX;
+        this.currentQuery.slug = urlData.slug;
+        this.currentQuery.title = urlData.title || '';
+        this.currentQuery.sourceId = urlData.id;
+        this.currentQuery.mangaSlug = urlData.slug;
 
         this.currentProgress = {
             chapter: String(urlData.chapterNo),
@@ -136,14 +135,16 @@ class ProgressTracker {
      */
     notifyProgress(entry) {
         try {
+            var messageData = {
+                source: this.currentQuery.source,
+                slug: this.currentQuery.slug,
+                chapter: this.currentProgress.chapter,
+                entry: entry
+            };
+            
             chrome.runtime.sendMessage({
                 action: 'progressSaved',
-                data: { 
-                    source: this.currentQuery[LIBRARY_ENTRY_KEYS.SOURCE], 
-                    slug: this.currentQuery.slug, 
-                    chapter: this.currentProgress.chapter,
-                    entry: entry
-                }
+                data: messageData
             });
         } catch (e) {
             // Background script might not be listening

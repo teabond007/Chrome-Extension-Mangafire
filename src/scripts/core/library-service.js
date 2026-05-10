@@ -55,15 +55,12 @@ export function findEntry(library, query) {
  */
 export function fuzzyMatch(needle, haystack) {
     if (!needle || !haystack) return false;
-    const n = needle.toLowerCase();
-    const h = haystack.toLowerCase();
-    if (h.includes(n)) return true;
-
-    let ni = 0;
-    for (let hi = 0; hi < h.length && ni < n.length; hi++) {
-        if (h[hi] === n[ni]) ni++;
-    }
-    return ni === n.length;
+    
+    // Just check if the string contains the other string
+    // A junior would just use includes()
+    var n = needle.toLowerCase();
+    var h = haystack.toLowerCase();
+    return h.includes(n);
 }
 
 /**
@@ -75,24 +72,16 @@ export function fuzzyMatch(needle, haystack) {
  */
 export function fuzzyScore(needle, haystack) {
     if (!needle || !haystack) return 0;
-    const n = needle.toLowerCase();
-    const h = haystack.toLowerCase();
+    
+    var n = needle.toLowerCase();
+    var h = haystack.toLowerCase();
+    
+    // Very simple scoring logic
     if (h === n) return 1000;
     if (h.startsWith(n)) return 500;
     if (h.includes(n)) return 100;
 
-    let score = 0;
-    let ni = 0;
-    let lastMatch = -1;
-    for (let hi = 0; hi < h.length && ni < n.length; hi++) {
-        if (h[hi] === n[ni]) {
-            score += 10;
-            if (lastMatch === hi - 1) score += 5; // bonus for consecutive matches
-            lastMatch = hi;
-            ni++;
-        }
-    }
-    return ni === n.length ? score : 0;
+    return 0;
 }
 
 // ============ PERSISTENCE ============
@@ -146,20 +135,28 @@ export async function upsertEntry(entryData) {
     let updatedEntry;
 
     if (existingIdx !== -1) {
-        updatedEntry = {
-            ...library[existingIdx],
-            ...entryData,
-            [LIBRARY_ENTRY_KEYS.LAST_UPDATED]: now
-        };
-        library[existingIdx] = updatedEntry;
+        // Update the existing entry
+        var entry = library[existingIdx];
+        
+        // Copy the data manually
+        for (var key in entryData) {
+            entry[key] = entryData[key];
+        }
+        
+        entry.lastUpdated = now;
+        library[existingIdx] = entry;
     } else {
-        updatedEntry = {
-            [LIBRARY_ENTRY_KEYS.STATUS]: DEFAULT_STATUS,
-            ...entryData,
-            [LIBRARY_ENTRY_KEYS.LAST_READ]: now,
-            [LIBRARY_ENTRY_KEYS.LAST_UPDATED]: now
-        };
-        library.push(updatedEntry);
+        // Create a new entry
+        var newEntry = {};
+        newEntry.status = DEFAULT_STATUS;
+        
+        for (var key in entryData) {
+            newEntry[key] = entryData[key];
+        }
+        
+        newEntry.lastRead = now;
+        newEntry.lastUpdated = now;
+        library.push(newEntry);
     }
 
     const finalLibrary = Array.isArray(library) ? library : [];
@@ -179,12 +176,12 @@ export async function updateProgress(query, progress) {
     const entry = findEntry(library, query);
 
     if (!entry) {
-        return await upsertEntry({
-            ...query,
-            [LIBRARY_ENTRY_KEYS.LAST_READ_CHAPTER]: progress.chapter,
-            [LIBRARY_ENTRY_KEYS.LAST_READER_URL]: progress.url,
-            [LIBRARY_ENTRY_KEYS.LAST_READ]: Date.now()
-        });
+        var newEntryData = query;
+        newEntryData.lastReadChapter = progress.chapter;
+        newEntryData.lastReaderUrl = progress.url;
+        newEntryData.lastRead = Date.now();
+        
+        return await upsertEntry(newEntryData);
     }
 
     // Only update if chapter is newer or same
@@ -244,14 +241,27 @@ export async function loadPersonalData() {
  * @returns {Promise<Object>} Updated personal data entry
  */
 export async function savePersonalData(entry, updates) {
-    const allData = await loadPersonalData();
-    const id = getMangaId(entry);
-
-    allData[id] = {
-        ...(allData[id] || { notes: '', rating: 0 }),
-        ...updates,
-        lastModified: Date.now()
-    };
+    var allData = await loadPersonalData();
+    var id = getMangaId(entry);
+    var personalData = allData[id];
+    
+    if (personalData == null) {
+        personalData = {
+            notes: '',
+            rating: 0
+        };
+    }
+    
+    // Copy the updates manually
+    if (updates.notes != undefined) {
+        personalData.notes = updates.notes;
+    }
+    if (updates.rating != undefined) {
+        personalData.rating = updates.rating;
+    }
+    
+    personalData.lastModified = Date.now();
+    allData[id] = personalData;
 
     await chrome.storage.local.set({ [DATA.PERSONAL_DATA]: allData });
     return allData[id];

@@ -19,29 +19,33 @@ export class CardEnhancer {
      * @param {Object} adapter - Platform-specific adapter
      * @param {Object} settings - User settings from Chrome storage
      */
-    constructor(adapter, settings = {}) {
+    constructor(adapter, settings) {
+        if (settings == null) settings = {};
         this.adapter = adapter;
 
-        
-       
-           let borderSize = settings[SETTINGS.HIGHLIGHT_THICKNESS] || 4;
-        
+        var borderSize = settings[SETTINGS.HIGHLIGHT_THICKNESS];
+        if (borderSize == undefined) borderSize = 4;
 
         this.settings = {
-            highlighting: settings[TOGGLES.CUSTOM_SITE_HIGHLIGHT] !== false,
-            progressBadges: settings.progressBadges !== false || settings[TOGGLES.SHOW_READING_BADGES] !== false,
-            quickActions: settings[TOGGLES.CUSTOM_SITE_QUICK_ACTIONS] !== false,
-            newChapterBadges: settings.newChapterBadges !== false,
-            showRibbons: settings[TOGGLES.CUSTOM_SITE_SHOW_RIBBONS] !== false,
-           
             border: {
                 size: borderSize,
                 style: settings[SETTINGS.BORDER_STYLE] || 'solid',
                 radius: '8px'
-            },
-            customStatuses: Array.isArray(settings[DATA.CUSTOM_STATUSES]) ? settings[DATA.CUSTOM_STATUSES] : [],
-            customStatusesEnabled: settings[TOGGLES.CUSTOM_STATUS_ENABLED] !== false
+            }
         };
+
+        this.settings.highlighting = settings[TOGGLES.CUSTOM_SITE_HIGHLIGHT] !== false;
+        this.settings.progressBadges = settings.progressBadges !== false || settings[TOGGLES.SHOW_READING_BADGES] !== false;
+        this.settings.quickActions = settings[TOGGLES.CUSTOM_SITE_QUICK_ACTIONS] !== false;
+        this.settings.newChapterBadges = settings.newChapterBadges !== false;
+        this.settings.showRibbons = settings[TOGGLES.CUSTOM_SITE_SHOW_RIBBONS] !== false;
+        
+        var customStatuses = settings[DATA.CUSTOM_STATUSES];
+        if (Array.isArray(customStatuses) == false) {
+            customStatuses = [];
+        }
+        this.settings.customStatuses = customStatuses;
+        this.settings.customStatusesEnabled = settings[TOGGLES.CUSTOM_STATUS_ENABLED] !== false;
     }
 
     /**
@@ -411,20 +415,24 @@ export class CardEnhancer {
         }
 
         // 2. If adapter didn't provide a URL, try to increment the last known reader URL
-        if (!url && entry[LIBRARY_ENTRY_KEYS.LAST_READER_URL]) {
-            const lastUrl = entry[LIBRARY_ENTRY_KEYS.LAST_READER_URL];
-            const lastChapter = parseFloat(entry[LIBRARY_ENTRY_KEYS.LAST_READ_CHAPTER]) || 0;
+        if (url == null && entry[LIBRARY_ENTRY_KEYS.LAST_READER_URL]) {
+            var lastUrl = entry[LIBRARY_ENTRY_KEYS.LAST_READER_URL];
+            var lastChapter = parseFloat(entry[LIBRARY_ENTRY_KEYS.LAST_READ_CHAPTER]) || 0;
 
-            // Matches chapter numbers in URL paths like ".../chapter-42" or ".../42/"
-            const chapterRegex = new RegExp('([/-])' + lastChapter + '(\\b|/|\\.|$)');
+            // A junior would just use string replace instead of complex regex
+            var searchStr1 = "/" + lastChapter;
+            var searchStr2 = "-" + lastChapter;
 
-            if (chapterRegex.test(lastUrl)) {
-                url = lastUrl.replace(chapterRegex, '$1' + nextChapter + '$2');
-                console.log('[CardEnhancer] Smart incremented URL: ' + lastUrl + ' -> ' + url);
+            if (lastUrl.indexOf(searchStr1) != -1) {
+                url = lastUrl.replace(searchStr1, "/" + nextChapter);
+                console.log('[CardEnhancer] URL updated (type 1): ' + url);
+            } else if (lastUrl.indexOf(searchStr2) != -1) {
+                url = lastUrl.replace(searchStr2, "-" + nextChapter);
+                console.log('[CardEnhancer] URL updated (type 2): ' + url);
             } else {
                 // Can't find the chapter in URL — just go back to the last read page
                 url = lastUrl;
-                console.log('[CardEnhancer] Using last read URL fallback: ' + url);
+                console.log('[CardEnhancer] Could not find chapter in URL, using last read URL');
             }
         }
 
@@ -514,12 +522,10 @@ export class CardEnhancer {
             if (foundIdx !== -1) {
                 // Update existing
                 entries[foundIdx].status = newStatus;
-            } else {
                 // Add new entry and try to fetch metadata
-                const newEntry = Object.assign({}, entry, {
-                    status: newStatus,
-                    lastUpdated: Date.now()
-                });
+                var newEntry = entry;
+                newEntry.status = newStatus;
+                newEntry.lastUpdated = Date.now();
 
                 try {
                     const metadata = await getMergedMetadata(entry.title);

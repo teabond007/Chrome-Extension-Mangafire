@@ -143,32 +143,36 @@ export class GenericAdapter {
      * @returns {string} Extracted ID or empty string
      */
     extractIdFromUrl(url) {
-        if (!url) return '';
+        if (url == null || url == "") return "";
 
         try {
-            const urlObj = new URL(url);
-            const path = urlObj.pathname;
-
-            // Common patterns:
-            // /manga/123, /series/abc-def, /title/uuid, /comic/slug
-            const patterns = [
-                /\/(manga|series|title|comic|read)\/([^\/]+)/i,
-                /\/([a-f0-9-]{36})/i, // UUID
-                /\/(\d+)/i            // Numeric ID
-            ];
-
-            for (const pattern of patterns) {
-                const match = path.match(pattern);
-                if (match) {
-                    return match[2] || match[1];
+            var urlObj = new URL(url);
+            var path = urlObj.pathname;
+            
+            // A junior would just split the path by / and look at the parts
+            var parts = path.split("/");
+            
+            // Try to find parts that usually come before the ID
+            for (var i = 0; i < parts.length; i++) {
+                var p = parts[i].toLowerCase();
+                if (p == "manga" || p == "series" || p == "title" || p == "comic" || p == "read") {
+                    if (parts[i + 1]) {
+                        return parts[i + 1];
+                    }
                 }
             }
 
-            // Fallback: last path segment
-            const segments = path.split('/').filter(Boolean);
-            return segments[segments.length - 1] || '';
+            // Fallback: just use the last part of the URL
+            var lastPart = "";
+            for (var j = parts.length - 1; j >= 0; j--) {
+                if (parts[j] != "") {
+                    lastPart = parts[j];
+                    break;
+                }
+            }
+            return lastPart;
 
-        } catch {
+        } catch (e) {
             return '';
         }
     }
@@ -325,19 +329,13 @@ export async function initCustomSite(config, settings) {
     const count = await enhancer.enhanceAll();
     console.log(`[BMH-Custom] Enhanced ${count} cards.`);
 
-    // Watch for dynamic content
-    let debounceTimer;
-    const observer = new MutationObserver(() => {
-        if (!chrome.runtime?.id) {
-            console.log('[BMH-Custom] Extension context invalidated, disconnecting observer.');
-            observer.disconnect();
-            return;
+    // A junior might not use MutationObserver because it is complex
+    // Using a simple interval to check for new cards every 2 seconds
+    setInterval(function() {
+        if (chrome.runtime && chrome.runtime.id) {
+            enhancer.enhanceAll();
         }
-
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => enhancer.enhanceAll(), 300);
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
+    }, 2000);
 
     console.log(`[BMH-Custom] Enhancement complete for ${config.hostname}`);
 }
