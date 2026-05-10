@@ -36,9 +36,7 @@ export function useLibraryFilters(savedEntries, customStatuses, personalData, fa
         filters.demographic = 'All';
     };
 
-    const toggleBingeworthy = () => {
-        filters.chapterMin = filters.chapterMin >= 100 ? null : 100;
-    };
+ 
 
     const availableGenres = computed(() => {
         const genres = new Set();
@@ -189,7 +187,6 @@ export function useLibraryFilters(savedEntries, customStatuses, personalData, fa
         hasMoreEntries,
         setViewSize,
         clearFilters,
-        toggleBingeworthy,
         loadMoreEntries
     };
 }

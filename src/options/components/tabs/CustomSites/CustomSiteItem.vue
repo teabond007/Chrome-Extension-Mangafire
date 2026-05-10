@@ -1,6 +1,6 @@
 <template>
     <div class="site-item" :class="{ disabled: !site.enabled }">
-        <div class="site-info" @click="$emit('open', site)">
+        <div class="site-info">
             <div class="site-header">
                 <span class="site-name">{{ site.name }}</span>
                 <span class="site-status" :class="statusClass">
@@ -42,7 +42,7 @@ const props = defineProps({
     site: Object
 });
 
-const emit = defineEmits(['open', 'edit', 'edit-reader']);
+const emit = defineEmits(['edit', 'edit-reader']);
 const customSitesStore = useCustomSitesStore();
 
 const selectorStatus = computed(() => {
@@ -105,7 +105,6 @@ const deleteSite = async () => {
         display: flex;
         flex-direction: column;
         gap: 4px;
-        cursor: pointer;
 
         .site-header {
             display: flex;

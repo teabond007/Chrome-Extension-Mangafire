@@ -203,7 +203,8 @@ export class GenericAdapter {
         const path = window.location.pathname.toLowerCase();
         return path.includes('/read') ||
             path.includes('/chapter') ||
-            path.includes('/viewer');
+            path.includes('/viewer') ||
+            /chapter-\d+/i.test(path);
     }
 
     /**

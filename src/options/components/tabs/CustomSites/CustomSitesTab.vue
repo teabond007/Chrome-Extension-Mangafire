@@ -31,7 +31,6 @@
                         v-for="site in customSitesStore.sites" 
                         :key="site.id"
                         :site="site"
-                        @open="openSite"
                         @edit="editSite"
                         @edit-reader="editReaderPage"
                     />
@@ -72,12 +71,7 @@
             </SettingsCard>
         </div>
 
-        <SiteDetailModal 
-            v-if="selectedSite" 
-            :site="selectedSite" 
-            @close="selectedSite = null" 
-            @edit="editSite"
-        />
+
     </div>
 </template>
 
@@ -86,18 +80,16 @@ import { ref, onMounted } from 'vue';
 import SettingsCard from '../../common/SettingsCard.vue';
 import AddSiteForm from './AddSiteForm.vue';
 import CustomSiteItem from './CustomSiteItem.vue';
-import SiteDetailModal from './SiteDetailModal.vue';
+
 import { useCustomSitesStore } from '../../../scripts/store/custom-sites.store.js';
 import { useSettingsStore } from '../../../scripts/store/settings.store.js';
 
 const customSitesStore = useCustomSitesStore();
 const settingsStore = useSettingsStore();
 const importFileInput = ref(null);
-const selectedSite = ref(null);
 
-function openSite(site) {
-    selectedSite.value = site;
-}
+
+
 
 function injectSelectorToolOnLoad(tabId) {
     if (!tabId) return;

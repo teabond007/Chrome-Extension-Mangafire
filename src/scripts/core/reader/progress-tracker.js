@@ -3,7 +3,7 @@
  * Automatically saves chapter progress after user engagement threshold.
  */
 
-import { PROGRESS_CONFIG, LIBRARY_ENTRY_KEYS } from '../../../config.js';
+import { PROGRESS_CONFIG, LIBRARY_ENTRY_KEYS, TOGGLES } from '../../../config.js';
 import * as LibraryService from '../library-service.js';
 
 /**
@@ -27,6 +27,13 @@ class ProgressTracker {
      * Parses the current URL and schedules a progress save.
      */
     async init() {
+        // Check if progress tracking is enabled in settings
+        const settings = await chrome.storage.local.get([TOGGLES.PROGRESS_TRACKING]);
+        if (settings[TOGGLES.PROGRESS_TRACKING] === false) {
+            console.log('[ProgressTracker] Tracking disabled in settings');
+            return;
+        }
+
         const urlData = this.parseCurrentUrl();
         
         console.log('[ProgressTracker] parseCurrentUrl result:', urlData);
@@ -106,10 +113,6 @@ class ProgressTracker {
             // 3. Update entry with read chapters count from history
             if (entry) {
                 entry.readChapters = history.length;
-                // Note: LibraryService.updateProgress already saved the main progress, 
-                // but we might want to update the full list if we want it synced immediately.
-                // However, updateProgress is intended for basic progress tracking.
-                // For now, let's just ensure it's logged.
             }
 
             console.log(`[ProgressTracker] ✓ Saved progress: ${this.currentQuery.title || this.currentQuery.slug} ch.${this.currentProgress.chapter}`);
@@ -118,7 +121,6 @@ class ProgressTracker {
             this.notifyProgress(entry);
 
             // 5. Auto-fetch AniList metadata for new entries
-            // If the entry was newly created (no anilistData), request metadata
             if (entry && !entry.anilistData) {
                 this.fetchMetadataForEntry(entry.title, LibraryService.getMangaId(entry));
             }
@@ -156,7 +158,7 @@ class ProgressTracker {
             chrome.runtime.sendMessage({
                 type: 'fetchMetadata',
                 title: title,
-                storageKey: mangaId // Backward compatibility for background script
+                storageKey: mangaId 
             });
         } catch (e) {
              console.warn('[ProgressTracker] Metadata request failed:', e);

@@ -6,7 +6,7 @@
 // Selector tool - auto-initializes when ?bmh-selector-mode=true is in URL
 import './selector-tool';
 import { initCustomSite, GenericAdapter } from '../core/generic-adapter.js';
-import ReaderEnhancements from '../core/reader/reader-enhancements';
+import ProgressTracker from '../core/reader/progress-tracker.js';
 import { TOGGLES, SETTINGS, DATA } from '../../config.js';
 
 // Prevent multiple initializations in the same window/frame
@@ -52,9 +52,9 @@ if ((window as any).__BMH_INITIALIZED__) {
                 const isReader = adapter.isReaderPage();
 
                 if (isReader) {
-                    console.log('[BMH] Reader page detected, initializing reader enhancements');
-                    const enhancements = new ReaderEnhancements(adapter);
-                    await enhancements.init();
+                    console.log('[BMH] Reader page detected, initializing progress tracking');
+                    const tracker = new ProgressTracker(adapter);
+                    await tracker.init();
                 } else {
                     // Listing/Gallery page: Always enhance cards
                     console.log('[BMH] Gallery/Listing page detected, initializing card enhancements');
