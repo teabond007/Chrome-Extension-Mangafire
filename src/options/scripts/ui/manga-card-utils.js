@@ -75,25 +75,5 @@ export function getFormatName(format, country) {
     return formats[format] || 'Manga';
 }
 
-/**
- * Extracts demographic information from AniList tags.
- * Prioritizes: Seinen > Josei > Shounen > Shoujo (Detailed specs can follow user preference, but this addresses overlap)
- * 
- * @param {Array<Object>} tags - Array of tag objects from AniList.
- * @returns {string|null} The extracted demographic or null if not found.
- */
-export function getDemographic(tags) {
-    if (!tags || !Array.isArray(tags)) return null;
-    
-    // Normalize tag names to lower case for comparison
-    const tagNames = tags.map(t => t.name.toLowerCase());
-    
-    // Check for explicit demographic tags
-    if (tagNames.includes('seinen')) return 'Seinen';
-    if (tagNames.includes('josei')) return 'Josei';
-    if (tagNames.includes('shounen')) return 'Shonen';
-    if (tagNames.includes('shoujo')) return 'Shoujo';
-    
-    return null;
-}
+
 

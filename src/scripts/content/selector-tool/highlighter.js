@@ -117,21 +117,36 @@ export function getFrozenElement() {
  * @returns {boolean} True if the class is likely stable and meaningful
  */
 function isStableClass(cls) {
-    if (!cls || cls.length < 2) return false;
-    if (cls.startsWith('_') || cls.startsWith('css-')) return false;
-    if (/^[a-z]+[0-9]+$/i.test(cls)) return false;
-    if (/[0-9]{3,}/.test(cls)) return false;
+    if (cls == null || cls.length < 2) return false;
+    
+    if (cls.startsWith('_')) return false;
+    if (cls.startsWith('css-')) return false;
+    
+    var numberCount = 0;
+    for (var i = 0; i < cls.length; i++) {
+        if (!isNaN(parseInt(cls[i]))) {
+            numberCount++;
+        }
+    }
+    
+    if (numberCount > 2) return false;
+    
     return true;
 }
 
 function buildSegment(node) {
-    const tag = node.tagName.toLowerCase();
-    const stableClasses = Array.from(node.classList)
-        .filter(isStableClass)
-        .map(cls => CSS.escape(cls));
+    var tag = node.tagName.toLowerCase();
+    var classes = "";
+    
+    for (var i = 0; i < node.classList.length; i++) {
+        var cls = node.classList[i];
+        if (isStableClass(cls)) {
+            classes += "." + CSS.escape(cls);
+        }
+    }
 
-    if (stableClasses.length > 0) {
-        return `${tag}.${stableClasses.join('.')}`;
+    if (classes.length > 0) {
+        return tag + classes;
     }
     return tag;
 }
@@ -143,11 +158,11 @@ function buildSegment(node) {
  * @returns {string[]} Path segments from root to element, e.g. ["body", "div.wrapper", "main", "div.container", ...]
  */
 function buildDomPath(element) {
-    const segments = [];
-    let node = element;
+    var segments = [];
+    var node = element;
 
-    while (node && node !== document.documentElement) {
-        if (node === document.body) {
+    while (node != null && node != document.documentElement) {
+        if (node == document.body) {
             segments.unshift('body');
             break;
         }
@@ -159,35 +174,31 @@ function buildDomPath(element) {
     return segments;
 }
 
-/**
- * Converts a path segments array into a CSS selector string using child combinators.
- * @param {string[]} segments
- * @returns {string}
- */
-function pathToSelector(segments) {
-    return segments.join(' > ');
-}
-
-/**
- * Generalizes a DOM path at a specific segment index.
- * Strips classes from the target segment (keeping only the tag name)
- * and discards all segments after it, producing a selector that
- * matches all siblings at that structural depth.
- * @param {string[]} fullPathSegments - The full path from buildDomPath()
- * @param {number} targetIndex - Index of the segment to generalize (0-based)
- * @returns {string} Generalized CSS selector
- */
 function generalizePath(fullPathSegments, targetIndex) {
-    if (fullPathSegments.length === 0) return '';
-
-    const clamped = Math.max(0, Math.min(targetIndex, fullPathSegments.length - 1));
-    // Take segments up to and including the target
-    const trimmed = fullPathSegments.slice(0, clamped + 1);
-    // Strip classes from the target segment, keep only the tag
-    const targetSegment = trimmed[trimmed.length - 1];
-    trimmed[trimmed.length - 1] = targetSegment.split('.')[0];
-
-    return pathToSelector(trimmed);
+    if (fullPathSegments.length == 0) return "";
+    
+    var index = targetIndex;
+    if (index < 0) index = 0;
+    if (index >= fullPathSegments.length) index = fullPathSegments.length - 1;
+    
+    var pathStr = "";
+    
+    for (var i = 0; i <= index; i++) {
+        var segment = fullPathSegments[i];
+        
+        if (i == index) {
+            var parts = segment.split(".");
+            segment = parts[0];
+        }
+        
+        pathStr += segment;
+        
+        if (i < index) {
+            pathStr += " > ";
+        }
+    }
+    
+    return pathStr;
 }
 
 /**

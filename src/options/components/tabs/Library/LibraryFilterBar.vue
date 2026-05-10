@@ -49,13 +49,7 @@
                 <option value="rating-asc">My Rating ↑</option>
             </select>
 
-            <select v-model="filters.demographic" class="select-field">
-                <option value="All">All Demographics</option>
-                <option value="Shonen">Shonen</option>
-                <option value="Seinen">Seinen</option>
-                <option value="Shoujo">Shoujo</option>
-                <option value="Josei">Josei</option>
-            </select>
+
 
             <select v-model="filters.status" class="select-field">
                 <option value="All">All Statuses</option>
@@ -137,7 +131,6 @@ defineProps({
     customStatuses: Array,
     availableGenres: Array,
     showStats: Boolean,
-    cardViewSize: String,
     sortedEntriesCount: Number
 });
 

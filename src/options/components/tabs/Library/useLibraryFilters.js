@@ -8,7 +8,6 @@ export function useLibraryFilters(savedEntries, customStatuses, personalData, fa
     
     const filters = reactive({
         sort: 'last-read-desc',
-        demographic: 'All',
         status: 'All',
         genre: 'All',
         format: 'All',
@@ -33,7 +32,6 @@ export function useLibraryFilters(savedEntries, customStatuses, personalData, fa
         filters.status = 'All';
         filters.genre = 'All';
         filters.format = 'All';
-        filters.demographic = 'All';
     };
 
  
@@ -93,11 +91,7 @@ export function useLibraryFilters(savedEntries, customStatuses, personalData, fa
                 if (!titleMatch && !authorMatch) return false;
             }
 
-            // Demographic
-            if (filters.demographic !== "All") {
-                const targetDemo = filters.demographic.toLowerCase();
-                if (!ani?.tags?.some(t => t.name.toLowerCase() === targetDemo)) return false;
-            }
+
 
             // Chapter Range
             const chapterMin = filters.chapterMin || 0;

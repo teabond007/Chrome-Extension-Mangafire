@@ -135,22 +135,15 @@ export const useLibraryStore = defineStore('library', {
             console.log(`[LibraryStore] filter complete. Count: ${beforeCount} -> ${afterCount}`);
 
             // CRITICAL: Convert to plain JS object/array before saving to storage.
-            // Vue/Pinia Proxies can sometimes cause issues with chrome.storage serialization.
+            // Vue/Pinia Proxies can cause issues. We use JSON stringify to strip all proxies simply.
             try {
-                const plainEntries = JSON.parse(JSON.stringify(this.entries));
+                var plainString = JSON.stringify(this.entries);
+                var plainEntries = JSON.parse(plainString);
                 console.log('[LibraryStore] saving plainEntries to storage. Length:', plainEntries.length);
                 
-                await new Promise((resolve, reject) => {
-                    chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: plainEntries }, () => {
-                        if (chrome.runtime.lastError) {
-                            console.error('[LibraryStore] Storage set error:', chrome.runtime.lastError);
-                            reject(chrome.runtime.lastError);
-                        } else {
-                            console.log('[LibraryStore] Storage set successful');
-                            resolve();
-                        }
-                    });
-                });
+                // Set directly without complex Promise wrappers
+                await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: plainEntries });
+                console.log('[LibraryStore] Storage set successful');
             } catch (err) {
                 console.error('[LibraryStore] Failed to save removed entry to storage:', err);
             }
@@ -235,15 +228,20 @@ export const useLibraryStore = defineStore('library', {
             console.log(wipeAll ? "Starting full forced library sync..." : "Starting missing info sync...");
 
             try {
-                let updatedEntries = [...this.entries];
+                var updatedEntries = [];
+                
+                for (var i = 0; i < this.entries.length; i++) {
+                    var entry = this.entries[i];
+                    
+                    if (wipeAll == true) {
+                        entry.anilistData = undefined;
+                        entry.lastChecked = undefined;
+                    }
+                    
+                    updatedEntries.push(entry);
+                }
 
-                if (wipeAll) {
-                    updatedEntries = updatedEntries.map(e => ({
-                        ...e,
-                        anilistData: undefined,
-                        lastChecked: undefined
-                    }));
-
+                if (wipeAll == true) {
                     await wipeMangadexCache();
                     console.log("Cleared MangaDex cache.");
                 }
@@ -288,7 +286,9 @@ export const useLibraryStore = defineStore('library', {
                     // Use centralized metadata service
                     const data = await getMergedMetadata(liveEntry.title);
 
-                    if (data) Object.assign(liveEntry, { anilistData: data });
+                    if (data != null) {
+                        liveEntry.anilistData = data;
+                    }
                     liveEntry.lastChecked = Date.now();
                     
                     // Throttle

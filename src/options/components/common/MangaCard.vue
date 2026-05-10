@@ -60,9 +60,7 @@
                         {{ formatName }}
                     </div>
                     
-                    <div v-if="demographic" :class="['info-item', 'format-badge', `demo-${demographic.toLowerCase()}`]" style="margin-left: 4px;">
-                        {{ demographic }}
-                    </div>
+
 
                     <div v-if="librarySettings.showReadingBadges" class="info-item">
                         <template v-if="entry.anilistData.chapters">
@@ -85,7 +83,7 @@
 
 <script setup>
 import { computed, ref, onMounted } from 'vue';
-import { getStatusInfo, getFormatName, getDemographic } from '../../scripts/ui/manga-card-utils.js';
+import { getStatusInfo, getFormatName } from '../../scripts/ui/manga-card-utils.js';
 import { BORDER_DEFAULTS, LIBRARY_ENTRY_KEYS } from '../../../config.js';
 
 // Fallback placeholder - base64 encoded or remote fallback
@@ -159,9 +157,7 @@ const formatName = computed(() => {
     return getFormatName(props.entry.anilistData.format, props.entry.anilistData.countryOfOrigin);
 });
 
-const demographic = computed(() => {
-    return getDemographic(props.entry.anilistData?.tags);
-});
+
 </script>
 
 <style scoped lang="scss">
