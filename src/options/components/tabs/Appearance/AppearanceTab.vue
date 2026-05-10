@@ -20,23 +20,23 @@
                 >
 
 
-                    <div class="feature-toggle-wrapper" style="margin-top: 10px;">
-                        <div class="toggle-label-group">
-                            <label class="toggle-main-label">Enable Highlighting</label>
-                            <span class="toggle-sub-label">Highlight found manga on sites</span>
-                        </div>
-                        <ToggleSwitch :id="TOGGLES.CUSTOM_SITE_HIGHLIGHT" v-model="highlightEnabled" />
-                    </div>
+                    <SwitchControl 
+                        :id="TOGGLES.CUSTOM_SITE_HIGHLIGHT" 
+                        label="Enable Highlighting" 
+                        sub-label="Highlight found manga on sites" 
+                        v-model="highlightEnabled"
+                        margin-top
+                    />
 
                     
 
-                    <div class="feature-toggle-wrapper" style="margin-top: 10px;">
-                        <div class="toggle-label-group">
-                            <label class="toggle-main-label">Status Ribbons</label>
-                            <span class="toggle-sub-label">Show status corner ribbons</span>
-                        </div>
-                        <ToggleSwitch :id="TOGGLES.CUSTOM_SITE_SHOW_RIBBONS" v-model="customSiteShowRibbons" />
-                    </div>
+                    <SwitchControl 
+                        :id="TOGGLES.CUSTOM_SITE_SHOW_RIBBONS" 
+                        label="Status Ribbons" 
+                        sub-label="Show status corner ribbons" 
+                        v-model="customSiteShowRibbons"
+                        margin-top
+                    />
 
                     <div class="divider"></div>
 
@@ -80,7 +80,7 @@
 <script setup>
 import { watch } from 'vue';
 import { storeToRefs } from 'pinia';
-import ToggleSwitch from '../../common/ToggleSwitch.vue';
+
 import SwitchControl from '../../common/SwitchControl.vue';
 import SettingsCard from '../../common/SettingsCard.vue';
 import ThemeSelector from './ThemeSelector.vue';

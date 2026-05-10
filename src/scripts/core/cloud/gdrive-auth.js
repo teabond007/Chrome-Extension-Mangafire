@@ -1,10 +1,7 @@
 /**
  * @fileoverview Google Drive authentication module using chrome.identity API.
- * Handles OAuth2 token management for Drive appDataFolder access.
+ * Handles OAuth2 token management for Drive appDataFolder access and storage.
  * 
- * Required manifest.json configuration:
- * - permissions: ["identity"]
- * - oauth2: { client_id: "...", scopes: ["https://www.googleapis.com/auth/drive.appdata"] }
  */
 
 const SCOPES = ['https://www.googleapis.com/auth/drive.appdata'];
