@@ -57,7 +57,7 @@ export function fuzzyMatch(needle, haystack) {
     if (!needle || !haystack) return false;
     
     // Just check if the string contains the other string
-    // A junior would just use includes()
+    // Use includes() for a simple fuzzy check
     var n = needle.toLowerCase();
     var h = haystack.toLowerCase();
     return h.includes(n);

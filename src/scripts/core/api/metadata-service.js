@@ -4,7 +4,7 @@
  * I moved this here so we don't have the same code in two places.
  */
 
-import { fetchMangaFromAnilist } from './anilist-api';
+import { fetchMangaFromAnilist } from './anilist-api.js';
 import { fetchMangaFromMangadex } from './mangadex-api.js';
 
 // This function gets the data and mixes it together

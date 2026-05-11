@@ -3,7 +3,7 @@
  * Creates compact hover tooltip with quick actions for manga/webtoon cards.
  * Platform-agnostic: works with any adapter that provides required configuration.
  * 
- * Part of Phase 2.2: Quick Actions Overlay
+ * Provides the Quick Actions Overlay
  * @module core/overlay-factory
  * @version 3.8.1
  */
@@ -469,7 +469,7 @@ export class OverlayFactory {
         
         // Listen for the custom event if we use a different mounting strategy,
         // but here we can just pass callbacks as props for simplicity or use provide/inject.
-        // Let's update QuickActions.vue to accept callbacks as props for Phase 1.
+        // QuickActions.vue accepts callbacks as props.
         
         return app;
     }

@@ -1,229 +1,236 @@
 /**
  * @fileoverview Google Drive sync operations for manga library backup.
- * Uses the appDataFolder space for hidden, app-specific storage.
- * 
- * The appDataFolder is:
- * - Hidden from user's Drive file view
- * - Automatically deleted if the app is uninstalled
- * - Perfect for app-specific sync data
+ * This file handles uploading and downloading data from Google Drive.
+
  */
 
 import { getAuthToken } from './gdrive-auth.js';
 import { DATA } from '../../../config.js';
 
-const BACKUP_FILENAME = 'manga_colormarker_sync.json';
-const DRIVE_API_BASE = 'https://www.googleapis.com/drive/v3';
-const DRIVE_UPLOAD_BASE = 'https://www.googleapis.com/upload/drive/v3';
+var BACKUP_FILENAME = 'manga_colormarker_sync.json';
+var DRIVE_API_BASE = 'https://www.googleapis.com/drive/v3';
+var DRIVE_UPLOAD_BASE = 'https://www.googleapis.com/upload/drive/v3';
 
 /**
- * Uploads backup data to Google Drive appDataFolder.
- * Creates new file on first sync, updates existing file on subsequent syncs.
- * 
- * @param {Object} data - The backup data object (library, history, settings)
- * @returns {Promise<{fileId: string, syncTime: number}>}
- * @throws {Error} If upload fails
+ * Uploads all our extension data to Google Drive appDataFolder.
+ * This makes sure your library is safe if you uninstall the extension.
+ * @param {Object} data - The data object to backup
+ * @returns {Promise<Object>} Results with fileId and syncTime
  */
 export async function uploadBackup(data) {
-    const token = await getAuthToken();
-    const syncTime = Date.now();
+    var token = await getAuthToken();
+    var now = Date.now();
     
-    // Add sync metadata to payload
-    const payload = {
-        ...data,
-        syncTimestamp: syncTime,
-        syncVersion: '1.0',
-        extensionVersion: chrome.runtime?.getManifest?.()?.version || 'unknown'
-    };
+    // We create a copy of the data so we don't change the original
+    var payload = {};
+    for (var key in data) {
+        payload[key] = data[key];
+    }
+    
+    // Add some info about when this was saved
+    payload.syncTimestamp = now;
+    payload.syncVersion = '1.0';
 
-    // Check if backup file already exists
-    const existingFile = await findBackupFile(token);
+    // We check if a backup file already exists on Google Drive
+    var existingFile = await findBackupFile(token);
 
-    // Prepare metadata
-    const metadata = {
+    // Information about the file we are saving
+    var metadata = {
         name: BACKUP_FILENAME,
         mimeType: 'application/json'
     };
 
-    // Only set parents for new files
-    if (!existingFile) {
+    // If it's the first time, we tell Google to put it in the hidden app folder
+    if (existingFile == null) {
         metadata.parents = ['appDataFolder'];
     }
 
-    // Create multipart form for upload
-    const boundary = '---ColorMarkerSync' + Date.now();
-    const body = createMultipartBody(boundary, metadata, payload);
+    // We build a multipart body manually. 
+    // This allows sending the file description (metadata) and the file content (payload) together.
+    var boundary = '---ColorMarkerSyncBoundary---' + now;
+    var body = "";
+    body += "--" + boundary + "\r\n";
+    body += "Content-Type: application/json; charset=UTF-8\r\n\r\n";
+    body += JSON.stringify(metadata) + "\r\n";
+    body += "--" + boundary + "\r\n";
+    body += "Content-Type: application/json\r\n\r\n";
+    body += JSON.stringify(payload, null, 2) + "\r\n";
+    body += "--" + boundary + "--";
 
-    // Determine URL based on create vs update
-    const url = existingFile
-        ? `${DRIVE_UPLOAD_BASE}/files/${existingFile.id}?uploadType=multipart`
-        : `${DRIVE_UPLOAD_BASE}/files?uploadType=multipart`;
-
-    const response = await fetch(url, {
-        method: existingFile ? 'PATCH' : 'POST',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': `multipart/related; boundary=${boundary}`
-        },
-        body
-    });
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Upload failed: ${response.status} - ${errorText}`);
+    var url = "";
+    var method = "";
+    
+    if (existingFile != null) {
+        // Update the existing file
+        url = DRIVE_UPLOAD_BASE + "/files/" + existingFile.id + "?uploadType=multipart";
+        method = 'PATCH';
+    } else {
+        // Create a new file
+        url = DRIVE_UPLOAD_BASE + "/files?uploadType=multipart";
+        method = 'POST';
     }
 
-    const result = await response.json();
-    return { fileId: result.id, syncTime };
+    var response = await fetch(url, {
+        method: method,
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'multipart/related; boundary=' + boundary
+        },
+        body: body
+    });
+
+    if (response.ok == false) {
+        var errorText = await response.text();
+        console.error("Upload failed with status: " + response.status);
+        throw new Error('Google Drive upload failed');
+    }
+
+    var result = await response.json();
+    return { fileId: result.id, syncTime: now };
 }
 
 /**
- * Downloads the latest backup from Google Drive.
- * 
- * @returns {Promise<Object|null>} Backup data object, or null if no backup exists
- * @throws {Error} If download fails (but not if file doesn't exist)
+ * Downloads the latest backup file from Google Drive.
+ * @returns {Promise<Object|null>} The data or null if not found
  */
 export async function downloadBackup() {
-    const token = await getAuthToken();
-    const file = await findBackupFile(token);
+    var token = await getAuthToken();
+    var file = await findBackupFile(token);
 
-    if (!file) {
+    if (file == null) {
         return null;
     }
 
-    const response = await fetch(`${DRIVE_API_BASE}/files/${file.id}?alt=media`, {
+    // We ask for the "media" content of the file
+    var response = await fetch(DRIVE_API_BASE + "/files/" + file.id + "?alt=media", {
         headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': 'Bearer ' + token
         }
     });
 
-    if (!response.ok) {
-        throw new Error(`Download failed: ${response.status}`);
+    if (response.ok == false) {
+        throw new Error('Google Drive download failed: ' + response.status);
     }
 
-    return response.json();
+    var data = await response.json();
+    return data;
 }
 
 /**
- * Gets info about the cloud backup without downloading full content.
- * 
- * @returns {Promise<{id: string, size: string, modifiedTime: string, entryCount: number}|null>}
+ * Gets some basic info about the backup file without downloading everything.
+ * @param {string} [providedToken] - Optional token to use
+ * @returns {Promise<Object|null>} File info
  */
 export async function getBackupInfo(providedToken = null) {
-    const token = providedToken || await getAuthToken();
-    const file = await findBackupFile(token);
+    var token = providedToken;
+    if (token == null) {
+        token = await getAuthToken();
+    }
+    
+    var file = await findBackupFile(token);
 
-    if (!file) {
+    if (file == null) {
         return null;
     }
 
-    // Get file metadata including size
-    const response = await fetch(
-        `${DRIVE_API_BASE}/files/${file.id}?fields=id,name,size,modifiedTime`,
-        { headers: { 'Authorization': `Bearer ${token}` } }
+    // Get the file details like size and date
+    var response = await fetch(
+        DRIVE_API_BASE + "/files/" + file.id + "?fields=id,name,size,modifiedTime",
+        { headers: { 'Authorization': 'Bearer ' + token } }
     );
 
-    if (!response.ok) {
+    if (response.ok == false) {
         return null;
     }
 
-    const metadata = await response.json();
+    var metadata = await response.json();
 
-    // To get entry count, we unfortunately have to download the file.
-    // But let's use the token we already have.
-    const downloadResponse = await fetch(`${DRIVE_API_BASE}/files/${file.id}?alt=media`, {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
+    // To find out how many manga are in the backup, we have to look inside the file
+    var downloadResponse = await fetch(DRIVE_API_BASE + "/files/" + file.id + "?alt=media", {
+        headers: { 'Authorization': 'Bearer ' + token }
     });
 
-    let entryCount = 0;
+    var mangaCount = 0;
     if (downloadResponse.ok) {
-        const data = await downloadResponse.json();
-        entryCount = Array.isArray(data?.[DATA.LIBRARY_ENTRIES]) ? data[DATA.LIBRARY_ENTRIES].length : 0;
+        var data = await downloadResponse.json();
+        if (data && data[DATA.LIBRARY_ENTRIES]) {
+            if (Array.isArray(data[DATA.LIBRARY_ENTRIES])) {
+                mangaCount = data[DATA.LIBRARY_ENTRIES].length;
+            }
+        }
     }
 
     return {
         id: metadata.id,
         size: formatBytes(parseInt(metadata.size || '0')),
         modifiedTime: new Date(metadata.modifiedTime).toLocaleString(),
-        entryCount
+        entryCount: mangaCount
     };
 }
 
 /**
  * Deletes the backup file from Google Drive.
- * 
- * @returns {Promise<boolean>} True if deleted, false if no file existed
+ * @returns {Promise<boolean>} True if it worked
  */
 export async function deleteBackup() {
-    const token = await getAuthToken();
-    const file = await findBackupFile(token);
+    var token = await getAuthToken();
+    var file = await findBackupFile(token);
 
-    if (!file) {
+    if (file == null) {
         return false;
     }
 
-    const response = await fetch(`${DRIVE_API_BASE}/files/${file.id}`, {
+    var response = await fetch(DRIVE_API_BASE + "/files/" + file.id, {
         method: 'DELETE',
         headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': 'Bearer ' + token
         }
     });
 
-    return response.ok || response.status === 404;
+    return response.ok;
 }
 
-// ============ Private Helper Functions ============
-
 /**
- * Finds the backup file in appDataFolder.
- * @private
+ * Internal function to find the backup file in the hidden appData folder.
+ * @param {string} token - OAuth2 token
+ * @returns {Promise<Object|null>} The file object or null
  */
 async function findBackupFile(token) {
-    const query = encodeURIComponent(`name='${BACKUP_FILENAME}'`);
-    const url = `${DRIVE_API_BASE}/files?spaces=appDataFolder&q=${query}&fields=files(id,name,modifiedTime)`;
+    var nameFilter = encodeURIComponent("name='" + BACKUP_FILENAME + "'");
+    var url = DRIVE_API_BASE + "/files?spaces=appDataFolder&q=" + nameFilter + "&fields=files(id,name,modifiedTime)";
 
-    const response = await fetch(url, {
-        headers: { 'Authorization': `Bearer ${token}` }
+    var response = await fetch(url, {
+        headers: { 'Authorization': 'Bearer ' + token }
     });
 
-    if (!response.ok) {
+    if (response.ok == false) {
         return null;
     }
 
-    const data = await response.json();
-    return data.files?.[0] || null;
+    var result = await response.json();
+    if (result.files && result.files.length > 0) {
+        return result.files[0];
+    }
+    
+    return null;
 }
 
 /**
- * Creates multipart body for Drive upload.
- * @private
- */
-function createMultipartBody(boundary, metadata, content) {
-    const delimiter = `--${boundary}`;
-    const closeDelimiter = `--${boundary}--`;
-
-    return [
-        delimiter,
-        'Content-Type: application/json; charset=UTF-8',
-        '',
-        JSON.stringify(metadata),
-        delimiter,
-        'Content-Type: application/json',
-        '',
-        JSON.stringify(content, null, 2),
-        closeDelimiter
-    ].join('\r\n');
-}
-
-/**
- * Formats bytes to human-readable string.
- * @private
+ * Converts bytes into a readable string like "500 KB" or "2.5 MB".
+ * @param {number} bytes - The size in bytes
+ * @returns {string} Human readable size
  */
 function formatBytes(bytes) {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    if (bytes == 0) return '0 B';
+    
+    // We check the size manually with simple math
+    if (bytes < 1024) {
+        return bytes + " B";
+    } else if (bytes < 1024 * 1024) {
+        return (bytes / 1024).toFixed(1) + " KB";
+    } else if (bytes < 1024 * 1024 * 1024) {
+        return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+    } else {
+        return (bytes / (1024 * 1024 * 1024)).toFixed(1) + " GB";
+    }
 }

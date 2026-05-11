@@ -1,49 +1,35 @@
 /**
  * @fileoverview Google Drive authentication module using chrome.identity API.
- * Handles OAuth2 token management for Drive appDataFolder access and storage.
- * 
- */
+ * This file handles logging in with Google and getting the access token.
 
-const SCOPES = ['https://www.googleapis.com/auth/drive.appdata'];
+ */
 
 /**
- * Retrieves an OAuth2 access token, prompting user login if needed.
- * Uses chrome.identity.getAuthToken for seamless Chrome extension OAuth.
- * 
- * @param {boolean} interactive - If true, shows OAuth consent screen when needed
- * @returns {Promise<string>} The OAuth access token
- * @throws {Error} If authentication fails or user denies consent
+ * This function gets a login token from Google.
+ * If interactive is true, it will show a popup to the user.
+ * @param {boolean} interactive - If we should show the login popup or not
+ * @returns {Promise<string>} The token
  */
 export async function getAuthToken(interactive = true) {
-    return new Promise((resolve, reject) => {
-        // Check if running in extension context
-        if (typeof chrome === 'undefined') {
-            reject(new Error('chrome object not defined. Are you running in a browser?'));
-            return;
-        }
-        
-        if (!chrome.identity) {
-            // More detailed error with available chrome APIs
-            const availableApis = Object.keys(chrome).join(', ');
-            reject(new Error(`chrome.identity not available. Available APIs: ${availableApis}. Protocol: ${location.protocol}`));
-            return;
-        }
-        
-        if (!chrome.identity.getAuthToken) {
-            reject(new Error('chrome.identity.getAuthToken not available. Make sure identity permission is in manifest.'));
+    return new Promise(function(resolve, reject) {
+        // We check if we are actually in a chrome extension environment
+        if (typeof chrome === 'undefined' || !chrome.identity) {
+            reject(new Error('Chrome identity API not found. Are you in the extension?'));
             return;
         }
 
-        chrome.identity.getAuthToken({ interactive }, (token) => {
+        // We ask chrome to give us the OAuth2 token
+        chrome.identity.getAuthToken({ interactive: interactive }, function(token) {
             if (chrome.runtime.lastError) {
-                const errorMsg = chrome.runtime.lastError.message || 'Authentication failed';
-                // Provide more helpful error messages
-                if (errorMsg.includes('OAuth2 not granted')) {
+                var errorMessage = chrome.runtime.lastError.message || 'Authentication failed';
+                
+                // Map common errors to user-friendly messages
+                if (errorMessage.indexOf('OAuth2 not granted') != -1) {
                     reject(new Error('Please allow the extension to access your Google account'));
-                } else if (errorMsg.includes('user did not approve')) {
-                    reject(new Error('Sign-in was cancelled'));
+                } else if (errorMessage.indexOf('user did not approve') != -1) {
+                    reject(new Error('Sign-in was cancelled by user'));
                 } else {
-                    reject(new Error(errorMsg));
+                    reject(new Error(errorMessage));
                 }
             } else if (!token) {
                 reject(new Error('No token received from Google'));
@@ -56,77 +42,70 @@ export async function getAuthToken(interactive = true) {
 }
 
 /**
- * Revokes the cached OAuth token and signs the user out.
- * Also invalidates the token on Google's servers.
- * 
- * @returns {Promise<void>}
+ * This logs the user out by removing the token.
  */
 export async function revokeToken() {
     try {
-        const token = await getAuthToken(false);
+        // We try to get the current token without showing a popup
+        var token = await getAuthToken(false);
+        
         if (token) {
-            // Revoke on Google's servers
-            await fetch(`https://accounts.google.com/o/oauth2/revoke?token=${token}`);
+            // We tell Google to revoke (cancel) the token
+            await fetch('https://accounts.google.com/o/oauth2/revoke?token=' + token);
             
-            // Remove from Chrome's cache
-            return new Promise((resolve) => {
-                chrome.identity.removeCachedAuthToken({ token }, () => {
+            // We also remove it from the browser's memory
+            return new Promise(function(resolve) {
+                chrome.identity.removeCachedAuthToken({ token: token }, function() {
                     resolve();
                 });
             });
         }
-    } catch (error) {
-        // Token might already be invalid, that's fine
-        console.log('[GDrive Auth] Token already revoked or invalid');
+    } catch (err) {
+        // If we couldn't get a token, the user is probably already logged out
+        console.log('[GDriveAuth] Already logged out or token is gone');
     }
 }
 
 /**
- * Checks if user has a valid cached token (is signed in).
- * Uses non-interactive check to avoid prompting user.
- * 
- * @returns {Promise<boolean>} True if user is signed in
+ * Checks if the user is currently signed in.
+ * @returns {Promise<boolean>} True if signed in
  */
 export async function isSignedIn() {
     try {
         await getAuthToken(false);
         return true;
-    } catch {
+    } catch (err) {
         return false;
     }
 }
 
 /**
- * Fetches user profile info from Google's OAuth2 userinfo endpoint.
- * 
- * @returns {Promise<{email: string, picture: string, name: string}>}
- * @throws {Error} If not signed in or request fails
+ * Gets the user's profile info (email and avatar) from Google.
+ * @returns {Promise<Object>} The profile data
  */
 export async function getUserProfile() {
-    const token = await getAuthToken(false);
+    var token = await getAuthToken(false);
     
-    const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+    var response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
         headers: { 
-            Authorization: `Bearer ${token}` 
+            'Authorization': 'Bearer ' + token 
         }
     });
     
-    if (!response.ok) {
-        throw new Error(`Failed to fetch profile: ${response.status}`);
+    if (response.ok == false) {
+        throw new Error('Failed to fetch profile: ' + response.status);
     }
     
-    return response.json();
+    var profileData = await response.json();
+    return profileData;
 }
 
 /**
- * Clears all cached authentication state.
- * Useful for troubleshooting auth issues.
- * 
- * @returns {Promise<void>}
+ * Clears all cached tokens. This helps if there are login bugs.
  */
 export async function clearAuthCache() {
-    return new Promise((resolve) => {
-        if (chrome?.identity?.clearAllCachedAuthTokens) {
+    return new Promise(function(resolve) {
+        if (chrome && chrome.identity && chrome.identity.clearAllCachedAuthTokens) {
             chrome.identity.clearAllCachedAuthTokens(resolve);
         } else {
             resolve();

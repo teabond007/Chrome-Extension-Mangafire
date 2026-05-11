@@ -57,8 +57,16 @@ export class GenericAdapter {
     }
 
     get selectors() {
+        var cardSelectors = [];
+        for (var i = 0; i < this.selectorGroups.length; i++) {
+            var group = this.selectorGroups[i];
+            if (group && group.card) {
+                cardSelectors.push(group.card);
+            }
+        }
+
         return {
-            card: this.selectorGroups.map(g => g.card).filter(Boolean).join(', '),
+            card: cardSelectors.join(', '),
             cardTitle: '',
             cardLink: '',
             cardCover: ''
@@ -75,11 +83,19 @@ export class GenericAdapter {
         let url = '';
         let id = '';
 
-        // Find which selector group matches this card
-        const group = this.selectorGroups.find(g => {
-            try { return cardElement.matches(g.card); }
-            catch { return false; }
-        });
+        // Find which selector group matches this card using a simple loop
+        var group = null;
+        for (var i = 0; i < this.selectorGroups.length; i++) {
+            var g = this.selectorGroups[i];
+            try {
+                if (cardElement.matches(g.card)) {
+                    group = g;
+                    break;
+                }
+            } catch (e) {
+                // Ignore invalid selectors
+            }
+        }
 
         if (group && group.title) {
             try {
@@ -162,7 +178,7 @@ export class GenericAdapter {
             var urlObj = new URL(url);
             var path = urlObj.pathname;
             
-            // A junior would just split the path by / and look at the parts
+            // Split the path by / and look at the parts
             var parts = path.split("/");
             
             // Try to find parts that usually come before the ID
@@ -342,8 +358,7 @@ export async function initCustomSite(config, settings) {
     const count = await enhancer.enhanceAll();
     console.log(`[BMH-Custom] Enhanced ${count} cards.`);
 
-    // A junior might not use MutationObserver because it is complex
-    // Using a simple interval to check for new cards every 2 seconds
+    // Use a simple interval to check for new cards every 2 seconds
     setInterval(function() {
         if (chrome.runtime && chrome.runtime.id) {
             enhancer.enhanceAll();

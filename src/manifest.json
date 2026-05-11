@@ -46,7 +46,7 @@
         "*://fallback.custom-sites.local/*"
       ],
       "js": [
-        "src/scripts/content/main.ts"
+        "src/scripts/content/main.js"
       ],
       "run_at": "document_idle"
     }
