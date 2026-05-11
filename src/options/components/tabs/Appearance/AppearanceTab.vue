@@ -20,23 +20,7 @@
                 >
 
 
-                    <SwitchControl 
-                        :id="TOGGLES.CUSTOM_SITE_HIGHLIGHT" 
-                        label="Enable Highlighting" 
-                        sub-label="Highlight found manga on sites" 
-                        v-model="highlightEnabled"
-                        margin-top
-                    />
 
-                    
-
-                    <SwitchControl 
-                        :id="TOGGLES.CUSTOM_SITE_SHOW_RIBBONS" 
-                        label="Status Ribbons" 
-                        sub-label="Show status corner ribbons" 
-                        v-model="customSiteShowRibbons"
-                        margin-top
-                    />
 
                     <div class="divider"></div>
 
@@ -58,8 +42,8 @@
                 >
                     <SwitchControl 
                         :id="TOGGLES.LIBRARY_BORDERS" 
-                        label="Show Status Borders" 
-                        sub-label="Color borders in library" 
+                        label="Card Highlighting" 
+                        sub-label="Show colored borders on all sites and library" 
                         v-model="libraryBordersEnabled"
                     />
                     <SwitchControl 
@@ -95,13 +79,6 @@ const {
     borderStyle,
     libraryBordersEnabled,
     libraryHideNoHistory,
- 
-    libraryAnimatedBorders,
-    libraryShowProgressBar,
-    highlightEnabled,
-    customSiteShowRibbons,
-
-
 } = storeToRefs(settingsStore);
 
 const bindSetting = (refValue, key) => {
@@ -112,11 +89,7 @@ const bindSetting = (refValue, key) => {
 
 bindSetting(libraryBordersEnabled, 'libraryBordersEnabled');
 
-bindSetting(libraryAnimatedBorders, 'libraryAnimatedBorders');
-
 bindSetting(libraryHideNoHistory, 'libraryHideNoHistory');
-bindSetting(highlightEnabled, 'highlightEnabled');
-bindSetting(customSiteShowRibbons, 'customSiteShowRibbons');
 
 
 

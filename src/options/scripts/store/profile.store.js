@@ -25,27 +25,10 @@ export const useProfileStore = defineStore('profile', {
         
         // Sync preferences (persisted)
         autoSyncEnabled: false,
-        syncLibrary: true,
-        syncHistory: true,
-        syncPersonal: true,
-        syncSettings: true,
-        syncCache: false,
         syncInterval: 1, // Default to 1 day
         
-        // OAuth configuration status
-        isOAuthConfigured: false,
-
         // Local Export/Import state
         lastLocalBackup: null,
-        localExportSettings: {
-            library: true,
-            history: true,
-            personalData: true,
-            settings: true,
-            cache: false,
-            customSites: true
-        },
-        isMergeImport: true,
 
         // Cloud backup metadata
         cloudBackupInfo: null
@@ -76,73 +59,45 @@ export const useProfileStore = defineStore('profile', {
         async initialize() {
             try {
                 // Load persisted preferences
-                const saved = await chrome.storage.local.get([
+                const keys = [
                     TOGGLES.AUTO_SYNC,
-                    TOGGLES.SYNC_LIBRARY,
-                    TOGGLES.SYNC_HISTORY_CLOUD,
-                    TOGGLES.SYNC_PERSONAL,
-                    TOGGLES.SYNC_SETTINGS,
-                    TOGGLES.SYNC_CACHE,
                     DATA.LAST_SYNC_CLOUD,
                     DATA.LAST_BACKUP
-                ]);
+                ].filter(k => k !== undefined);
+
+                const saved = await chrome.storage.local.get(keys);
 
                 this.autoSyncEnabled = saved[TOGGLES.AUTO_SYNC] ?? false;
-                this.syncLibrary = saved[TOGGLES.SYNC_LIBRARY] ?? true;
-                this.syncHistory = saved[TOGGLES.SYNC_HISTORY_CLOUD] ?? true;
-                this.syncPersonal = saved[TOGGLES.SYNC_PERSONAL] ?? true;
-                this.syncSettings = saved[TOGGLES.SYNC_SETTINGS] ?? true;
-                this.syncCache = saved[TOGGLES.SYNC_CACHE] ?? false;
                 this.syncInterval = saved[SETTINGS.SYNC_INTERVAL] ?? 1;
                 this.lastSyncTime = saved[DATA.LAST_SYNC_CLOUD] ?? null;
                 this.lastLocalBackup = saved[DATA.LAST_BACKUP] ?? null;
 
-                // Check OAuth configuration
-                this.isOAuthConfigured = this.checkOAuthConfig();
 
-                // Check auth status if configured
-                if (this.isOAuthConfigured) {
+
+                // Check auth status
+                try {
                     const token = await gdriveAuth.getAuthToken(false).catch(() => null);
                     if (token) {
                         this.isSignedIn = true;
-                        // Parallelize user profile and cloud info fetching
+                        console.log('[ProfileStore] User is signed in, loading profile...');
                         await Promise.all([
                             this.loadUserProfile(),
                             this.updateCloudBackupInfo()
                         ]);
                     } else {
+                        console.log('[ProfileStore] No valid token found on init');
                         this.isSignedIn = false;
                     }
+                } catch (error) {
+                    console.error('[ProfileStore] Auth error during init:', error);
+                    this.isSignedIn = false;
                 }
             } catch (error) {
                 console.error('[ProfileStore] Initialization error:', error);
             }
         },
 
-        /**
-         * Checks if OAuth2 is properly configured in manifest.
-         */
-        checkOAuthConfig() {
-            try {
-                // Check if chrome.identity API is available
-                if (!chrome?.identity?.getAuthToken) {
-                    return false;
-                }
-                
-                // Check manifest for oauth2 config
-                const manifest = chrome.runtime?.getManifest?.();
-                if (!manifest) {
-                    return false;
-                }
-                
-                const clientId = manifest?.oauth2?.client_id;
-                const hasIdentity = manifest?.permissions?.includes('identity');
-                
-                return !!(clientId && !clientId.includes('YOUR_CLIENT_ID') && hasIdentity);
-            } catch (error) {
-                return false;
-            }
-        },
+
 
         /**
          * Signs in with Google.
@@ -200,17 +155,9 @@ export const useProfileStore = defineStore('profile', {
             this.syncStatusMessage = 'Preparing data...';
 
             try {
-                // Gather data based on user preferences
+                // Gather all data
                 this.syncProgress = 20;
-                const categories = {
-                    library: this.syncLibrary,
-                    history: this.syncHistory,
-                    personalData: this.syncPersonal,
-                    settings: this.syncSettings,
-                    cache: this.syncCache,
-                    customSites: true
-                };
-                const data = await gatherStorageData(categories);
+                const data = await gatherStorageData();
 
                 // Upload to Drive
                 this.syncProgress = 40;
@@ -328,11 +275,6 @@ export const useProfileStore = defineStore('profile', {
         async savePreferences() {
             await chrome.storage.local.set({
                 [TOGGLES.AUTO_SYNC]: this.autoSyncEnabled,
-                [TOGGLES.SYNC_LIBRARY]: this.syncLibrary,
-                [TOGGLES.SYNC_HISTORY_CLOUD]: this.syncHistory,
-                [TOGGLES.SYNC_PERSONAL]: this.syncPersonal,
-                [TOGGLES.SYNC_SETTINGS]: this.syncSettings,
-                [TOGGLES.SYNC_CACHE]: this.syncCache,
                 [SETTINGS.SYNC_INTERVAL]: this.syncInterval
             });
         },
@@ -348,13 +290,6 @@ export const useProfileStore = defineStore('profile', {
         },
 
         /**
-         * Generic data gathering helper.
-         */
-        async prepareExportData(categories) {
-            return await gatherStorageData(categories);
-        },
-
-        /**
          * Exports data to a local JSON file.
          */
         async exportLocalData() {
@@ -362,7 +297,7 @@ export const useProfileStore = defineStore('profile', {
             this.syncStatusMessage = 'Preparing export...';
             
             try {
-                const data = await this.prepareExportData(this.localExportSettings);
+                const data = await gatherStorageData();
                 const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 

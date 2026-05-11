@@ -25,17 +25,12 @@ export const useSettingsStore = defineStore('settings', {
         libraryBordersEnabled: true,
         libraryHideNoHistory: false,
       
-        libraryAnimatedBorders: false,
         cardViewSize: 'large', // 'compact', 'large', 'list'
         
-        // General Preferences
+        // Library & Sites
         quickActions: true,
-        showReadingBadges: true,
         libraryShowRibbons: true,
         syncAndMarkRead: true,
-
-        // Custom Sites (Card Enhancer)
-        customSiteShowRibbons: true,
      
 
         // Reader Enhancements
@@ -53,7 +48,7 @@ export const useSettingsStore = defineStore('settings', {
 
     actions: {
         async loadSettings() {
-            const data = await chrome.storage.local.get([
+            const keys = [
                 SETTINGS.THEME, 
                 TOGGLES.IS_CUSTOM_THEME,
                 SETTINGS.CUSTOM_THEME_DATA,
@@ -61,21 +56,18 @@ export const useSettingsStore = defineStore('settings', {
                 SETTINGS.LIBRARY_THICKNESS,
                 SETTINGS.BORDER_STYLE,
                 TOGGLES.QUICK_ACTIONS,
-                TOGGLES.SHOW_READING_BADGES,
                 TOGGLES.HISTORY_TRACKING,
                 TOGGLES.PROGRESS_TRACKING,
                 SETTINGS.VIEW_MODE,
                 TOGGLES.LIBRARY_HIDE_NO_HISTORY,
                 DATA.CUSTOM_STATUSES,
                 TOGGLES.CUSTOM_STATUS_ENABLED,
-                TOGGLES.LIBRARY_ANIMATED_BORDERS,
-                TOGGLES.LIBRARY_PROGRESS_BARS,
-                TOGGLES.CUSTOM_SITE_HIGHLIGHT,
+                TOGGLES.LIBRARY_BORDERS,
                 TOGGLES.FAMILY_FRIENDLY,
-                TOGGLES.LIBRARY_SHOW_RIBBONS,
-                TOGGLES.CUSTOM_SITE_SHOW_RIBBONS,
-                TOGGLES.CUSTOM_SITE_QUICK_ACTIONS
-            ]);
+                TOGGLES.LIBRARY_SHOW_RIBBONS
+            ].filter(k => k !== undefined);
+
+            const data = await chrome.storage.local.get(keys);
 
             this.theme = data[SETTINGS.THEME] || 'dark';
             this.isCustomTheme = !!data[TOGGLES.IS_CUSTOM_THEME];
@@ -87,7 +79,6 @@ export const useSettingsStore = defineStore('settings', {
             this.borderStyle = data[SETTINGS.BORDER_STYLE] || BORDER_DEFAULTS.style;
 
             this.quickActions = data[TOGGLES.QUICK_ACTIONS] !== false;
-            this.showReadingBadges = data[TOGGLES.SHOW_READING_BADGES] !== false;
             this.syncAndMarkRead = data[TOGGLES.HISTORY_TRACKING] !== false;
             this.progressTracking = data[TOGGLES.PROGRESS_TRACKING] !== false;
             
@@ -97,14 +88,15 @@ export const useSettingsStore = defineStore('settings', {
             this.customStatusEnabled = !!data[TOGGLES.CUSTOM_STATUS_ENABLED];
             
           
-            this.libraryAnimatedBorders = !!data[TOGGLES.LIBRARY_ANIMATED_BORDERS];
-            this.highlightEnabled = data[TOGGLES.CUSTOM_SITE_HIGHLIGHT] !== false;
+            this.highlightEnabled = data[TOGGLES.LIBRARY_BORDERS] !== false;
             this.familyFriendlyEnabled = !!data[TOGGLES.FAMILY_FRIENDLY];
             this.libraryShowRibbons = data[TOGGLES.LIBRARY_SHOW_RIBBONS] !== false;
-            this.customSiteShowRibbons = data[TOGGLES.CUSTOM_SITE_SHOW_RIBBONS] !== false;
- 
-            this.quickActions = data[TOGGLES.CUSTOM_SITE_QUICK_ACTIONS] !== false;
-          
+            
+            console.log('[SettingsStore] Settings loaded:', { 
+                theme: this.theme, 
+                isCustomTheme: this.isCustomTheme,
+                customTheme: this.customTheme 
+            });
 
             this.isLoaded = true;
         },
@@ -127,7 +119,6 @@ export const useSettingsStore = defineStore('settings', {
                 case 'libraryThickness':      storagePayload[SETTINGS.LIBRARY_THICKNESS] = value; break;
                 case 'borderStyle':           storagePayload[SETTINGS.BORDER_STYLE] = value; break;
                 case 'quickActions':          storagePayload[TOGGLES.QUICK_ACTIONS] = value; break;
-                case 'showReadingBadges':     storagePayload[TOGGLES.SHOW_READING_BADGES] = value; break;
                 case 'syncAndMarkRead':       storagePayload[TOGGLES.HISTORY_TRACKING] = value; break;
                 case 'progressTracking':      storagePayload[TOGGLES.PROGRESS_TRACKING] = value; break;
                 case 'libraryBordersEnabled': storagePayload[TOGGLES.LIBRARY_BORDERS] = value; break;
@@ -137,19 +128,18 @@ export const useSettingsStore = defineStore('settings', {
                 case 'customTheme':           storagePayload[SETTINGS.CUSTOM_THEME_DATA] = value; break;
                 case 'customStatusEnabled':   storagePayload[TOGGLES.CUSTOM_STATUS_ENABLED] = value; break;
                
-                case 'libraryAnimatedBorders': storagePayload[TOGGLES.LIBRARY_ANIMATED_BORDERS] = value; break;
-                case 'highlightEnabled':      storagePayload[TOGGLES.CUSTOM_SITE_HIGHLIGHT] = value; break;
+                case 'highlightEnabled':      storagePayload[TOGGLES.LIBRARY_BORDERS] = value; break;
                 case 'familyFriendlyEnabled': storagePayload[TOGGLES.FAMILY_FRIENDLY] = value; break;
                 case 'libraryShowRibbons':    storagePayload[TOGGLES.LIBRARY_SHOW_RIBBONS] = value; break;
-                case 'customSiteShowRibbons': storagePayload[TOGGLES.CUSTOM_SITE_SHOW_RIBBONS] = value; break;
            
             }
 
             if (Object.keys(storagePayload).length > 0) {
-                // Ensure plain object serialization for arrays
+                console.log('[SettingsStore] Saving to storage:', storagePayload);
+                // Ensure plain object serialization for objects/arrays to avoid Proxy issues
                 const finalPayload = {};
                 for (const [k, v] of Object.entries(storagePayload)) {
-                    finalPayload[k] = Array.isArray(v) ? JSON.parse(JSON.stringify(v)) : v;
+                    finalPayload[k] = (typeof v === 'object' && v !== null) ? JSON.parse(JSON.stringify(v)) : v;
                 }
                 await chrome.storage.local.set(finalPayload);
             }
@@ -204,7 +194,6 @@ export const useSettingsStore = defineStore('settings', {
             if (changes[SETTINGS.LIBRARY_THICKNESS])  this.libraryThickness = parseInt(changes[SETTINGS.LIBRARY_THICKNESS].newValue);
             if (changes[SETTINGS.BORDER_STYLE])  this.borderStyle = changes[SETTINGS.BORDER_STYLE].newValue;
             if (changes[TOGGLES.QUICK_ACTIONS]) this.quickActions = changes[TOGGLES.QUICK_ACTIONS].newValue;
-            if (changes[TOGGLES.SHOW_READING_BADGES]) this.showReadingBadges = changes[TOGGLES.SHOW_READING_BADGES].newValue;
             if (changes[TOGGLES.HISTORY_TRACKING])    this.syncAndMarkRead = changes[TOGGLES.HISTORY_TRACKING].newValue;
             if (changes[TOGGLES.PROGRESS_TRACKING]) this.progressTracking = changes[TOGGLES.PROGRESS_TRACKING].newValue;
             if (changes[DATA.CUSTOM_STATUSES]) {
@@ -213,11 +202,9 @@ export const useSettingsStore = defineStore('settings', {
             }
             if (changes[TOGGLES.CUSTOM_STATUS_ENABLED]) this.customStatusEnabled = changes[TOGGLES.CUSTOM_STATUS_ENABLED].newValue;
             
-            if (changes[TOGGLES.LIBRARY_ANIMATED_BORDERS]) this.libraryAnimatedBorders = changes[TOGGLES.LIBRARY_ANIMATED_BORDERS].newValue;
-            if (changes[TOGGLES.CUSTOM_SITE_HIGHLIGHT]) this.highlightEnabled = changes[TOGGLES.CUSTOM_SITE_HIGHLIGHT].newValue;
+            if (changes[TOGGLES.LIBRARY_BORDERS]) this.highlightEnabled = changes[TOGGLES.LIBRARY_BORDERS].newValue;
             if (changes[TOGGLES.FAMILY_FRIENDLY]) this.familyFriendlyEnabled = changes[TOGGLES.FAMILY_FRIENDLY].newValue;
             if (changes[TOGGLES.LIBRARY_SHOW_RIBBONS]) this.libraryShowRibbons = changes[TOGGLES.LIBRARY_SHOW_RIBBONS].newValue;
-            if (changes[TOGGLES.CUSTOM_SITE_SHOW_RIBBONS]) this.customSiteShowRibbons = changes[TOGGLES.CUSTOM_SITE_SHOW_RIBBONS].newValue;
            
            
             if (changes[SETTINGS.VIEW_MODE]) this.cardViewSize = changes[SETTINGS.VIEW_MODE].newValue;

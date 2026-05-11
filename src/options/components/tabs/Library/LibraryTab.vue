@@ -86,10 +86,8 @@ const {
 const { 
     libraryBordersEnabled, 
 
-    libraryAnimatedBorders, 
     familyFriendlyEnabled,
     customStatuses,
-    showReadingBadges,
     highlightThickness,
     libraryHideNoHistory,
     libraryShowRibbons,
@@ -101,9 +99,6 @@ const librarySettings = computed(() => ({
     bordersEnabled: libraryBordersEnabled.value,
     borderThickness: highlightThickness.value,
     hideNoHistory: libraryHideNoHistory.value,
-
-    animatedBorders: libraryAnimatedBorders.value,
-    showReadingBadges: showReadingBadges.value,
     showRibbons: libraryShowRibbons.value
 }));
 

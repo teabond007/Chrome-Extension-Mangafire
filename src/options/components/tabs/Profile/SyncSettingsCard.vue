@@ -45,32 +45,6 @@
                 </div>
             </div>
             
-            <div class="divider-line"></div>
-            
-            <p class="section-label">Data to sync:</p>
-            <div class="sync-checkboxes">
-                <label class="checkbox-option" :class="{ disabled: !isSignedIn }">
-                    <input type="checkbox" v-model="syncLibrary" :disabled="!isSignedIn" />
-                    <span class="checkbox-label">📚 Library Entries</span>
-                </label>
-                <label class="checkbox-option" :class="{ disabled: !isSignedIn }">
-                    <input type="checkbox" v-model="syncHistory" :disabled="!isSignedIn" />
-                    <span class="checkbox-label">📖 Reading History</span>
-                </label>
-                <label class="checkbox-option" :class="{ disabled: !isSignedIn }">
-                    <input type="checkbox" v-model="syncPersonal" :disabled="!isSignedIn" />
-                    <span class="checkbox-label">🏷️ Tags, Notes & Ratings</span>
-                </label>
-                <label class="checkbox-option" :class="{ disabled: !isSignedIn }">
-                    <input type="checkbox" v-model="syncSettings" :disabled="!isSignedIn" />
-                    <span class="checkbox-label">⚙️ Settings</span>
-                </label>
-                <label class="checkbox-option" :class="{ disabled: !isSignedIn }">
-                    <input type="checkbox" v-model="syncCache" :disabled="!isSignedIn" />
-                    <span class="checkbox-label">💾 API Cache</span>
-                </label>
-            </div>
-
             
         </div>
     </SettingsCard>
@@ -85,7 +59,7 @@ import { useProfileStore } from '../../../scripts/store/profile.store.js';
 
 const profileStore = useProfileStore();
 const { 
-    isSignedIn, autoSyncEnabled, syncLibrary, syncHistory, syncPersonal, syncSettings, syncCache, syncInterval
+    isSignedIn, autoSyncEnabled, syncInterval
 } = storeToRefs(profileStore);
 
 const syncIntervalLocal = ref(1);
@@ -117,7 +91,7 @@ const resetSyncInterval = () => {
 
 // Auto-persist other settings when changed
 watch([
-    autoSyncEnabled, syncLibrary, syncHistory, syncPersonal, syncSettings, syncCache
+    autoSyncEnabled
 ], () => {
     profileStore.savePreferences();
 });

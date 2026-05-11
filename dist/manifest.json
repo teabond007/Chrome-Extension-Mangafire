@@ -43,7 +43,7 @@
   "content_scripts": [
     {
       "js": [
-        "assets/main.ts-loader-47f06ce9.js"
+        "assets/main.ts-loader-e80e8596.js"
       ],
       "matches": [
         "*://fallback.custom-sites.local/*"
@@ -71,9 +71,9 @@
         "*://fallback.custom-sites.local/*"
       ],
       "resources": [
-        "assets/metadata-service-36d0958b.js",
-        "assets/library-service-fab69074.js",
-        "assets/main.ts-6a6ed433.js"
+        "assets/metadata-service-d9ea8091.js",
+        "assets/library-service-b1182b16.js",
+        "assets/main.ts-216866db.js"
       ],
       "use_dynamic_url": false
     }

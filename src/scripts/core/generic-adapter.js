@@ -83,9 +83,13 @@ export class GenericAdapter {
 
         if (group && group.title) {
             try {
-                const titleEl = cardElement.querySelector(group.title);
+                // Check if the card itself matches the title selector, or find it inside
+                const titleEl = cardElement.matches(group.title) 
+                    ? cardElement 
+                    : cardElement.querySelector(group.title);
+                
                 if (titleEl) {
-                    title = titleEl.textContent?.trim() || '';
+                    title = titleEl.textContent?.trim() || titleEl.getAttribute('title') || '';
 
                     // Try to find URL related to title (closest anchor or anchor inside)
                     const titleLink = titleEl.closest('a') || titleEl.querySelector('a');
@@ -110,6 +114,16 @@ export class GenericAdapter {
             }
         }
 
+        // Robust Fallback: if no title found via selector, try common attributes
+        if (!title) {
+            title = cardElement.getAttribute('title') || 
+                    cardElement.getAttribute('aria-label') || 
+                    cardElement.querySelector('img')?.getAttribute('alt') || 
+                    cardElement.querySelector('img')?.getAttribute('title') || 
+                    '';
+            title = title.trim();
+        }
+
         // Extract ID from URL
         if (url) {
             id = this.extractIdFromUrl(url);
@@ -120,9 +134,8 @@ export class GenericAdapter {
             id = this.slugify(title);
         }
 
-        // VISUAL DEBUG: If we matched the card selector but failed to extract title,
-        // return a placeholder so the overlay still appears. This confirms to the user
-        // that the CARD selector is working, even if the TITLE selector is wrong.
+        // VISUAL DEBUG: If we matched the card selector but still no title,
+        // return a placeholder so the overlay still appears.
         if (!title) {
             title = "Unknown Title (Check Selectors)";
             id = `unknown-${Math.random().toString(36).substr(2, 9)}`;

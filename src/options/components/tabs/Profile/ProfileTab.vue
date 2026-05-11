@@ -12,15 +12,6 @@
             <SyncSettingsCard />
             <CloudSyncActions />
             <LocalDataPortability />
-
-            <!-- Setup Required Banner -->
-            <div v-if="!isOAuthConfigured" class="setup-banner">
-                <div class="banner-icon">🔧</div>
-                <div class="banner-content">
-                    <h4>Setup Required</h4>
-                    <p>Google Drive sync requires OAuth configuration. See the implementation plan for setup instructions.</p>
-                </div>
-            </div>
         </div>
     </div>
 </template>
@@ -36,8 +27,6 @@ import { useSettingsStore } from '../../../scripts/store/settings.store.js';
 
 const profileStore = useProfileStore();
 const settingsStore = useSettingsStore();
-
-const { isOAuthConfigured } = storeToRefs(profileStore);
 </script>
 
 <style scoped lang="scss">

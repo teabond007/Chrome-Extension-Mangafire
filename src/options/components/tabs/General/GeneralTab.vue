@@ -20,16 +20,10 @@
                         <SwitchControl 
                             :id="TOGGLES.QUICK_ACTIONS" 
                             label="Quick Actions Overlay" 
-                            sub-label="Show 'Continue', 'Status', 'Rating' on hover"
+                            sub-label="Show actions on hover (external sites & library)"
                             v-model="quickActions"
                         />
-                        <SwitchControl 
-                            :id="TOGGLES.SHOW_READING_BADGES" 
-                            label="Show Reading Badges" 
-                            sub-label="Display 'Ch. X/Y' on manga cards"
-                            v-model="showReadingBadges"
-                            margin-top
-                        />
+
                         <SwitchControl 
                             :id="TOGGLES.FAMILY_FRIENDLY" 
                             label="Family Friendly Mode" 
@@ -40,32 +34,22 @@
                         <SwitchControl 
                             :id="TOGGLES.LIBRARY_SHOW_RIBBONS" 
                             label="Show Status Ribbons" 
-                            sub-label="Show corner status banners (Read, Completed, etc) on cards"
+                            sub-label="Show corner status banners on all platforms"
                             v-model="libraryShowRibbons"
                             margin-top
                         />
+                        <SwitchControl 
+                            :id="TOGGLES.PROGRESS_TRACKING" 
+                            label="Auto-Save Progress" 
+                            sub-label="Automatically save chapter progress while reading"
+                            v-model="progressTracking"
+                            margin-top
+                        />
+
                     </div>
                 </SettingsCard>
             </div>
             
-            <!-- Row 1: Reader Enhancements -->
-            <div class="cards-row">
-                <SettingsCard 
-                    title="Reader Enhancements" 
-                    icon="📚" 
-                    icon-bg="rgba(16, 185, 129, 0.1)"
-                    icon-color="#10b981"
-                    guide-target="guide-reader"
-                    full-height
-                >
-                    <SwitchControl 
-                        :id="TOGGLES.PROGRESS_TRACKING" 
-                        label="Auto-Save Progress" 
-                        sub-label="Automatically save chapter progress while reading"
-                        v-model="progressTracking"
-                    />
-                </SettingsCard>
-            </div>
 
             <!-- Card: Custom Statuses -->
             <CustomStatusManager />
@@ -86,7 +70,6 @@ const settingsStore = useSettingsStore();
 
 const { 
     quickActions, 
-    showReadingBadges,
     progressTracking,
     familyFriendlyEnabled,
     libraryShowRibbons
@@ -97,7 +80,6 @@ const bindSetting = (refValue, key) => {
 };
 
 bindSetting(quickActions, 'quickActions');
-bindSetting(showReadingBadges, 'showReadingBadges');
 bindSetting(progressTracking, 'progressTracking');
 bindSetting(familyFriendlyEnabled, 'familyFriendlyEnabled');
 bindSetting(libraryShowRibbons, 'libraryShowRibbons');

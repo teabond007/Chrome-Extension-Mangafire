@@ -46,25 +46,6 @@ export const BORDER_DEFAULTS = {
  * Users can toggle these in settings.
  * @type {Object<string, boolean>}
  */
-export const FEATURE_DEFAULTS = {
-    highlighting: true,
-    progressBadges: true,
-    quickActions: true,
-    notifications: true,
-    newChapterBadge: true
-};
-
-/**
- * Notification engine configuration.
- * @type {Object}
- */
-export const NOTIFICATION_CONFIG = {
-    checkIntervalMinutes: 30,
-    maxBatchSize: 50, // Max entries to check per cycle
-    rateLimitMs: 500  // Delay between API calls
-};
-
-// Config class removed as it was unused and superseded by Pinia stores and direct storage access.
 // Status colors and defaults are preserved as constants below for direct import.
 
 /**
@@ -73,35 +54,23 @@ export const NOTIFICATION_CONFIG = {
  */
 export const TOGGLES = {
     // Cloud Sync
+    // Cloud Sync
     AUTO_SYNC: 'profileAutoSync',
-    SYNC_LIBRARY: 'profileSyncLibrary',
-    SYNC_HISTORY_CLOUD: 'profileSyncHistory',
-    SYNC_PERSONAL: 'profileSyncPersonal',
-    SYNC_SETTINGS: 'profileSyncSettings',
-    SYNC_CACHE: 'profileSyncCache',
 
     // Core Features
-    NOTIFICATIONS: 'NotificationsfeatureEnabled',
     FAMILY_FRIENDLY: 'FamilyFriendlyfeatureEnabled',
     HISTORY_TRACKING: 'SyncandMarkReadfeatureEnabled',
     PROGRESS_TRACKING: 'progressTrackingEnabled',
 
     // Custom Sites
-    CUSTOM_SITE_HIGHLIGHT: 'CustomSiteHighlightEnabled',
-    CUSTOM_SITE_QUICK_ACTIONS: 'CustomSiteQuickActionsEnabled',
-   
     CUSTOM_STATUS_ENABLED: 'CustomBookmarksfeatureEnabled',
 
     // UI Enhancements
     LIBRARY_BORDERS: 'LibraryCardBordersEnabled',
   
-    LIBRARY_ANIMATED_BORDERS: 'LibraryAnimatedBorders',
-    LIBRARY_PROGRESS_BARS: 'LibraryProgressBars',
     LIBRARY_HIDE_NO_HISTORY: 'libraryHideNoHistory',
     QUICK_ACTIONS: 'quickActions',
-    SHOW_READING_BADGES: 'showReadingBadges',
     LIBRARY_SHOW_RIBBONS: 'libraryShowStatusRibbon',
-    CUSTOM_SITE_SHOW_RIBBONS: 'customSiteStatusRibbon',
     
     IS_CUSTOM_THEME: 'isCustomTheme'
 };

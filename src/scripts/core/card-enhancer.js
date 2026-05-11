@@ -34,11 +34,10 @@ export class CardEnhancer {
             }
         };
 
-        this.settings.highlighting = settings[TOGGLES.CUSTOM_SITE_HIGHLIGHT] !== false;
-        this.settings.progressBadges = settings.progressBadges !== false || settings[TOGGLES.SHOW_READING_BADGES] !== false;
-        this.settings.quickActions = settings[TOGGLES.CUSTOM_SITE_QUICK_ACTIONS] !== false;
+        this.settings.highlighting = settings[TOGGLES.LIBRARY_BORDERS] !== false;
+        this.settings.quickActions = settings[TOGGLES.QUICK_ACTIONS] !== false;
         this.settings.newChapterBadges = settings.newChapterBadges !== false;
-        this.settings.showRibbons = settings[TOGGLES.CUSTOM_SITE_SHOW_RIBBONS] !== false;
+        this.settings.showRibbons = settings[TOGGLES.LIBRARY_SHOW_RIBBONS] !== false;
         
         var customStatuses = settings[DATA.CUSTOM_STATUSES];
         if (Array.isArray(customStatuses) == false) {
@@ -244,13 +243,6 @@ export class CardEnhancer {
             this.applyBorder(card, entry);
         }
 
-        if (this.settings.progressBadges) {
-            const readCount = entry.readChapters ? entry.readChapters.length : 0;
-            if (readCount > 0) {
-                this.applyProgressBadge(card, entry);
-            }
-        }
-
         if (this.settings.newChapterBadges && entry.hasNewChapters) {
             this.applyNewBadge(card);
         }
@@ -319,13 +311,25 @@ export class CardEnhancer {
         // Default: apply directly to the card's li wrapper (or the card itself)
         const target = card.element.closest('li') || card.element;
 
+        // Ensure target is at least inline-block so border wraps content correctly
+        const display = window.getComputedStyle(target).display;
+        if (display === 'inline') {
+            target.style.setProperty('display', 'inline-block', 'important');
+        }
        
-            target.style.setProperty('border', `${this.settings.border.size}px ${style} ${color}`, 'important');
-            target.style.setProperty('box-shadow', 'none', 'important');
-        
-
+        target.style.setProperty('border', `${this.settings.border.size}px ${style} ${color}`, 'important');
+        target.style.setProperty('box-shadow', 'none', 'important');
         target.style.setProperty('border-radius', this.settings.border.radius, 'important');
         target.style.setProperty('box-sizing', 'border-box', 'important');
+        
+        // Ensure content is visible and wraps correctly
+        target.style.setProperty('overflow', 'visible', 'important');
+        
+        // If target has no height (collapsed), force a minimum height based on font size or content
+        if (target.offsetHeight === 0) {
+            target.style.setProperty('min-height', '20px', 'important');
+            target.style.setProperty('display', 'inline-block', 'important');
+        }
     }
 
     /**
@@ -346,32 +350,10 @@ export class CardEnhancer {
     }
 
     /**
-     * Apply a progress badge showing current/total chapters.
-     * @param {{ element: HTMLElement, data: Object }} card
-     * @param {Object} entry - Library entry
+     * @deprecated Reading badges removed to simplify UI.
      */
     applyProgressBadge(card, entry) {
-        const unitName = this.adapter.unitName === 'episode' ? 'Ep.' : 'Ch.';
-
-        // Prefer explicit chapter count, fall back to anilist data
-        let totalChapters = entry.chapters || 0;
-        if (!totalChapters && entry.anilistData) {
-            totalChapters = entry.anilistData.chapters || 0;
-        }
-
-        let text = '';
-        if (totalChapters) {
-            text = unitName + ' ' + entry.lastReadChapter + '/' + totalChapters;
-        } else {
-            text = unitName + ' ' + entry.lastReadChapter + '+';
-        }
-
-        let position = { bottom: '4px', left: '4px' };
-        if (this.adapter.getBadgePosition) {
-            position = this.adapter.getBadgePosition();
-        }
-
-        OverlayFactory.mountStatusBadge(card.element, text, 'progress', position);
+        // No-op
     }
 
     /**
@@ -396,7 +378,14 @@ export class CardEnhancer {
         };
 
         OverlayFactory.mountQuickActions(card.element, entry, this.adapter, callbacks);
-        card.element.style.position = 'relative';
+        
+        // Ensure element can host absolute children
+        const display = window.getComputedStyle(card.element).display;
+        if (display === 'inline') {
+            card.element.style.setProperty('display', 'inline-block', 'important');
+        }
+        card.element.style.setProperty('position', 'relative', 'important');
+        card.element.style.setProperty('overflow', 'visible', 'important');
     }
 
     /**

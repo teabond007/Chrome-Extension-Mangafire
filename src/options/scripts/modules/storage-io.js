@@ -5,74 +5,17 @@
 
 import { TOGGLES, SETTINGS, DATA } from '../../../config.js';
 
-export const EXPORT_CATEGORIES = {
-    library: {
-        keys: [DATA.LIBRARY_ENTRIES],
-        label: 'Library Entries'
-    },
-    history: {
-        keys: [DATA.READING_HISTORY],
-        label: 'Reading History'
-    },
-    settings: {
-        keys: [
-            TOGGLES.AUTO_SYNC,
-            TOGGLES.PROGRESS_TRACKING,
-            SETTINGS.VIEW_MODE,
-            SETTINGS.THEME,
-            TOGGLES.LIBRARY_BORDERS,
-            SETTINGS.LIBRARY_THICKNESS,
-            TOGGLES.LIBRARY_ANIMATED_BORDERS,
-            TOGGLES.LIBRARY_PROGRESS_BARS,
-            DATA.CUSTOM_STATUSES,
-            SETTINGS.HIGHLIGHT_THICKNESS,
-            TOGGLES.QUICK_ACTIONS,
-            TOGGLES.SHOW_READING_BADGES
-        ],
-        label: 'Settings'
-    },
-    personalData: {
-        keys: [DATA.PERSONAL_DATA, DATA.FILTER_PRESETS],
-        label: 'Tags, Notes & Ratings'
-    },
-    cache: {
-        keys: [DATA.ANILIST_CACHE, DATA.MANGADEX_CACHE],
-        label: 'API Cache'
-    },
-    customSites: {
-        keys: [DATA.CUSTOM_SITES],
-        label: 'Custom Site Configs'
-    }
-};
-
 /**
- * Gathers data for specified categories from storage.
- * @param {Object} categoryFlags - Map of category keys to boolean enabled status
+ * Gathers all data from storage.
  * @returns {Promise<Object>} The gathered data object
  */
-export async function gatherStorageData(categoryFlags) {
-    const keysToExport = [];
-    
-    for (const [category, enabled] of Object.entries(categoryFlags)) {
-        if (enabled && EXPORT_CATEGORIES[category]) {
-            keysToExport.push(...EXPORT_CATEGORIES[category].keys);
-        }
-    }
-
-    if (keysToExport.length === 0) return {};
-
-    // Filter out any undefined or null keys to prevent storage.get errors
-    const validKeys = keysToExport.filter(k => k !== undefined && k !== null);
-    
-    if (validKeys.length === 0) return {};
-
-    const data = await chrome.storage.local.get(validKeys);
+export async function gatherStorageData() {
+    const data = await chrome.storage.local.get(null);
     
     // Add metadata
     data._exportMeta = {
         version: '4.0.0',
-        exportDate: new Date().toISOString(),
-        categories: { ...categoryFlags }
+        exportDate: new Date().toISOString()
     };
 
     return data;

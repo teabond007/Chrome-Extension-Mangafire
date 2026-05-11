@@ -7,32 +7,6 @@
         icon-color="var(--accent-primary)"
         guide-target="guide-profile-export"
     >
-        <div class="export-options">
-            <p class="section-label">Include in export:</p>
-            <div class="export-checkboxes">
-                <label class="export-option checkbox-option">
-                    <input type="checkbox" v-model="localExportSettings.library">
-                    <span class="checkbox-label">📚 Library Entries</span>
-                </label>
-                <label class="export-option checkbox-option">
-                    <input type="checkbox" v-model="localExportSettings.history">
-                    <span class="checkbox-label">📖 Reading History</span>
-                </label>
-                <label class="export-option checkbox-option">
-                    <input type="checkbox" v-model="localExportSettings.personalData">
-                    <span class="checkbox-label">🏷️ Tags, Notes & Ratings</span>
-                </label>
-                <label class="export-option checkbox-option">
-                    <input type="checkbox" v-model="localExportSettings.settings">
-                    <span class="checkbox-label">⚙️ Settings</span>
-                </label>
-                <label class="export-option checkbox-option">
-                    <input type="checkbox" v-model="localExportSettings.cache">
-                    <span class="checkbox-label">💾 API Cache</span>
-                </label>
-            </div>
-        </div>
-
         <div class="inner-info-card">
             <div class="format-info">
                 <span class="label-info">Format: <span class="highlight-text">JSON</span></span>
@@ -87,11 +61,7 @@
             </div>
         </div>
 
-        <div class="import-actions-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <div class="feature-toggle-wrapper">
-                <span class="toggle-main-label" style="font-size: 13px;">Merge with current data</span>
-                <ToggleSwitch v-model="isMergeImport" />
-            </div>
+        <div class="import-actions-row" style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 16px;">
             <button 
                 class="btn btn-primary btn-with-icon"
                 @click="$refs.fileInput.click()"
@@ -106,13 +76,6 @@
                 Start Import
             </button>
         </div>
-
-        <div class="caution-banner">
-            <div class="caution-icon">⚠️</div>
-            <div class="caution-text">
-                <strong>Caution:</strong> If "Merge with current data" is disabled, all existing data will be overwritten by the imported file. This action cannot be undone.
-            </div>
-        </div>
     </SettingsCard>
 
 </template>
@@ -126,7 +89,7 @@ import { useProfileStore } from '../../../scripts/store/profile.store.js';
 
 const profileStore = useProfileStore();
 const { 
-    syncStatus, lastLocalBackup, localExportSettings, isMergeImport 
+    syncStatus, lastLocalBackup 
 } = storeToRefs(profileStore);
 
 const syncDirection = ref(null);
@@ -148,7 +111,7 @@ const handleFileSelect = async (event) => {
     const file = event.target.files[0];
     if (file) {
         syncDirection.value = 'import';
-        await profileStore.importLocalData(file, isMergeImport.value);
+        await profileStore.importLocalData(file, true);
         syncDirection.value = null;
         event.target.value = '';
     }
@@ -159,7 +122,7 @@ const handleFileDrop = async (event) => {
     const file = event.dataTransfer.files[0];
     if (file) {
         syncDirection.value = 'import';
-        await profileStore.importLocalData(file, isMergeImport.value);
+        await profileStore.importLocalData(file, true);
         syncDirection.value = null;
     }
 };
@@ -266,85 +229,7 @@ const handleFileDrop = async (event) => {
     margin-bottom: 24px;
 }
 
-.caution-banner {
-    background-color: rgba(255, 255, 255, 0.02);
-    border: 1px dashed var(--border-color, #2B3674);
-    border-radius: var(--radius-md, 8px);
-    padding: 16px;
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-    width: 100%;
 
-    .caution-icon { font-size: 20px; }
-
-    .caution-text {
-        font-size: 13px;
-        color: var(--text-secondary);
-        line-height: 1.5;
-
-        strong { color: var(--warning, #FFB547); }
-    }
-}
-
-/* Export Options */
-.export-options {
-    margin-bottom: 20px;
-    width: 100%;
-
-    .section-label {
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--text-secondary);
-        margin-bottom: 12px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .export-checkboxes {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-
-        .export-option {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 14px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: var(--radius-sm, 6px);
-            cursor: pointer;
-            transition: all 0.15s ease;
-
-            &:hover {
-                background: rgba(67, 24, 255, 0.05);
-                border-color: rgba(67, 24, 255, 0.2);
-            }
-
-            input[type="checkbox"] {
-                width: 18px;
-                height: 18px;
-                accent-color: var(--accent-primary);
-                cursor: pointer;
-            }
-
-            span:first-of-type {
-                flex: 1;
-                font-size: 13px;
-                color: var(--text-primary);
-            }
-
-            .export-count {
-                font-size: 11px;
-                color: var(--text-secondary);
-                background: rgba(255, 255, 255, 0.05);
-                padding: 2px 8px;
-                border-radius: 10px;
-            }
-        }
-    }
-}
 
 /* Spinner */
 .spinner {

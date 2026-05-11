@@ -17,11 +17,18 @@ chrome.action.onClicked.addListener(() => {
  */
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === "showMangaDetails") {
-    // Open options page with library tab and manga details modal
-    // Encode the entry title to find it in storage
     const encodedTitle = encodeURIComponent(msg.title || '');
-    chrome.tabs.create({ 
-      url: chrome.runtime.getURL(`src/options/options.html#library?showDetails=${encodedTitle}`)
+    const optionsUrl = chrome.runtime.getURL(`src/options/options.html#library?showDetails=${encodedTitle}`);
+    
+    // Check if options page already open
+    chrome.tabs.query({ url: chrome.runtime.getURL('src/options/options.html*') }, (tabs) => {
+      if (tabs.length > 0) {
+        // Update existing tab
+        chrome.tabs.update(tabs[0].id, { url: optionsUrl, active: true });
+      } else {
+        // Create new tab
+        chrome.tabs.create({ url: optionsUrl });
+      }
     });
   } 
   // ========== Google Drive Sync Handlers ==========

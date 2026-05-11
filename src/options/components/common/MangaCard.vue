@@ -62,16 +62,7 @@
                     
 
 
-                    <div v-if="librarySettings.showReadingBadges" class="info-item">
-                        <template v-if="entry.anilistData.chapters">
-                            <span class="info-label">Read:</span>{{ entry.readChapters || 'ch.???' }} / 
-                            <span class="info-label">Total:</span>{{ entry.anilistData.chapters }}
-                        </template>
-                        <template v-else>
-                            <span class="info-label">Read:</span>{{ entry.readChapters || 'ch.???' }} 
-                            <span class="info-label ongoing-tag">Ongoing</span>
-                        </template>
-                    </div>
+
                 </div>
                 <div v-else class="info-item" style="opacity: 0.6;">
                     Loading info...
@@ -108,7 +99,6 @@ const props = defineProps({
             bordersEnabled: true,
             borderThickness: BORDER_DEFAULTS.size,
         
-            showReadingBadges: true,
             showRibbons: true
         })
     }
@@ -260,14 +250,7 @@ const formatName = computed(() => {
 }
 
 
-.ongoing-tag {
-    background: rgba(251, 191, 36, 0.15);
-    color: #fbbf24;
-    padding: 1px 5px;
-    border-radius: 3px;
-    font-size: 9px;
-    margin-left: 4px;
-}
+
 
 .card-action {
     &-btn {

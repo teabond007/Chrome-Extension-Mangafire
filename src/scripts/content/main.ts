@@ -26,9 +26,8 @@ if ((window as any).__BMH_INITIALIZED__) {
             TOGGLES.CUSTOM_STATUS_ENABLED,
             DATA.CUSTOM_STATUSES,
             DATA.CUSTOM_SITES,
-            TOGGLES.CUSTOM_SITE_QUICK_ACTIONS,
-            TOGGLES.CUSTOM_SITE_HIGHLIGHT,
-            TOGGLES.CUSTOM_SITE_SHOW_RIBBONS
+            TOGGLES.QUICK_ACTIONS,
+            TOGGLES.LIBRARY_SHOW_RIBBONS
         ];
 
         try {
