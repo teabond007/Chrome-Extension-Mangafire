@@ -104,14 +104,23 @@
     background-position: right 12px center;
     background-size: 16px;
 
+    .dark-mode &,
+    .black-mode &,
+    .neon-mode & {
+        color-scheme: dark;
+        background-color: var(--input-bg);
+    }
+
     &:hover {
         border-color: var(--accent-primary);
         background-color: var(--bg-card);
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 
-        .dark-mode &, .black-mode &, .neon-mode & {
-            background-color: rgba(255, 255, 255, 0.05);
+        .dark-mode &,
+        .black-mode &,
+        .neon-mode & {
+            background-color: var(--input-bg);
         }
     }
 
@@ -121,19 +130,56 @@
     }
 
     /* Theme adjustments for the arrow icon color */
-    .dark-mode &, .black-mode &, .neon-mode & {
+    .dark-mode &,
+    .black-mode &,
+    .neon-mode & {
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23A3AED0' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
     }
 
-    /* Dropdown Options Styling */
+    /* Dropdown Options Styling - Chromium native selects require solid colors since OS popups do not resolve CSS variables */
     option {
-        background-color: var(--input-bg);
-        color: var(--text-primary);
-        padding: 10px;
+        background-color: #FFFFFF;
+        color: #1A1A1A;
+        padding: 8px 12px;
+        border-radius: var(--radius-sm);
+        border: 1px solid transparent;
+        cursor: pointer;
 
-        .dark-mode &, .black-mode &, .neon-mode & {
-            background-color: var(--bg-card);
-            color: var(--text-primary);
+        &:hover, &:focus, &:active, &:checked {
+            background-color: var(--accent-primary) !important;
+            color: #FFFFFF !important;
+            border: 1px solid var(--accent-primary) !important;
+        }
+
+        .dark-mode & {
+            background-color: #1B254B;
+            color: #FFFFFF;
+
+            &:hover, &:focus, &:active, &:checked {
+                background-color: var(--accent-primary) !important;
+                color: #FFFFFF !important;
+                border: 1px solid var(--accent-primary) !important;
+            }
+        }
+        .black-mode & {
+            background-color: #050505;
+            color: #FFFFFF;
+
+            &:hover, &:focus, &:active, &:checked {
+                background-color: var(--accent-primary) !important;
+                color: #FFFFFF !important;
+                border: 1px solid var(--accent-primary) !important;
+            }
+        }
+        .neon-mode & {
+            background-color: #100e14;
+            color: #FFFFFF;
+
+            &:hover, &:focus, &:active, &:checked {
+                background-color: var(--accent-primary) !important;
+                color: #FFFFFF !important;
+                border: 1px solid var(--accent-primary) !important;
+            }
         }
     }
 }
@@ -527,33 +573,6 @@ label {
     width: fit-content;
     text-transform: uppercase;
 }
-
-// Map of status colors
-$status-colors: (
-    read: #9f9f9f,
-    reading: #4CAF50,
-    completed: #2196F3,
-    dropped: #F44336,
-    onhold: #FFC107,
-    planning: #9C27B0,
-    default: #000000
-);
-
-@each $status, $color in $status-colors {
-    .status-dot-#{$status} {
-        background: $color;
-    }
-
-    .status-#{$status} {
-        background: rgba($color, 0.15);
-        color: $color;
-
-        @if $status == read {
-            color: #9c9c9c;
-        }
-    }
-}
-
 .format-badge {
     background: rgba(103, 58, 183, 0.15);
     color: #673AB7;
@@ -567,33 +586,3 @@ $status-colors: (
         color: #B39DDB;
     }
 }
-
-.demo {
-    &-shonen {
-        background: rgba(255, 87, 34, 0.15);
-        color: #FF5722;
-    }
-    &-seinen {
-        background: rgba(96, 125, 139, 0.15);
-        color: #455A64;
-    }
-    &-shoujo {
-        background: rgba(233, 30, 99, 0.15);
-        color: #E91E63;
-    }
-    &-josei {
-        background: rgba(156, 39, 176, 0.15);
-        color: #9C27B0;
-    }
-}
-
-.dark-mode .demo-seinen {
-    color: #90A4AE;
-    background: rgba(144, 164, 174, 0.15);
-}
-
-.search-highlight {
-    background: rgba(255, 235, 59, 0.3);
-    border-radius: 2px;
-    padding: 0 2px;
-}

@@ -131,7 +131,8 @@ defineProps({
     customStatuses: Array,
     availableGenres: Array,
     showStats: Boolean,
-    sortedEntriesCount: Number
+    sortedEntriesCount: Number,
+    cardViewSize: String
 });
 
 defineEmits(['toggle-stats', 'set-view-size', 'clear-filters']);

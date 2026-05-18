@@ -3,8 +3,11 @@
         <div class="site-info">
             <div class="site-header">
                 <span class="site-name">{{ site.name }}</span>
-                <span class="site-status" :class="statusClass">
-                    {{ statusText }}
+                <span class="site-status" :class="cardStatus">
+                    {{ cardStatusText }}
+                </span>
+                <span class="site-status" :class="readerStatus">
+                    {{ readerStatusText }}
                 </span>
             </div>
             <span class="site-hostname">{{ site.url || site.hostname }}</span>
@@ -45,7 +48,10 @@ const props = defineProps({
 const emit = defineEmits(['edit', 'edit-reader']);
 const customSitesStore = useCustomSitesStore();
 
-const selectorStatus = computed(() => {
+/**
+ * Determines configuration status of card/listing selectors
+ */
+const cardStatus = computed(() => {
     const site = props.site;
     if (!site.selectors) return 'empty';
     
@@ -61,12 +67,38 @@ const selectorStatus = computed(() => {
     return 'complete';
 });
 
-const statusClass = computed(() => selectorStatus.value);
-const statusText = computed(() => {
-    switch (selectorStatus.value) {
-        case 'complete': return '✓ Ready';
-        case 'incomplete': return '⚠ Incomplete';
-        case 'empty': return '✗ Not configured';
+const cardStatusText = computed(() => {
+    switch (cardStatus.value) {
+        case 'complete': return '✓ Card Selectors';
+        case 'incomplete': return '⚠ Incomplete Cards';
+        case 'empty': return '✗ Missing Card Selectors';
+        default: return '';
+    }
+});
+
+/**
+ * Determines configuration status of reader selectors
+ */
+const readerStatus = computed(() => {
+    const site = props.site;
+    if (!site.readerSelectors) return 'empty';
+    
+    const r = site.readerSelectors;
+    const hasDetect = !!r.readerDetect;
+    const hasTitle = !!r.readerTitle;
+    const hasChapter = !!r.readerChapter;
+    
+    if (!hasDetect && !hasTitle && !hasChapter) return 'empty';
+    if (!hasDetect || !hasTitle || !hasChapter) return 'incomplete';
+    
+    return 'complete';
+});
+
+const readerStatusText = computed(() => {
+    switch (readerStatus.value) {
+        case 'complete': return '✓ Reader Selectors';
+        case 'incomplete': return '⚠ Incomplete Reader';
+        case 'empty': return '✗ Missing Reader Selectors';
         default: return '';
     }
 });
