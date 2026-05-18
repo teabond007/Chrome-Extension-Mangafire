@@ -16,17 +16,9 @@
   "permissions": [
     "scripting",
     "tabs",
-    "storage",
-    "identity"
+    "storage"
   ],
-  "oauth2": {
-    "client_id": "230078342235-anlc8rvjvbo5lg18tclldqpucfc0bja3.apps.googleusercontent.com",
-    "scopes": [
-      "https://www.googleapis.com/auth/drive.appdata",
-      "https://www.googleapis.com/auth/userinfo.email",
-      "https://www.googleapis.com/auth/userinfo.profile"
-    ]
-  },
+
   "host_permissions": [
     "https://graphql.anilist.co/*",
     "https://api.mangadex.org/*",

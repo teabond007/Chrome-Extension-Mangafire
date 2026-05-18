@@ -5,14 +5,13 @@
  * 
  * Provides the Quick Actions Overlay
  * @module core/overlay-factory
- * @version 3.8.1
+ * @version 3.8.2
  */
 
 import { createApp } from 'vue';
 import { STATUS_COLORS } from '../../config.js';
 import QuickActions from '../content/components/QuickActions.vue';
 import StatusPicker from '../content/components/StatusPicker.vue';
-import RatingPicker from '../content/components/RatingPicker.vue';
 import StatusBadge from '../content/components/StatusBadge.vue';
 
 
@@ -135,131 +134,6 @@ export class OverlayFactory {
     }
 
     /**
-     * Create and mount a Vue-based Rating Picker.
-     * @param {HTMLElement} host - The anchor element
-     * @param {Object} entry - Library entry data
-     * @param {Function} onSelect - Callback when rating is selected
-     */
-    static mountRatingPicker(host, entry, onSelect) {
-        // Remove existing pickers first
-        document.querySelectorAll('.bmh-vue-picker-container').forEach(p => p.remove());
-
-        const container = document.createElement('div');
-        container.className = 'bmh-vue-picker-container bmh-vue-rating-picker';
-        document.body.appendChild(container);
-
-        const shadow = container.attachShadow({ mode: 'open' });
-        const mountPoint = document.createElement('div');
-        shadow.appendChild(mountPoint);
-
-        // Inject Rating Picker styles
-        const style = document.createElement('style');
-        style.textContent = `
-            .bmh-rating-picker {
-                background: rgba(20, 20, 25, 0.98);
-                border: 1px solid rgba(255, 255, 255, 0.12);
-                border-radius: 12px;
-                padding: 12px;
-                min-width: 180px;
-                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
-
-                animation: bmh-picker-slide 0.2s ease-out;
-                font-family: sans-serif;
-            }
-            @keyframes bmh-picker-slide {
-                from { opacity: 0; transform: scale(0.95) translateY(-8px); }
-                to { opacity: 1; transform: scale(1) translateY(0); }
-            }
-            .bmh-picker-header {
-                font-size: 11px;
-                color: rgba(255, 255, 255, 0.5);
-                text-transform: uppercase;
-                letter-spacing: 1px;
-                padding-bottom: 8px;
-                margin-bottom: 8px;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            }
-            .bmh-rating-grid {
-                display: grid;
-                grid-template-columns: repeat(5, 1fr);
-                gap: 6px;
-                margin-bottom: 10px;
-            }
-            .bmh-rating-num {
-                width: 36px;
-                height: 36px;
-                border: 1px solid rgba(255, 255, 255, 0.15);
-                border-radius: 8px;
-                background: transparent;
-                color: #fff;
-                font-size: 14px;
-                font-weight: 600;
-                cursor: pointer;
-                transition: all 0.15s ease;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            .bmh-rating-num:hover, .bmh-rating-num.hovered {
-                background: rgba(251, 191, 36, 0.3);
-                border-color: #fbbf24;
-                color: #fbbf24;
-            }
-            .bmh-rating-num.active {
-                background: #fbbf24;
-                border-color: #fbbf24;
-                color: #000;
-            }
-            .bmh-rating-clear {
-                width: 100%;
-                padding: 8px;
-                background: transparent;
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                border-radius: 6px;
-                color: rgba(255, 255, 255, 0.6);
-                font-size: 12px;
-                cursor: pointer;
-                transition: all 0.15s ease;
-            }
-            .bmh-rating-clear:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
-        `;
-        shadow.appendChild(style);
-
-        const rect = host.getBoundingClientRect();
-        container.style.position = 'fixed';
-        container.style.left = `${rect.left}px`;
-        container.style.top = `${rect.bottom + 8}px`;
-        container.style.zIndex = '10000';
-
-        let outsideClickHandler;
-        const cleanup = () => {
-            app.unmount();
-            container.remove();
-            if (outsideClickHandler) {
-                document.removeEventListener('click', outsideClickHandler);
-            }
-        };
-
-        const app = createApp(RatingPicker, { 
-            entry,
-            onSelect: (rating) => {
-                onSelect(rating, entry);
-                cleanup();
-            }
-        });
-
-        outsideClickHandler = (e) => {
-            if (!container.contains(e.target) && !host.contains(e.target)) {
-                cleanup();
-            }
-        };
-
-        setTimeout(() => document.addEventListener('click', outsideClickHandler), 0);
-        
-        return app.mount(mountPoint);
-    }
-
-    /**
      * Create and mount a Vue-based Status Badge.
      * @param {HTMLElement} host - The card element
      * @param {String} text - Badge text
@@ -354,8 +228,6 @@ export class OverlayFactory {
         mountPoint.appendChild(ribbon);
     }
 
-
-
     /**
      * Create and mount a Vue-based Quick Actions tooltip.
      * @param {HTMLElement} host - The element to attach the tooltip to
@@ -437,10 +309,6 @@ export class OverlayFactory {
                 border-radius: 50%;
                 box-shadow: 0 0 8px var(--status-color);
             }
-            .bmh-tt-rating {
-                font-weight: 700;
-                color: #fbbf24;
-            }
             .bmh-tt-info {
                 color: #60a5fa;
                 display: flex;
@@ -465,11 +333,7 @@ export class OverlayFactory {
             callbacks
         });
 
-        const mountedApp = app.mount(mountPoint);
-        
-        // Listen for the custom event if we use a different mounting strategy,
-        // but here we can just pass callbacks as props for simplicity or use provide/inject.
-        // QuickActions.vue accepts callbacks as props.
+        app.mount(mountPoint);
         
         return app;
     }
@@ -491,7 +355,6 @@ export class OverlayFactory {
         const lastRead = parseFloat(entry.lastReadChapter) || 0;
         const nextChapter = OverlayFactory.calculateNextChapter(entry);
         const statusColor = OverlayFactory.getStatusColor(entry.status);
-        const currentRating = entry.personalData?.rating || 0;
         const hasHistory = lastRead > 0;
 
         tooltip.innerHTML = `
@@ -503,9 +366,6 @@ export class OverlayFactory {
             <button class="bmh-tt-btn bmh-tt-status" data-action="status" title="${entry.status || 'Set Status'}" style="--status-color: ${statusColor}">
                 <span class="bmh-tt-status-dot" style="background: ${statusColor}"></span>
             </button>
-            <button class="bmh-tt-btn bmh-tt-rating" data-action="rating" title="Rating: ${currentRating}/10">
-                ${currentRating > 0 ? currentRating : '★'}
-            </button>
             <button class="bmh-tt-btn bmh-tt-info" data-action="details" title="View Details">
                 ℹ
             </button>
@@ -514,7 +374,6 @@ export class OverlayFactory {
         OverlayFactory.attachEventListeners(tooltip, entry, callbacks);
         return tooltip;
     }
-
 
     /**
      * Attach event listeners to action buttons.
@@ -539,18 +398,6 @@ export class OverlayFactory {
     static calculateNextChapter(entry) {
         const lastRead = parseFloat(entry.lastReadChapter) || 0;
         return Math.floor(lastRead) + 1;
-    }
-
-    /**
-     * Render rating as a simple badge with number.
-     * @param {number} rating - Rating value (1-10)
-     * @returns {string} HTML string
-     */
-    static renderRatingBadge(rating) {
-        if (!rating || rating <= 0) {
-            return '<span class="bmh-rating-badge bmh-rating-empty">-</span>';
-        }
-        return `<span class="bmh-rating-badge">${rating}/10</span>`;
     }
 
     /**
@@ -606,58 +453,6 @@ export class OverlayFactory {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 onSelect?.(btn.dataset.status, entry);
-                picker.remove();
-            });
-        });
-
-        OverlayFactory.autoCloseOnOutsideClick(picker);
-        return picker;
-    }
-
-    /**
-     * Create a 1-10 rating picker (no stars, number buttons).
-     * @param {Object} entry - Library entry  
-     * @param {Function} onSelect - Callback when rating is selected
-     * @returns {HTMLElement}
-     */
-    static createRatingPicker(entry, onSelect) {
-        const picker = document.createElement('div');
-        picker.className = 'bmh-rating-picker';
-
-        const currentRating = entry.personalData?.rating || 0;
-
-        picker.innerHTML = `
-            <div class="bmh-picker-header">Rate (1-10)</div>
-            <div class="bmh-rating-grid">
-                ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => `
-                    <button class="bmh-rating-num ${num === currentRating ? 'active' : ''}" 
-                            data-rating="${num}">
-                        ${num}
-                    </button>
-                `).join('')}
-            </div>
-            <button class="bmh-rating-clear" data-rating="0">Clear</button>
-        `;
-
-        // Hover effect for preview
-        const buttons = picker.querySelectorAll('.bmh-rating-num');
-        buttons.forEach((btn, idx) => {
-            btn.addEventListener('mouseenter', () => {
-                buttons.forEach((b, i) => {
-                    b.classList.toggle('hovered', i <= idx);
-                });
-            });
-        });
-
-        picker.querySelector('.bmh-rating-grid').addEventListener('mouseleave', () => {
-            buttons.forEach(b => b.classList.remove('hovered'));
-        });
-
-        picker.querySelectorAll('[data-rating]').forEach(el => {
-            el.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const rating = parseInt(el.dataset.rating);
-                onSelect?.(rating, entry);
                 picker.remove();
             });
         });
@@ -757,11 +552,6 @@ export class OverlayFactory {
                 box-shadow: 0 0 8px var(--status-color);
             }
 
-            .bmh-tt-rating {
-                font-weight: 700;
-                color: #fbbf24;
-            }
-
             .bmh-tt-info {
                 color: #60a5fa;
                 display: flex;
@@ -777,9 +567,8 @@ export class OverlayFactory {
                 display: block;
             }
 
-            /* ===== PICKERS (Status & Rating) ===== */
-            .bmh-status-picker,
-            .bmh-rating-picker {
+            /* ===== PICKERS (Status) ===== */
+            .bmh-status-picker {
                 position: fixed;
                 background: rgba(20, 20, 25, 0.98);
                 border: 1px solid rgba(255, 255, 255, 0.12);
@@ -842,68 +631,6 @@ export class OverlayFactory {
                 height: 10px;
                 border-radius: 50%;
                 flex-shrink: 0;
-            }
-
-            /* Rating Grid (1-10) */
-            .bmh-rating-grid {
-                display: grid;
-                grid-template-columns: repeat(5, 1fr);
-                gap: 6px;
-                margin-bottom: 10px;
-            }
-
-            .bmh-rating-num {
-                width: 36px;
-                height: 36px;
-                border: 1px solid rgba(255, 255, 255, 0.15);
-                border-radius: 8px;
-                background: transparent;
-                color: #fff;
-                font-size: 14px;
-                font-weight: 600;
-                cursor: pointer;
-                transition: all 0.15s ease;
-            }
-
-            .bmh-rating-num:hover,
-            .bmh-rating-num.hovered {
-                background: rgba(251, 191, 36, 0.3);
-                border-color: #fbbf24;
-                color: #fbbf24;
-            }
-
-            .bmh-rating-num.active {
-                background: #fbbf24;
-                border-color: #fbbf24;
-                color: #000;
-            }
-
-            .bmh-rating-clear {
-                width: 100%;
-                padding: 8px;
-                background: transparent;
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                border-radius: 6px;
-                color: rgba(255, 255, 255, 0.6);
-                font-size: 12px;
-                cursor: pointer;
-                transition: all 0.15s ease;
-            }
-
-            .bmh-rating-clear:hover {
-                background: rgba(255, 255, 255, 0.08);
-                color: #fff;
-            }
-
-            /* Rating Badge */
-            .bmh-rating-badge {
-                color: #fbbf24;
-                font-weight: 600;
-                font-size: 13px;
-            }
-
-            .bmh-rating-empty {
-                opacity: 0.5;
             }
 
             /* Animation keyframes */

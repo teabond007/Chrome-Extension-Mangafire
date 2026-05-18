@@ -25,9 +25,9 @@
                 <span class="nav-icon">🌐</span>
                 <span class="nav-text">Custom Sites</span>
             </a>
-            <a href="#" class="nav-item" :class="{ active: activeTab === 'profile' }" @click="setActiveTab('profile')" data-tab="profile">
-                <span class="nav-icon">☁️</span>
-                <span class="nav-text">Profile & Sync</span>
+            <a href="#" class="nav-item" :class="{ active: activeTab === 'backup' }" @click="setActiveTab('backup')" data-tab="backup">
+                <span class="nav-icon">💾</span>
+                <span class="nav-text">Backup</span>
             </a>
             <a href="#" class="nav-item" :class="{ active: activeTab === 'about' }" @click="setActiveTab('about')" data-tab="about">
                 <span class="nav-icon">ℹ️</span>

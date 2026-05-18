@@ -138,7 +138,7 @@ const availableGenres = computed(() => {
     const genres = new Set();
     if (Array.isArray(savedEntries.value)) {
         savedEntries.value.forEach(e => {
-            if (e.anilistData?.genres) {
+            if (e.anilistData?.genres && Array.isArray(e.anilistData.genres)) {
                 e.anilistData.genres.forEach(g => genres.add(g));
             }
         });
@@ -155,7 +155,7 @@ const filteredEntries = computed(() => {
         var keep = true;
         
         // Family Friendly
-        if (familyFriendlyEnabled.value == true && ani != null && ani.genres != null) {
+        if (familyFriendlyEnabled.value == true && ani != null && Array.isArray(ani.genres)) {
             for (var g = 0; g < ani.genres.length; g++) {
                 if (ani.genres[g] == 'Ecchi' || ani.genres[g] == 'Hentai') {
                     keep = false;

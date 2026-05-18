@@ -22,15 +22,6 @@
         ▶
       </button>
 
-      <!-- Rating Picker Toggle -->
-      <button 
-        class="bmh-tt-btn bmh-tt-rating" 
-        @click.stop.prevent="onAction('rating', $event)"
-        :title="`Rating: ${currentRating}/10`"
-      >
-        {{ currentRating > 0 ? currentRating : '★' }}
-      </button>
-
       <!-- Details Button -->
       <button 
         class="bmh-tt-btn bmh-tt-info" 
@@ -85,8 +76,6 @@ const continueTitle = computed(() => {
     ? `Continue ${unitName.value} ${nextChapter.value}` 
     : `Start Reading ${unitName.value} 1`;
 });
-
-const currentRating = computed(() => props.entry.personalData?.rating || 0);
 
 const statusColor = computed(() => {
   const normalized = (props.entry.status || '').toLowerCase().trim();
@@ -145,11 +134,6 @@ const onAction = (action, event) => {
       &:not(.bmh-btn-disabled):hover {
         background: linear-gradient(135deg, #66BB6A, #43A047);
       }
-    }
-
-    &.bmh-tt-rating {
-      font-weight: 700;
-      color: #fbbf24;
     }
 
     &.bmh-tt-info {

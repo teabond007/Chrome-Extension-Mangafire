@@ -30,26 +30,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         chrome.tabs.create({ url: optionsUrl });
       }
     });
-  } 
-  // ========== Google Drive Sync Handlers ==========
-  else if (msg.type === "gdrive:signIn") {
-    handleGDriveSignIn(sendResponse);
-    return true; // Keep channel open for async response
-  } else if (msg.type === "gdrive:signOut") {
-    handleGDriveSignOut(sendResponse);
-    return true;
-  } else if (msg.type === "gdrive:upload") {
-    handleGDriveUpload(msg.data, sendResponse);
-    return true;
-  } else if (msg.type === "gdrive:download") {
-    handleGDriveDownload(sendResponse);
-    return true;
-  } else if (msg.type === "gdrive:getBackupInfo") {
-    handleGDriveBackupInfo(sendResponse);
-    return true;
-  } else if (msg.type === "gdrive:deleteBackup") {
-    handleGDriveDeleteBackup(sendResponse);
-    return true;
   } else if (msg.type === "custom-sites-updated") {
     // Re-register content scripts for custom sites
     handleCustomSitesUpdate(sendResponse);
@@ -93,90 +73,9 @@ function safeSendMessage(message) {
   }
 }
 
-// ========== Google Drive Handler Functions ==========
-
-/**
- * Handles Google sign-in via chrome.identity.
- */
-async function handleGDriveSignIn(sendResponse) {
-  try {
-    const { getAuthToken, getUserProfile } = await import('../scripts/core/cloud/gdrive-auth.js');
-    await getAuthToken(true);
-    const profile = await getUserProfile();
-    sendResponse({ success: true, profile });
-  } catch (error) {
-    sendResponse({ success: false, error: error.message });
-  }
-}
-
-/**
- * Handles Google sign-out and token revocation.
- */
-async function handleGDriveSignOut(sendResponse) {
-  try {
-    const { revokeToken } = await import('../scripts/core/cloud/gdrive-auth.js');
-    await revokeToken();
-    sendResponse({ success: true });
-  } catch (error) {
-    sendResponse({ success: false, error: error.message });
-  }
-}
-
-/**
- * Handles backup upload to Google Drive.
- */
-async function handleGDriveUpload(data, sendResponse) {
-  try {
-    const { uploadBackup } = await import('../scripts/core/cloud/gdrive-sync.js');
-    const result = await uploadBackup(data);
-    sendResponse({ success: true, result });
-  } catch (error) {
-    sendResponse({ success: false, error: error.message });
-  }
-}
-
-/**
- * Handles backup download from Google Drive.
- */
-async function handleGDriveDownload(sendResponse) {
-  try {
-    const { downloadBackup } = await import('../scripts/core/cloud/gdrive-sync.js');
-    const data = await downloadBackup();
-    sendResponse({ success: true, data });
-  } catch (error) {
-    sendResponse({ success: false, error: error.message });
-  }
-}
-
-/**
- * Handles fetching backup info from Google Drive.
- */
-async function handleGDriveBackupInfo(sendResponse) {
-  try {
-    const { getBackupInfo } = await import('../scripts/core/cloud/gdrive-sync.js');
-    const info = await getBackupInfo();
-    sendResponse({ success: true, info });
-  } catch (error) {
-    sendResponse({ success: false, error: error.message });
-  }
-}
-
-/**
- * Handles deleting backup from Google Drive.
- */
-async function handleGDriveDeleteBackup(sendResponse) {
-  try {
-    const { deleteBackup } = await import('../scripts/core/cloud/gdrive-sync.js');
-    await deleteBackup();
-    sendResponse({ success: true });
-  } catch (error) {
-    sendResponse({ success: false, error: error.message });
-  }
-}
-
-
 
 let isUpdatingCustomSites = false;
+
 
 /**
  * Updates dynamic content script registrations based on user-defined custom sites.

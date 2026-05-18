@@ -364,7 +364,6 @@ export class CardEnhancer {
         var callbacks = {
             continue: (e) => this.handleContinueReading(e, card),
             status: (e, target) => this.handleStatusChange(e, target || null, card),
-            rating: (e, target) => this.handleRatingChange(e, target || null, card),
             details: (e) => this.handleViewDetails(e, card)
         };
 
@@ -444,20 +443,6 @@ export class CardEnhancer {
     }
 
     /**
-     * Handle rating change — opens the rating picker popup.
-     * @param {Object} entry - Library entry
-     * @param {HTMLElement} btn - Button element that was clicked
-     * @param {{ element: HTMLElement, data: Object }} card
-     */
-    handleRatingChange(entry, btn, card) {
-        OverlayFactory.mountRatingPicker(
-            btn,
-            entry,
-            (rating, entry) => this.saveRatingChange(entry, rating)
-        );
-    }
-
-    /**
      * Handle view details — sends a message to open the options page detail modal.
      * Adapter can override this behaviour.
      * @param {Object} entry - Library entry
@@ -500,12 +485,21 @@ export class CardEnhancer {
             }
 
             if (foundIdx !== -1) {
-                // Update existing
+                // Entry already exists — just update its status in place
                 entries[foundIdx].status = newStatus;
-                // Add new entry and try to fetch metadata
-                var newEntry = entry;
-                newEntry.status = newStatus;
-                newEntry.lastUpdated = Date.now();
+                entries[foundIdx].lastUpdated = Date.now();
+                console.log('[CardEnhancer] Updated existing entry status: ' + entry.title + ' → ' + newStatus);
+            } else {
+                // Entry is new — build it and try to fetch metadata before saving
+                var newEntry = {
+                    title: entry.title,
+                    slug: entry.slug,
+                    status: newStatus,
+                    source: entry.source,
+                    sourceId: entry.sourceId,
+                    sourceUrl: entry.sourceUrl,
+                    lastUpdated: Date.now()
+                };
 
                 try {
                     var metadata = await getMergedMetadata(entry.title);
@@ -520,13 +514,13 @@ export class CardEnhancer {
                 console.log('[CardEnhancer] Added new entry to library: ' + entry.title);
             }
 
-            // Sanitize before saving — strips Vue proxies
+            // Sanitize before saving — strips Vue proxies and ensures plain array
             var finalEntries = Array.isArray(entries) ? entries : [];
             await new Promise(resolve => {
                 chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: JSON.parse(JSON.stringify(finalEntries)) }, resolve);
             });
 
-            console.log('[CardEnhancer] Status updated: ' + entry.title + ' → ' + newStatus);
+            console.log('[CardEnhancer] Status saved: ' + entry.title + ' → ' + newStatus);
 
             // Re-run enhancements after a short delay so storage can settle
             setTimeout(() => {
@@ -544,46 +538,6 @@ export class CardEnhancer {
             }, 100);
         } catch (e) {
             console.error('[CardEnhancer] Failed to save status:', e);
-        }
-    }
-
-    /**
-     * Save a new rating for an entry to Chrome storage.
-     * @param {Object} entry - Library entry
-     * @param {number} rating - Rating value (0-10)
-     */
-    async saveRatingChange(entry, rating) {
-        try {
-            var data = await new Promise(resolve => {
-                chrome.storage.local.get([DATA.LIBRARY_ENTRIES], resolve);
-            });
-
-            var entries = data[DATA.LIBRARY_ENTRIES] || [];
-
-            // Find existing entry by normalized title
-            var foundIdx = -1;
-            for (var i = 0; i < entries.length; i++) {
-                if (this.normalizeTitle(entries[i].title) === this.normalizeTitle(entry.title)) {
-                    foundIdx = i;
-                    break;
-                }
-            }
-
-            if (foundIdx !== -1) {
-                if (!entries[foundIdx].personalData) {
-                    entries[foundIdx].personalData = {};
-                }
-                entries[foundIdx].personalData.rating = rating;
-
-                var finalEntries = Array.isArray(entries) ? entries : [];
-                await new Promise(resolve => {
-                    chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: JSON.parse(JSON.stringify(finalEntries)) }, resolve);
-                });
-
-                console.log('[CardEnhancer] Rating updated: ' + entry.title + ' → ' + rating);
-            }
-        } catch (e) {
-            console.error('[CardEnhancer] Failed to save rating:', e);
         }
     }
 

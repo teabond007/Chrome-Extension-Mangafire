@@ -1,6 +1,6 @@
 /**
- * @fileoverview Shared utility for gathering and merging extension data.
- * This file helps with importing, exporting and syncing data to the cloud.
+ * @fileoverview Shared utility for gathering and restoring extension data.
+ * This file helps with importing and exporting data to/from local .json files.
 
  */
 

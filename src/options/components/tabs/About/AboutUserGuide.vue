@@ -81,19 +81,6 @@
             </GuideCard>
         </div>
 
-        <!-- Guide Section: Profile & Cloud Sync -->
-        <h3 class="guide-section-header">Profile & Cloud Sync</h3>
-        <div class="guide-grid">
-            <GuideCard id="guide-profile-account" title="Google Drive Sync" icon="👤">
-                Cross-device sync uses your personal Google Drive <b>App Data</b> folder. This is a private space that only the extension can access—your photos and other documents remain entirely invisible to us.
-            </GuideCard>
-
-            <GuideCard id="guide-profile-sync" title="Selective Sync" icon="☁️">
-                Optimize performance by choosing exactly what gets synced. You can toggle sync for <b>Library Entries</b>, <b>Reading History</b>, or <b>Custom Site Configs</b> independently to suit your needs.
-            </GuideCard>
-
-           
-        </div>
     </div>
 </template>
 

@@ -10,7 +10,7 @@
             <LibraryTab v-show="settingsStore.activeTab === 'saved-entries'" />
             <AboutTab v-show="settingsStore.activeTab === 'about'" />
             <CustomSitesTab v-show="settingsStore.activeTab === 'custom-sites'" />
-            <ProfileTab v-show="settingsStore.activeTab === 'profile'" />
+            <BackupTab v-show="settingsStore.activeTab === 'backup'" />
         </main>
     </div>
 
@@ -38,12 +38,12 @@ import AppearanceTab from './components/tabs/Appearance/AppearanceTab.vue';
 import LibraryTab from './components/tabs/Library/LibraryTab.vue';
 import AboutTab from './components/tabs/About/AboutTab.vue';
 import CustomSitesTab from './components/tabs/CustomSites/CustomSitesTab.vue';
-import ProfileTab from './components/tabs/Profile/ProfileTab.vue';
+import BackupTab from './components/tabs/Backup/BackupTab.vue';
 import MangaDetailsModal from './components/tabs/Library/MangaDetailsModal.vue';
-import { useProfileStore } from './scripts/store/profile.store.js';
+import { useBackupStore } from './scripts/store/backup.store.js';
 
 const settingsStore = useSettingsStore();
-const profileStore = useProfileStore();
+const backupStore = useBackupStore();
 const libraryStore = useLibraryStore();
 
 const showScrollTop = ref(false);
@@ -90,9 +90,9 @@ watch(() => settingsStore.isCustomTheme, (val) => {
 });
 
 onMounted(async () => {
-    // 1. Load basic settings & profile
+    // 1. Load basic settings & backup info
     await settingsStore.loadSettings();
-    await profileStore.initialize();
+    await backupStore.initialize();
     applyTheme(settingsStore.theme);
 
     // 2. Load Library (Async)

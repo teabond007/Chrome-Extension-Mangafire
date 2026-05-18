@@ -10,7 +10,7 @@
         <div class="content-grid">
             <AboutProjectInfo />
             <AboutUserGuide />
-            <SupportDevCard />
+          
         </div>
     </div>
 </template>
@@ -18,7 +18,6 @@
 <script setup>
 import AboutProjectInfo from './AboutProjectInfo.vue';
 import AboutUserGuide from './AboutUserGuide.vue';
-import SupportDevCard from './SupportDevCard.vue';
 import { useSettingsStore } from '../../../scripts/store/settings.store.js';
 
 const settingsStore = useSettingsStore();

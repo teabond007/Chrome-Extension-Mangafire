@@ -16,17 +16,8 @@
   "permissions": [
     "scripting",
     "tabs",
-    "storage",
-    "identity"
+    "storage"
   ],
-  "oauth2": {
-    "client_id": "230078342235-anlc8rvjvbo5lg18tclldqpucfc0bja3.apps.googleusercontent.com",
-    "scopes": [
-      "https://www.googleapis.com/auth/drive.appdata",
-      "https://www.googleapis.com/auth/userinfo.email",
-      "https://www.googleapis.com/auth/userinfo.profile"
-    ]
-  },
   "host_permissions": [
     "https://graphql.anilist.co/*",
     "https://api.mangadex.org/*",
@@ -43,14 +34,14 @@
   "content_scripts": [
     {
       "js": [
-        "assets/main.js-loader-534fa422.js"
+        "assets/main.js-loader-d950513d.js"
       ],
       "matches": [
         "*://fallback.custom-sites.local/*"
       ],
       "run_at": "document_idle",
       "css": [
-        "assets/main-5f09d376.css"
+        "assets/main-86b91591.css"
       ]
     }
   ],
@@ -72,8 +63,8 @@
       ],
       "resources": [
         "assets/metadata-service-7948b06d.js",
-        "assets/library-service-6bb2a1eb.js",
-        "assets/main.js-d9616f57.js"
+        "assets/library-service-e5a457b0.js",
+        "assets/main.js-707f9772.js"
       ],
       "use_dynamic_url": false
     }

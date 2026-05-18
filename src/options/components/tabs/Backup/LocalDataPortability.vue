@@ -5,7 +5,7 @@
         icon="💾"
         icon-bg="rgba(67, 24, 255, 0.15)"
         icon-color="var(--accent-primary)"
-        guide-target="guide-profile-export"
+        guide-target="guide-backup-export"
     >
         <div class="inner-info-card">
             <div class="format-info">
@@ -16,6 +16,7 @@
                 @click="performLocalExport"
                 :disabled="syncStatus === 'syncing'"
             >
+                <!-- Show a spinner while exporting, otherwise show the download icon -->
                 <span v-if="syncStatus === 'syncing' && syncDirection === 'export'" class="spinner"></span>
                 <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -37,9 +38,42 @@
         icon="📂"
         icon-bg="rgba(107, 70, 193, 0.15)"
         icon-color="#6B46C1"
-        guide-target="guide-profile-import"
+        guide-target="guide-backup-import"
     >
+        <!-- Success or Error Feedback Message -->
+        <div v-if="lastSyncResult" :class="['status-feedback-box', lastSyncResult.type]">
+            <span class="feedback-icon">{{ lastSyncResult.type === 'success' ? '✅' : '❌' }}</span>
+            <span class="feedback-message">{{ lastSyncResult.message }}</span>
+        </div>
+
+        <!-- Permission Request Alert Box when custom sites are imported -->
+        <div v-if="needsPermissions" class="permission-alert-box">
+            <div class="alert-icon">⚠️</div>
+            <div class="alert-content">
+                <h4>Permission Required</h4>
+                <p>The imported backup contains custom sites. To let the extension highlight manga cards on these sites, Chrome needs your permission to access their URLs.</p>
+                
+                <ul class="custom-sites-list">
+                    <li v-for="site in pendingCustomSites" :key="site.hostname">
+                        🌐 <strong>{{ site.name || site.hostname }}</strong> ({{ site.hostname }})
+                    </li>
+                </ul>
+
+                <div class="alert-buttons">
+                    <button class="btn btn-primary btn-with-icon" @click="handleGrantPermissions" :disabled="syncStatus === 'syncing'">
+                        <span v-if="syncStatus === 'syncing'" class="spinner"></span>
+                        Grant Permissions &amp; Import
+                    </button>
+                    <button class="btn btn-secondary" @click="handleCancelImport" :disabled="syncStatus === 'syncing'">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Standard Drag and Drop upload zone -->
         <div 
+            v-else
             class="drop-zone-container" 
             :class="{ 'drag-over': isDragging }"
             @click="$refs.fileInput.click()"
@@ -47,6 +81,7 @@
             @dragleave.prevent="isDragging = false"
             @drop.prevent="handleFileDrop"
         >
+            <!-- Hidden file input, triggered by clicking the zone -->
             <input 
                 type="file" 
                 ref="fileInput" 
@@ -61,12 +96,13 @@
             </div>
         </div>
 
-        <div class="import-actions-row" style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 16px;">
+        <div v-if="!needsPermissions" class="import-actions-row" style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 16px;">
             <button 
                 class="btn btn-primary btn-with-icon"
                 @click="$refs.fileInput.click()"
                 :disabled="syncStatus === 'syncing'"
             >
+                <!-- Show a spinner while importing, otherwise show the upload icon -->
                 <span v-if="syncStatus === 'syncing' && syncDirection === 'import'" class="spinner"></span>
                 <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -77,60 +113,78 @@
             </button>
         </div>
     </SettingsCard>
-
 </template>
 
 <script setup>
 import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import SettingsCard from '../../common/SettingsCard.vue';
-import ToggleSwitch from '../../common/ToggleSwitch.vue';
-import { useProfileStore } from '../../../scripts/store/profile.store.js';
+import { useBackupStore } from '../../../scripts/store/backup.store.js';
 
-const profileStore = useProfileStore();
+const backupStore = useBackupStore();
 const { 
-    syncStatus, lastLocalBackup 
-} = storeToRefs(profileStore);
+    syncStatus, 
+    lastLocalBackup, 
+    needsPermissions, 
+    pendingCustomSites, 
+    lastSyncResult 
+} = storeToRefs(backupStore);
 
+// Tracks which direction the operation is going (export vs import), used for spinner
 const syncDirection = ref(null);
-const isDragging = ref(false);
-const fileInput = ref(null);
 
-const lastLocalBackupFormatted = computed(() => {
+// Whether the user is currently dragging a file over the drop zone
+const isDragging = ref(false);
+
+// Shows "Never" or a readable date for when we last exported
+const lastLocalBackupFormatted = computed(function() {
     if (!lastLocalBackup.value) return 'Never';
     return new Date(lastLocalBackup.value).toLocaleString();
 });
 
+/** Called when the user clicks the Export button */
 async function performLocalExport() {
     syncDirection.value = 'export';
-    await profileStore.exportLocalData();
+    await backupStore.exportLocalData();
     syncDirection.value = null;
 }
 
-const handleFileSelect = async (event) => {
-    const file = event.target.files[0];
+/** Called when the user picks a file using the file dialog */
+async function handleFileSelect(event) {
+    var file = event.target.files[0];
     if (file) {
         syncDirection.value = 'import';
-        await profileStore.importLocalData(file, true);
+        await backupStore.importLocalData(file);
         syncDirection.value = null;
-        event.target.value = '';
+        event.target.value = ''; // Reset so the same file can be picked again
     }
-};
+}
 
-const handleFileDrop = async (event) => {
+/** Called when the user drops a file onto the drop zone */
+async function handleFileDrop(event) {
     isDragging.value = false;
-    const file = event.dataTransfer.files[0];
+    var file = event.dataTransfer.files[0];
     if (file) {
         syncDirection.value = 'import';
-        await profileStore.importLocalData(file, true);
+        await backupStore.importLocalData(file);
         syncDirection.value = null;
     }
-};
+}
 
+/** Called when the user clicks "Grant Permissions & Import" */
+async function handleGrantPermissions() {
+    syncDirection.value = 'import';
+    await backupStore.grantPermissionsAndImport();
+    syncDirection.value = null;
+}
+
+/** Called when the user clicks "Cancel" on the permissions alert */
+function handleCancelImport() {
+    backupStore.cancelImport();
+}
 </script>
 
 <style scoped lang="scss">
-/* Local Backup: Export & Import Styles */
 .inner-info-card {
     background-color: rgba(255, 255, 255, 0.02);
     border: 1px dashed var(--border-color, #2B3674);
@@ -157,12 +211,6 @@ const handleFileDrop = async (event) => {
                 font-weight: 700;
             }
         }
-
-        .sub-description {
-            font-size: 11px;
-            color: var(--text-secondary);
-            font-style: italic;
-        }
     }
 }
 
@@ -172,7 +220,6 @@ const handleFileDrop = async (event) => {
     gap: 8px;
 }
 
-/* Import Drop Zone */
 .drop-zone-container {
     background-color: rgba(255, 255, 255, 0.02);
     border: 2px dashed var(--border-color, #2B3674);
@@ -229,9 +276,93 @@ const handleFileDrop = async (event) => {
     margin-bottom: 24px;
 }
 
+/* Success or Error Feedback Message Styling */
+.status-feedback-box {
+    padding: 12px 16px;
+    border-radius: var(--radius-sm, 6px);
+    margin-bottom: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
 
+    &.success {
+        background-color: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        color: #10b981;
+    }
 
-/* Spinner */
+    &.error {
+        background-color: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+    }
+}
+
+/* Permission Alert Box Styling */
+.permission-alert-box {
+    background-color: rgba(251, 191, 36, 0.08);
+    border: 1px solid rgba(251, 191, 36, 0.25);
+    border-radius: var(--radius-md, 8px);
+    padding: 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 16px;
+    width: 100%;
+
+    .alert-icon {
+        font-size: 24px;
+    }
+
+    .alert-content {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        flex: 1;
+
+        h4 {
+            margin: 0;
+            color: var(--text-primary);
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .custom-sites-list {
+            list-style: none;
+            padding: 0;
+            margin: 4px 0 12px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+
+            li {
+                font-size: 12px;
+                color: var(--text-primary);
+                background-color: rgba(255, 255, 255, 0.02);
+                padding: 6px 12px;
+                border-radius: var(--radius-sm, 4px);
+                border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+                width: fit-content;
+            }
+        }
+
+        .alert-buttons {
+            display: flex;
+            gap: 12px;
+        }
+    }
+}
+
+/* Spinning animation for the loading indicator */
 .spinner {
     width: 14px;
     height: 14px;
@@ -245,22 +376,5 @@ const handleFileDrop = async (event) => {
 
 @keyframes spin {
     to { transform: rotate(360deg); }
-}
-
-/* Button overrides */
-.btn-sm {
-    padding: 6px 12px;
-    font-size: 12px;
-}
-
-.btn-secondary {
-    background: var(--bg-body);
-    border: 1px solid var(--border-color);
-    color: var(--text-primary);
-
-    &:hover {
-        border-color: var(--accent-primary);
-        background: rgba(117, 81, 255, 0.05);
-    }
 }
 </style>

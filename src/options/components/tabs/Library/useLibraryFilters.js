@@ -39,7 +39,7 @@ export function useLibraryFilters(savedEntries, customStatuses, personalData, fa
     const availableGenres = computed(() => {
         const genres = new Set();
         savedEntries.value.forEach(e => {
-            if (e.anilistData?.genres) {
+            if (e.anilistData?.genres && Array.isArray(e.anilistData.genres)) {
                 e.anilistData.genres.forEach(g => genres.add(g));
             }
         });
@@ -53,7 +53,7 @@ export function useLibraryFilters(savedEntries, customStatuses, personalData, fa
             // Family Friendly
             if (familyFriendlyEnabled.value) {
                 if (ani?.isAdult) return false;
-                if (ani?.genres?.some(g => ['Ecchi', 'Hentai'].includes(g))) return false;
+                if (Array.isArray(ani?.genres) && ani.genres.some(g => ['Ecchi', 'Hentai'].includes(g))) return false;
                 if (ani?.tags?.some(t => ['Nudity', 'Sexual Content', 'Netorare', 'Incest', 'Rape'].includes(t.name))) return false;
             }
 
@@ -78,7 +78,7 @@ export function useLibraryFilters(savedEntries, customStatuses, personalData, fa
             }
 
             // Genre
-            if (filters.genre !== "All" && (!ani?.genres?.includes(filters.genre))) return false;
+            if (filters.genre !== "All" && (!Array.isArray(ani?.genres) || !ani.genres.includes(filters.genre))) return false;
 
             // Search
             if (filters.search !== "") {

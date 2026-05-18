@@ -72,7 +72,7 @@
                         </div>
                         
                         <div id="modalGenres" class="modal-genres">
-                            <span v-for="g in ani?.genres" :key="g" class="modal-genre-tag">{{ g }}</span>
+                            <span v-for="g in (Array.isArray(ani?.genres) ? ani.genres : [])" :key="g" class="modal-genre-tag">{{ g }}</span>
                         </div>
                         
                         <div id="modalTags" class="modal-tags">
