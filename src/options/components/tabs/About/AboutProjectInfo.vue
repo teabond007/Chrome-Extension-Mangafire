@@ -10,7 +10,7 @@
             <ul>
                 <li><strong>Standardizing your library</strong>: A single, persistent database for all your entries, regardless of which site they come from, with dynamic pagination.</li>
                 <li><strong>Visual Context</strong>: Injecting custom UI elements ( reading badges, and status ribbons) directly into the websites you browse.</li>
-                <li><strong>Zero-Lock-in Sync</strong>: Seamless cross-device synchronization using your own <strong>Google Drive</strong>, keeping you in full control of your data.</li>
+                <li><strong>Local-First Architecture</strong>: All data is stored and processed on your machine without cloud dependency, keeping you in full control of your data.</li>
             </ul>
 
             <hr class="divider">
@@ -23,9 +23,9 @@
                 <li><strong>DOM-Based Tracking</strong>: Automatically detects when you move between listing pages and reader pages based on element presence.</li>
             </ul>
 
-            <h4>☁️ Cloud Sync & Privacy</h4>
+            <h4>🔒 Privacy & Portability</h4>
             <ul class="feature-list">
-                <li><strong>Google Drive Integration</strong>: Securely sync your library and settings across all your devices using your private App Data folder.</li>
+                <li><strong>Local Backups</strong>: Easily export and import your entire library and configurations as a single JSON file.</li>
                 <li><strong>Local-First Architecture</strong>: All data is stored and processed on your machine. No external servers track your behavior.</li>
             </ul>
 
@@ -38,18 +38,18 @@
 
             <h4>📊 Library Management</h4>
             <ul class="feature-list">
-                <li><strong>Advanced Statistics</strong>: Visualize your library trends with detailed breakdown charts and consumption metrics.</li>
-                <li><strong>Mass Actions</strong>: merge duplicates, or export specific subsets of your data.</li>
+                <li><strong>Advanced Filters</strong>: Search and sort your library with multiple filtering modes.</li>
+                <li><strong>Mass Actions</strong>: Easily manage and curate your collections.</li>
             </ul>
 
             <hr class="divider">
 
             <h3>📖 Getting Started</h3>
             <ol class="usage-list">
-                <li><strong>Initialize Your Library</strong>: Import existing data via the <strong>Profile</strong> tab (JSON/MangaDex) to get started quickly.</li>
+                <li><strong>Initialize Your Library</strong>: Import existing data via the <strong>Backup</strong> tab (JSON) to get started quickly.</li>
                 <li><strong>Configure Your Sites</strong>: Navigate to the <strong>Custom Sites</strong> tab to add tracking support for your favorite websites.</li>
                 <li><strong>Browse & Interact</strong>: Once a site is configured, the extension will automatically highlight your entries and track your progress as you read.</li>
-                <li><strong>Enable Sync</strong>: Sign in with Google in the <strong>Profile</strong> tab to ensure your data is backed up and available on other machines.</li>
+                <li><strong>Local Backup</strong>: Periodically export your data in the <strong>Backup</strong> tab to ensure your library is safe.</li>
             </ol>
             
             <hr class="divider">

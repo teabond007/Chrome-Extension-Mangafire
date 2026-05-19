@@ -13,23 +13,11 @@
             </GuideCard>
 
             <GuideCard id="guide-general" title="General Preferences" icon="⚙️">
-                Global controls for how the extension interacts with web content. Enable <b>Quick Actions</b> to add interactive hover buttons on external sites, or toggle <b>Reading Badges</b> to see your progress directly on thumbnails.
-            </GuideCard>
-
-            <GuideCard id="guide-smart-automation" title="Smart Automation" icon="⚡">
-                Reduces manual work by automating updates. <b>Sync & Mark Read</b> uses your browsing history to automatically update your library when you visit a chapter page.
-            </GuideCard>
-
-            <GuideCard id="guide-reader" title="Reader Enhancements" icon="📚">
-                Specialized tools for reading pages. <b>Progress Tracking</b> saves your exact vertical position, allowing you to resume reading instantly on any device by remembering exactly where you left off.
+                Global controls for how the extension interacts with web content. Enable <b>Quick Actions</b> for interactive hover buttons, activate <b>Family Friendly Mode</b> to filter adult content, toggle <b>Status Ribbons</b>, and enable <b>Auto-Save Progress</b> for your reading sessions.
             </GuideCard>
 
             <GuideCard id="guide-statuses" title="Custom Statuses" icon="🎨">
                 Create virtual categories (e.g., "Favorites", "To-Buy") that go beyond standard site statuses. Custom statuses allow you to apply unique visual styles (different border colors or patterns) to specific groups of entries across all your configured sites.
-            </GuideCard>
-
-            <GuideCard id="guide-custom-list" title="Site Customization" icon="🌐">
-                Fine-tune how the extension looks on specific domains. Adjust <b>Highlight Thickness</b> and enable or <b>Status Ribbons</b> to ensure your manga markers are clearly visible without obstructing the site's original UI.
             </GuideCard>
         </div>
 
@@ -48,8 +36,12 @@
                 Configure <b>Reader Selectors</b> to enable progress tracking on custom sites. By identifying a unique element on chapter pages, the extension can automatically detect when you are reading and save your position.
             </GuideCard>
 
-            <GuideCard id="guide-custom-share" title="Portability" icon="📤">
-                Configurations are fully portable. You can <b>Export</b> your site settings as JSON to share with others or <b>Import</b> configurations from the community to instantly support new platforms.
+            <GuideCard id="guide-custom-list" title="Your Custom Sites" icon="📋">
+                Manage all your added site configurations. From here you can edit existing DOM selectors for manga cards or reader pages to ensure the extension correctly tracks your progress on any platform.
+            </GuideCard>
+
+            <GuideCard id="guide-custom-share" title="Share Configurations" icon="📤">
+                Configurations are fully portable. You can <b>Export</b> your custom site settings as JSON to share with others or <b>Import</b> configurations from the community to instantly support new platforms.
             </GuideCard>
         </div>
 
@@ -64,20 +56,12 @@
                 Global visual settings for injected borders. Choose between <b>Solid, Dashed, Dotted,</b> or <b>Double</b> styles to distinguish your statuses and markers, even on sites with complex or busy backgrounds.
             </GuideCard>
 
-            <GuideCard id="guide-stats" title="Library Statistics" icon="📊">
-                Track your consumption patterns over time. This section provides detailed metrics on your most-read formats, status distribution, and total chapter counts, helping you stay on top of your library growth.
+            <GuideCard id="guide-backup-export" title="Local Backup (Export)" icon="💾">
+                Create a local JSON snapshot of your entire library and custom site configurations. This is the safest way to manually preserve your data or migrate between browsers without cloud dependency.
             </GuideCard>
 
-            <GuideCard id="guide-profile-export" title="Export Data" icon="📤">
-                Create a local JSON snapshot of your entire library, history, and custom site configurations. This is the safest way to manually preserve your data or migrate between browsers without cloud dependency.
-            </GuideCard>
-
-            <GuideCard id="guide-profile-import" title="Import Data" icon="📥">
-                Restore your library from a previously exported JSON file. <b>Warning:</b> Importing will merge with your current local data, favoring the imported values if duplicates are found.
-            </GuideCard>
-
-            <GuideCard id="guide-backup" title="Storage Management" icon="💾">
-                Monitor your local storage usage. Unlike cloud sync, these tools interact directly with your browser's persistent storage, allowing you to clear cache or reset specific modules if you encounter performance issues.
+            <GuideCard id="guide-backup-import" title="Local Restore (Import)" icon="📂">
+                Restore your library from a previously exported JSON file. It ensures your reading history and site configurations are recovered efficiently.
             </GuideCard>
         </div>
 
