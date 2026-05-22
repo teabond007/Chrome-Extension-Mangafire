@@ -19,7 +19,9 @@
         @click.stop.prevent="onAction('continue', $event)"
         :title="continueTitle"
       >
-        ▶
+        <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 12px; height: 12px; display: block; margin-left: 2px;">
+          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
       </button>
 
       <!-- Details Button -->

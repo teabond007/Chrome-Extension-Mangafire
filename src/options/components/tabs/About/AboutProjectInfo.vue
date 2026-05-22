@@ -4,7 +4,7 @@
             <h2>Universal Content Manager</h2>
             <p>A sophisticated Chrome Extension designed to unify your reading and viewing experience across the web. Rather than relying on hardcoded support for specific sites, it uses a powerful <strong>Custom Sites</strong> engine that allows you to track progress, save history, and visualize bookmarks on <em>any</em> website through user-defined DOM selectors.</p>
 
-            <h3>🚀 Why Use This?</h3>
+            <h3><span class="icon-svg icon-zap" style="margin-right: 8px; color: var(--accent-primary);"></span>Why Use This?</h3>
             <p>Managing content across dozens of different platforms leads to fragmented history and forgotten bookmarks. 
             <strong>Universal Content Manager</strong> solves this by:</p>
             <ul>
@@ -15,28 +15,28 @@
 
             <hr class="divider">
 
-            <h3>✨ Key Features</h3>
+            <h3><span class="icon-svg icon-sparkles" style="margin-right: 8px; color: var(--accent-primary);"></span>Key Features</h3>
             
-            <h4>🌍 Universal Site Support</h4>
+            <h4><span class="icon-svg icon-globe" style="margin-right: 8px; color: var(--accent-primary);"></span>Universal Site Support</h4>
             <ul class="feature-list">
                 <li><strong>Custom Sites Engine</strong>: Add support for any site in seconds using the visual selector tool.</li>
                 <li><strong>DOM-Based Tracking</strong>: Automatically detects when you move between listing pages and reader pages based on element presence.</li>
             </ul>
 
-            <h4>🔒 Privacy & Portability</h4>
+            <h4><span class="icon-svg icon-backup" style="margin-right: 8px; color: var(--accent-primary);"></span>Privacy & Portability</h4>
             <ul class="feature-list">
                 <li><strong>Local Backups</strong>: Easily export and import your entire library and configurations as a single JSON file.</li>
                 <li><strong>Local-First Architecture</strong>: All data is stored and processed on your machine. No external servers track your behavior.</li>
             </ul>
 
-            <h4>🎨 Enhancement Suite</h4>
+            <h4><span class="icon-svg icon-palette" style="margin-right: 8px; color: var(--accent-primary);"></span>Enhancement Suite</h4>
             <ul class="feature-list">
                 <li><strong>Smart Highlighting</strong>: Visualize your saved entries with custom colored borders,  corner status ribbons, and interactive markers.</li>
                 <li><strong>Reader Enhancement</strong>: Support for specialized tools on pages identified as a "Reader Page".</li>
                 <li><strong>Progress Persistence</strong>: Remembers your exact scroll position and chapter history across different domains.</li>
             </ul>
 
-            <h4>📊 Library Management</h4>
+            <h4><span class="icon-svg icon-list" style="margin-right: 8px; color: var(--accent-primary);"></span>Library Management</h4>
             <ul class="feature-list">
                 <li><strong>Advanced Filters</strong>: Search and sort your library with multiple filtering modes.</li>
                 <li><strong>Mass Actions</strong>: Easily manage and curate your collections.</li>
@@ -44,7 +44,7 @@
 
             <hr class="divider">
 
-            <h3>📖 Getting Started</h3>
+            <h3><span class="icon-svg icon-book-open" style="margin-right: 8px; color: var(--accent-primary);"></span>Getting Started</h3>
             <ol class="usage-list">
                 <li><strong>Initialize Your Library</strong>: Import existing data via the <strong>Backup</strong> tab (JSON) to get started quickly.</li>
                 <li><strong>Configure Your Sites</strong>: Navigate to the <strong>Custom Sites</strong> tab to add tracking support for your favorite websites.</li>
@@ -54,7 +54,7 @@
             
             <hr class="divider">
 
-            <h3>⚖️ Terms & Privacy</h3>
+            <h3><span class="icon-svg icon-info" style="margin-right: 8px; color: var(--accent-primary);"></span>Terms & Privacy</h3>
             <p>This extension is built with a <strong>Privacy-First</strong> philosophy. We do not collect analytics, track your browsing history, or store your data on our own servers. Your data belongs to you.</p>
             <ul>
                 <li><strong>Governing Law</strong>: Terms are governed by the laws of <strong>Slovenia</strong>.</li>

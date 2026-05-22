@@ -1,7 +1,10 @@
 <template>
     <div :id="id" class="card guide-card">
         <div class="card-header">
-            <div v-if="icon" class="card-icon">{{ icon }}</div>
+            <div v-if="icon" class="card-icon">
+                <span v-if="icon.startsWith('icon-')" class="icon-svg" :class="icon"></span>
+                <span v-else>{{ icon }}</span>
+            </div>
             <h3>{{ title }}</h3>
         </div>
         <div class="card-body">

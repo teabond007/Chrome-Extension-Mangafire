@@ -1,7 +1,7 @@
 <template>
     <SettingsCard 
         title="Add New Site" 
-        icon="➕"
+        icon="icon-plus"
         icon-bg="rgba(16, 185, 129, 0.15)"
         icon-color="#10b981"
         guide-target="guide-custom-add"
@@ -33,7 +33,7 @@
                 @click="startAddSite"
                 :disabled="!isValidUrl"
             >
-                <span>🔍</span> Open & Select Elements
+                <span class="icon-svg icon-search" style="margin-right: 6px;"></span> Open & Select Elements
             </button>
         </div>
     </SettingsCard>

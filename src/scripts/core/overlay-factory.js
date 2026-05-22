@@ -361,13 +361,19 @@ export class OverlayFactory {
             <button class="bmh-tt-btn bmh-tt-continue ${!hasHistory ? 'bmh-btn-disabled' : ''}" 
                     data-action="continue" 
                     title="${hasHistory ? `Continue ${unitName} ${nextChapter}` : `Start Reading ${unitName} 1`}">
-                ▶
+                <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 12px; height: 12px; display: block; margin-left: 2px;">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
             </button>
             <button class="bmh-tt-btn bmh-tt-status" data-action="status" title="${entry.status || 'Set Status'}" style="--status-color: ${statusColor}">
                 <span class="bmh-tt-status-dot" style="background: ${statusColor}"></span>
             </button>
             <button class="bmh-tt-btn bmh-tt-info" data-action="details" title="View Details">
-                ℹ
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 12px; height: 12px; display: block;">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
             </button>
         `;
 

@@ -1,7 +1,7 @@
 <template>
     <SettingsCard 
         title="Preset Themes" 
-        icon="🎭" 
+        icon="icon-theme" 
         guide-target="guide-personalization"
     >
         <div class="theme-grid">

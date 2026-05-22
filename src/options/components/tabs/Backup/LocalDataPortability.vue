@@ -2,7 +2,7 @@
     <!-- Local Backup: Export -->
     <SettingsCard 
         title="Local Backup (Export)" 
-        icon="💾"
+        icon="icon-backup"
         icon-bg="rgba(67, 24, 255, 0.15)"
         icon-color="var(--accent-primary)"
         guide-target="guide-backup-export"
@@ -27,35 +27,41 @@
             </button>
         </div>
 
-        <div class="card-footer-info" style="margin-top: 12px; font-size: 12px; color: var(--text-secondary);">
-            <span>ℹ️ Last local backup: <span :class="{ 'highlight-text': lastLocalBackup }">{{ lastLocalBackupFormatted }}</span></span>
+        <div class="card-footer-info" style="margin-top: 12px; font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 4px;">
+            <span class="icon-svg icon-info"></span>
+            <span>Last local backup: <span :class="{ 'highlight-text': lastLocalBackup }">{{ lastLocalBackupFormatted }}</span></span>
         </div>
     </SettingsCard>
 
     <!-- Local Backup: Import -->
     <SettingsCard 
         title="Local Restore (Import)" 
-        icon="📂"
+        icon="icon-folder"
         icon-bg="rgba(107, 70, 193, 0.15)"
         icon-color="#6B46C1"
         guide-target="guide-backup-import"
     >
         <!-- Success or Error Feedback Message -->
         <div v-if="lastSyncResult" :class="['status-feedback-box', lastSyncResult.type]">
-            <span class="feedback-icon">{{ lastSyncResult.type === 'success' ? '✅' : '❌' }}</span>
+            <span class="feedback-icon">
+                <span class="icon-svg" :class="lastSyncResult.type === 'success' ? 'icon-check' : 'icon-close'"></span>
+            </span>
             <span class="feedback-message">{{ lastSyncResult.message }}</span>
         </div>
 
         <!-- Permission Request Alert Box when custom sites are imported -->
         <div v-if="needsPermissions" class="permission-alert-box">
-            <div class="alert-icon">⚠️</div>
+            <div class="alert-icon">
+                <span class="icon-svg icon-warning" style="font-size: 20px;"></span>
+            </div>
             <div class="alert-content">
                 <h4>Permission Required</h4>
                 <p>The imported backup contains custom sites. To let the extension highlight manga cards on these sites, Chrome needs your permission to access their URLs.</p>
                 
                 <ul class="custom-sites-list">
-                    <li v-for="site in pendingCustomSites" :key="site.hostname">
-                        🌐 <strong>{{ site.name || site.hostname }}</strong> ({{ site.hostname }})
+                    <li v-for="site in pendingCustomSites" :key="site.hostname" style="display: flex; align-items: center; gap: 6px;">
+                        <span class="icon-svg icon-globe"></span>
+                        <strong>{{ site.name || site.hostname }}</strong> ({{ site.hostname }})
                     </li>
                 </ul>
 
@@ -90,7 +96,9 @@
                 style="display: none;"
             >
             <div class="drop-zone-content">
-                <div class="drop-zone-icon" style="font-size: 24px;">📄</div>
+                <div class="drop-zone-icon">
+                    <span class="icon-svg icon-file" style="font-size: 24px;"></span>
+                </div>
                 <span class="drop-zone-text">Click to upload or drag and drop</span>
                 <span class="drop-zone-subtext">Supports .json files (max 10MB)</span>
             </div>

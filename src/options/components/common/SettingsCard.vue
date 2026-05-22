@@ -1,7 +1,10 @@
 <template>
     <div class="card" :class="{ 'full-height': fullHeight, 'highlight-card': highlight }">
         <div class="card-header">
-            <div class="card-icon" :style="iconStyle">{{ icon }}</div>
+            <div class="card-icon" :style="iconStyle">
+                <span v-if="icon.startsWith('icon-')" class="icon-svg" :class="icon"></span>
+                <span v-else>{{ icon }}</span>
+            </div>
             <h3>{{ title }}</h3>
             <button 
                 v-if="guideTarget" 

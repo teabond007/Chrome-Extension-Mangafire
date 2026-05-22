@@ -145,6 +145,7 @@ export async function fetchMangaFromAnilist(title, attempt = 0) {
             'Accept': 'application/json',
         },
         body: JSON.stringify({
+            //graphQLQuery contains json with what to search for/ to recieve
             query: graphQLQuery,
             variables: {
                 search: searchTitle

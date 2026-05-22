@@ -1,7 +1,7 @@
 <template>
     <SettingsCard 
         title="Custom Statuses" 
-        icon="🎨" 
+        icon="icon-palette" 
         guide-target="guide-statuses"
     >
         <div class="feature-toggle-header">
@@ -39,8 +39,8 @@
                 </select>
             </div>
             <div class="input-wrapper input-button-wrapper">
-                <button id="addBookmarkButton" class="btn btn-primary btn-input-height" @click="handleAddStatus">
-                    + Add
+                <button id="addBookmarkButton" class="btn btn-primary btn-input-height" @click="handleAddStatus" style="display: inline-flex; align-items: center; gap: 4px;">
+                    <span class="icon-svg icon-plus"></span> Add
                 </button>
             </div>
         </div>

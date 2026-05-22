@@ -12,7 +12,7 @@
 
             <SettingsCard 
                 title="Your Custom Sites" 
-                icon="📋"
+                icon="icon-list"
                 icon-bg="rgba(117, 81, 255, 0.15)"
                 icon-color="var(--accent-primary)"
                 guide-target="guide-custom-list"
@@ -22,7 +22,9 @@
                     <span class="spinner"></span> Loading...
                 </div>
                 <div v-else-if="customSitesStore.sites.length === 0" class="empty-state">
-                    <span class="empty-icon">🌐</span>
+                    <span class="empty-icon" style="display: inline-flex; justify-content: center; align-items: center; width: 100%;">
+                        <span class="icon-svg icon-globe" style="font-size: 48px; opacity: 0.5;"></span>
+                    </span>
                     <p>No custom sites yet.</p>
                     <p class="empty-hint">Add your first site using the form above!</p>
                 </div>
@@ -39,7 +41,7 @@
 
             <SettingsCard 
                 title="Share Configurations" 
-                icon="📤"
+                icon="icon-export"
                 icon-bg="rgba(251, 191, 36, 0.15)"
                 icon-color="#FBBF24"
                 guide-target="guide-custom-share"
@@ -49,8 +51,8 @@
                     <div class="share-action">
                         <h4>Export Your Sites</h4>
                         <p>Share your site configurations with others.</p>
-                        <button class="btn btn-secondary" @click="exportConfigs">
-                            📥 Export JSON
+                        <button class="btn btn-secondary" @click="exportConfigs" style="display: inline-flex; align-items: center; gap: 8px;">
+                            <span class="icon-svg icon-export"></span> Export JSON
                         </button>
                     </div>
                     <div class="share-action">
@@ -63,8 +65,8 @@
                             @change="handleImport"
                             style="display: none"
                         />
-                        <button class="btn btn-secondary" @click="triggerImport">
-                            📤 Import JSON
+                        <button class="btn btn-secondary" @click="triggerImport" style="display: inline-flex; align-items: center; gap: 8px;">
+                            <span class="icon-svg icon-import"></span> Import JSON
                         </button>
                     </div>
                 </div>

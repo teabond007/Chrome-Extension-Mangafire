@@ -8,15 +8,15 @@
         <!-- Guide Section: Core Functionality -->
         <h3 class="guide-section-header">Core Functionality</h3>
         <div class="guide-grid">
-            <GuideCard id="guide-library" title="Your Library" icon="📚">
+            <GuideCard id="guide-library" title="Your Library" icon="icon-library">
                 The central hub for all your bookmarked content. Use the <b>Filter Bar</b> to search for specific titles, sort by activity, or filter by genre and status. Easily switch between <b>Large, Compact, and List</b> views to match your preference.
             </GuideCard>
 
-            <GuideCard id="guide-general" title="General Preferences" icon="⚙️">
+            <GuideCard id="guide-general" title="General Preferences" icon="icon-settings">
                 Global controls for how the extension interacts with web content. Enable <b>Quick Actions</b> for interactive hover buttons, activate <b>Family Friendly Mode</b> to filter adult content, toggle <b>Status Ribbons</b>, and enable <b>Auto-Save Progress</b> for your reading sessions.
             </GuideCard>
 
-            <GuideCard id="guide-statuses" title="Custom Statuses" icon="🎨">
+            <GuideCard id="guide-statuses" title="Custom Statuses" icon="icon-palette">
                 Create virtual categories (e.g., "Favorites", "To-Buy") that go beyond standard site statuses. Custom statuses allow you to apply unique visual styles (different border colors or patterns) to specific groups of entries across all your configured sites.
             </GuideCard>
         </div>
@@ -24,23 +24,23 @@
         <!-- Guide Section: Custom Sites System -->
         <h3 class="guide-section-header">Custom Sites System</h3>
         <div class="guide-grid">
-            <GuideCard id="guide-custom-add" title="Adding a New Site" icon="➕">
+            <GuideCard id="guide-custom-add" title="Adding a New Site" icon="icon-plus">
                 Use the <b>Visual Selector Tool</b> to teach the extension how to recognize content on any site. You'll select the main "Card" container and the "Title" element to enable highlighting and tracking.
             </GuideCard>
 
-            <GuideCard id="guide-selector-tool" title="The Selector Tool" icon="🎯">
+            <GuideCard id="guide-selector-tool" title="The Selector Tool" icon="icon-target">
                 Our path-based selector uses absolute DOM paths for stability. If a site has multiple designs (e.g., Grid vs. List), you can create <b>Variant Groups</b> to ensure the extension works perfectly in all view modes.
             </GuideCard>
 
-            <GuideCard id="guide-reader-selectors" title="Reader Tracking" icon="📖">
+            <GuideCard id="guide-reader-selectors" title="Reader Tracking" icon="icon-book-open">
                 Configure <b>Reader Selectors</b> to enable progress tracking on custom sites. By identifying a unique element on chapter pages, the extension can automatically detect when you are reading and save your position.
             </GuideCard>
 
-            <GuideCard id="guide-custom-list" title="Your Custom Sites" icon="📋">
+            <GuideCard id="guide-custom-list" title="Your Custom Sites" icon="icon-list">
                 Manage all your added site configurations. From here you can edit existing DOM selectors for manga cards or reader pages to ensure the extension correctly tracks your progress on any platform.
             </GuideCard>
 
-            <GuideCard id="guide-custom-share" title="Share Configurations" icon="📤">
+            <GuideCard id="guide-custom-share" title="Share Configurations" icon="icon-export">
                 Configurations are fully portable. You can <b>Export</b> your custom site settings as JSON to share with others or <b>Import</b> configurations from the community to instantly support new platforms.
             </GuideCard>
         </div>
@@ -48,19 +48,19 @@
         <!-- Guide Section: Appearance & Data -->
         <h3 class="guide-section-header">Appearance & Data</h3>
         <div class="guide-grid">
-            <GuideCard id="guide-personalization" title="Extension Appearance" icon="🌙">
+            <GuideCard id="guide-personalization" title="Extension Appearance" icon="icon-moon">
                 Customize the extension's own interface (Options page). These settings are purely cosmetic and ensure the extension fits your aesthetic preferences without altering the appearance of the websites you visit.
             </GuideCard>
 
-            <GuideCard id="guide-styles" title="Highlight Styles" icon="🖼️">
+            <GuideCard id="guide-styles" title="Highlight Styles" icon="icon-image">
                 Global visual settings for injected borders. Choose between <b>Solid, Dashed, Dotted,</b> or <b>Double</b> styles to distinguish your statuses and markers, even on sites with complex or busy backgrounds.
             </GuideCard>
 
-            <GuideCard id="guide-backup-export" title="Local Backup (Export)" icon="💾">
+            <GuideCard id="guide-backup-export" title="Local Backup (Export)" icon="icon-backup">
                 Create a local JSON snapshot of your entire library and custom site configurations. This is the safest way to manually preserve your data or migrate between browsers without cloud dependency.
             </GuideCard>
 
-            <GuideCard id="guide-backup-import" title="Local Restore (Import)" icon="📂">
+            <GuideCard id="guide-backup-import" title="Local Restore (Import)" icon="icon-folder">
                 Restore your library from a previously exported JSON file. It ensures your reading history and site configurations are recovered efficiently.
             </GuideCard>
         </div>

@@ -47,8 +47,10 @@
                                     {{ showChapters ? 'Hide Chapters' : 'Show Chapters' }}
                                 </button>
                                 <button class="btn btn-primary btn-sm" @click="handleMarkAllRead"
-                                    style="padding: 2px 8px; font-size: 11px;"
-                                    title="Mark all chapters as read up to total">✓ Mark All Read</button>
+                                    style="padding: 2px 8px; font-size: 11px; display: inline-flex; align-items: center; gap: 4px;"
+                                    title="Mark all chapters as read up to total">
+                                    <span class="icon-svg icon-check"></span> Mark All Read
+                                </button>
                             </div>
                             <div v-if="showChapters" id="modalReadChaptersList" class="modal-chapters-list">
                                 <span v-for="ch in sortedChapters" :key="ch" class="chapter-pill">{{ ch }}</span>
@@ -58,8 +60,8 @@
                             </div>
                         </div>
                         <!-- Remove Manga -->
-                        <button class="btn btn-danger btn-sm btn-remove-manga" @click="handleRemoveManga">
-                            🗑️ Remove Manga
+                        <button class="btn btn-danger btn-sm btn-remove-manga" @click="handleRemoveManga" style="display: inline-flex; align-items: center; gap: 6px; justify-content: center;">
+                            <span class="icon-svg icon-trash"></span> Remove Manga
                         </button>
                     </div>
                     <div class="modal-main">
@@ -84,7 +86,9 @@
                             <div class="personal-section-grid">
                                 <!-- Left Column: Header + Rating -->
                                 <div class="personal-left">
-                                    <h4>📝 Your Data</h4>
+                                    <h4 style="display: inline-flex; align-items: center; gap: 6px; margin: 0;">
+                                        <span class="icon-svg icon-list"></span> Your Data
+                                    </h4>
                                     
                                     <!-- Rating -->
                                     <div class="modal-personal-row">

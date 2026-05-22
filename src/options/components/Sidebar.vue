@@ -9,28 +9,28 @@
 
         <nav class="nav-menu" ref="navMenuRef">
             <a href="#" class="nav-item" :class="{ active: activeTab === 'settings' }" @click="setActiveTab('settings')" data-tab="settings">
-                <span class="nav-icon">⚙️</span>
+                <span class="nav-icon"><span class="icon-svg icon-settings" style="width: 20px; height: 20px;"></span></span>
                 <span class="nav-text">General Settings</span>
             </a>
             <a href="#" class="nav-item" :class="{ active: activeTab === 'saved-entries' }" @click="setActiveTab('saved-entries')" data-tab="saved-entries">
-                <span class="nav-icon">&#128218;</span>
+                <span class="nav-icon"><span class="icon-svg icon-library" style="width: 20px; height: 20px;"></span></span>
                 <span class="nav-text">Saved Entries</span>
             </a>
             <a href="#" class="nav-item" :class="{ active: activeTab === 'appearance' }" @click="setActiveTab('appearance')" data-tab="appearance">
-                <span class="nav-icon">🎨</span>
+                <span class="nav-icon"><span class="icon-svg icon-palette" style="width: 20px; height: 20px;"></span></span>
                 <span class="nav-text">Appearance</span>
             </a>
             
             <a href="#" class="nav-item" :class="{ active: activeTab === 'custom-sites' }" @click="setActiveTab('custom-sites')" data-tab="custom-sites">
-                <span class="nav-icon">🌐</span>
+                <span class="nav-icon"><span class="icon-svg icon-globe" style="width: 20px; height: 20px;"></span></span>
                 <span class="nav-text">Custom Sites</span>
             </a>
             <a href="#" class="nav-item" :class="{ active: activeTab === 'backup' }" @click="setActiveTab('backup')" data-tab="backup">
-                <span class="nav-icon">💾</span>
+                <span class="nav-icon"><span class="icon-svg icon-backup" style="width: 20px; height: 20px;"></span></span>
                 <span class="nav-text">Backup</span>
             </a>
             <a href="#" class="nav-item" :class="{ active: activeTab === 'about' }" @click="setActiveTab('about')" data-tab="about">
-                <span class="nav-icon">ℹ️</span>
+                <span class="nav-icon"><span class="icon-svg icon-info" style="width: 20px; height: 20px;"></span></span>
                 <span class="nav-text">About</span>
             </a>
             <div class="nav-indicator" ref="indicatorRef"></div>
@@ -39,7 +39,7 @@
         <div class="sidebar-footer" ref="footerRef">
             <a href="https://www.buymeacoffee.com" target="_blank" class="sidebar-btn support-sidebar-btn"
                 title="Support Developer">
-                <span class="icon">☕</span>
+                <span class="icon"><span class="icon-svg icon-coffee" style="width: 16px; height: 16px;"></span></span>
                 <span class="label nav-text">Support Dev</span>
             </a>
             <div class="version-info nav-text">Version 5.0.0</div>

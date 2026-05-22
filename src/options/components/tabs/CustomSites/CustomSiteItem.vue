@@ -1,12 +1,14 @@
 <template>
     <div class="site-item" :class="{ disabled: !site.enabled }">
         <div class="site-info">
-            <div class="site-header">
+            <div class="site-header" style="display: flex; align-items: center; gap: 10px;">
                 <span class="site-name">{{ site.name }}</span>
-                <span class="site-status" :class="cardStatus">
+                <span class="site-status" :class="cardStatus" style="display: inline-flex; align-items: center; gap: 4px;">
+                    <span class="icon-svg" :class="cardStatus === 'complete' ? 'icon-check' : (cardStatus === 'incomplete' ? 'icon-warning' : 'icon-close')" style="font-size: 10px;"></span>
                     {{ cardStatusText }}
                 </span>
-                <span class="site-status" :class="readerStatus">
+                <span class="site-status" :class="readerStatus" style="display: inline-flex; align-items: center; gap: 4px;">
+                    <span class="icon-svg" :class="readerStatus === 'complete' ? 'icon-check' : (readerStatus === 'incomplete' ? 'icon-warning' : 'icon-close')" style="font-size: 10px;"></span>
                     {{ readerStatusText }}
                 </span>
             </div>
@@ -17,22 +19,31 @@
                 class="btn btn-icon" 
                 @click="$emit('edit', site)"
                 title="Edit Card Selectors"
-            >✏️</button>
+            >
+                <span class="icon-svg icon-settings" style="width: 14px; height: 14px; display: inline-block;"></span>
+            </button>
             <button 
                 class="btn btn-icon btn-reader" 
                 @click="$emit('edit-reader', site)"
                 title="Edit Reader Selectors"
-            >📖</button>
+            >
+                <span class="icon-svg icon-book-open" style="width: 14px; height: 14px; display: inline-block;"></span>
+            </button>
             <button 
                 class="btn btn-icon" 
                 @click="toggleSite"
                 :title="site.enabled ? 'Disable' : 'Enable'"
-            >{{ site.enabled ? '🟢' : '⚫' }}</button>
+                :style="{ color: site.enabled ? '#10b981' : 'var(--text-muted)' }"
+            >
+                <span class="icon-svg" :class="site.enabled ? 'icon-check' : 'icon-close'" style="width: 14px; height: 14px; display: inline-block;"></span>
+            </button>
             <button 
                 class="btn btn-icon btn-danger" 
                 @click="deleteSite"
                 title="Delete"
-            >🗑️</button>
+            >
+                <span class="icon-svg icon-trash" style="width: 14px; height: 14px; display: inline-block;"></span>
+            </button>
         </div>
     </div>
 </template>
@@ -69,9 +80,9 @@ const cardStatus = computed(() => {
 
 const cardStatusText = computed(() => {
     switch (cardStatus.value) {
-        case 'complete': return '✓ Card Selectors';
-        case 'incomplete': return '⚠ Incomplete Cards';
-        case 'empty': return '✗ Missing Card Selectors';
+        case 'complete': return 'Card Selectors';
+        case 'incomplete': return 'Incomplete Cards';
+        case 'empty': return 'Missing Card Selectors';
         default: return '';
     }
 });
@@ -96,9 +107,9 @@ const readerStatus = computed(() => {
 
 const readerStatusText = computed(() => {
     switch (readerStatus.value) {
-        case 'complete': return '✓ Reader Selectors';
-        case 'incomplete': return '⚠ Incomplete Reader';
-        case 'empty': return '✗ Missing Reader Selectors';
+        case 'complete': return 'Reader Selectors';
+        case 'incomplete': return 'Incomplete Reader';
+        case 'empty': return 'Missing Reader Selectors';
         default: return '';
     }
 });

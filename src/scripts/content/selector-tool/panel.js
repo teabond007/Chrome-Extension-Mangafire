@@ -10,6 +10,28 @@
 import * as highlighter from './highlighter';
 import { DATA } from '../../../config.js';
 
+/**
+ * High-fidelity vector SVG icons sourced from Feather Icons / Lucide (MIT License).
+ * Sourced under the MIT License from Cole Bemis & Lucide community.
+ * Used inline within the Shadow DOM to avoid cross-origin resource blockings or shifts.
+ * @type {Object<string, string>}
+ */
+const ICONS = {
+    TARGET: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px; display: inline-block;"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>`,
+    CLOSE: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`,
+    SEARCH: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px; display: inline-block;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`,
+    BOOK_OPEN: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px; display: inline-block;"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>`,
+    HASH: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px; display: inline-block;"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line></svg>`,
+    PACKAGE: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px; display: inline-block;"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`,
+    FILE: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px; display: inline-block;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>`,
+    ARROW_UP: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>`,
+    ARROW_DOWN: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>`,
+    ARROW_LEFT: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>`,
+    ARROW_RIGHT: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`,
+    CHECK: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px; display: inline-block;"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
+    SAVE: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px; display: inline-block;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>`
+};
+
 /** Panel element reference */
 let panelContainer = null;
 let shadowRoot = null;
@@ -159,7 +181,7 @@ function getPanelHTML() {
                 height: 28px;
                 border-radius: 6px;
                 cursor: pointer;
-                display: flex;
+                display: inline-flex;
                 align-items: center;
                 justify-content: center;
                 font-size: 12px;
@@ -179,11 +201,21 @@ function getPanelHTML() {
             .group-tab.complete {
                 border-color: rgba(16, 185, 129, 0.4);
             }
-            .group-tab.complete::after {
-                content: '✓';
-                color: #10b981;
-                font-size: 9px;
+            .group-tab .group-check-icon {
+                display: inline-block;
+                width: 8px;
+                height: 8px;
                 margin-left: 3px;
+                vertical-align: middle;
+            }
+            .group-tab.complete .group-check-icon {
+                mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>');
+                -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>');
+                mask-repeat: no-repeat;
+                -webkit-mask-repeat: no-repeat;
+                mask-size: contain;
+                -webkit-mask-size: contain;
+                background-color: #10b981;
             }
             .group-add-btn {
                 background: rgba(255, 255, 255, 0.05);
@@ -219,7 +251,10 @@ function getPanelHTML() {
                 height: 28px;
                 border-radius: 8px;
                 cursor: pointer;
-                font-size: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 14px;
                 transition: background 0.2s;
             }
             .close-btn:hover {
@@ -240,7 +275,10 @@ function getPanelHTML() {
                 font-size: 11px;
                 cursor: pointer;
                 transition: all 0.2s;
-                text-align: center;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 4px;
             }
             .field-tab:hover {
                 background: rgba(117, 81, 255, 0.2);
@@ -253,9 +291,20 @@ function getPanelHTML() {
             .field-tab.complete {
                 border-color: rgba(16, 185, 129, 0.5);
             }
-            .field-tab.complete::after {
-                content: ' ✓';
-                color: #10b981;
+            .field-tab .tab-check-icon {
+                display: inline-block;
+                width: 10px;
+                height: 10px;
+                vertical-align: middle;
+            }
+            .field-tab.complete .tab-check-icon {
+                mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>');
+                -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>');
+                mask-repeat: no-repeat;
+                -webkit-mask-repeat: no-repeat;
+                mask-size: contain;
+                -webkit-mask-size: contain;
+                background-color: #10b981;
             }
             .path-display {
                 background: rgba(0, 0, 0, 0.3);
@@ -369,6 +418,9 @@ function getPanelHTML() {
                 font-size: 18px;
                 cursor: pointer;
                 transition: all 0.2s;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
             .nav-btn:hover {
                 background: rgba(117, 81, 255, 0.3);
@@ -391,6 +443,10 @@ function getPanelHTML() {
                 font-weight: 600;
                 cursor: pointer;
                 transition: all 0.2s;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
             }
             .confirm-btn {
                 background: linear-gradient(135deg, #7551ff, #6AD2FF);
@@ -420,20 +476,20 @@ function getPanelHTML() {
         </style>
         <div class="panel">
             <div class="panel-header">
-                <span class="panel-title">🎯 ${isReaderMode ? 'Reader Page Selector' : 'Element Selector'}</span>
-                <button class="close-btn" id="closeBtn">✕</button>
+                <span class="panel-title">${ICONS.TARGET} ${isReaderMode ? 'Reader Page Selector' : 'Element Selector'}</span>
+                <button class="close-btn" id="closeBtn">${ICONS.CLOSE}</button>
             </div>
             
             <div id="groupTabs" class="group-tabs" ${isReaderMode ? 'style="display:none"' : ''}></div>
             
             <div class="field-tabs">
                 ${isReaderMode ? `
-                    <button class="field-tab active" data-field="readerDetect">🔍 Detect Page</button>
-                    <button class="field-tab" data-field="readerTitle">📖 Reader Title</button>
-                    <button class="field-tab" data-field="readerChapter">#️⃣ Chapter</button>
+                    <button class="field-tab active" data-field="readerDetect">${ICONS.SEARCH} Detect Page<span class="tab-check-icon"></span></button>
+                    <button class="field-tab" data-field="readerTitle">${ICONS.BOOK_OPEN} Reader Title<span class="tab-check-icon"></span></button>
+                    <button class="field-tab" data-field="readerChapter">${ICONS.HASH} Chapter<span class="tab-check-icon"></span></button>
                 ` : `
-                    <button class="field-tab active" data-field="card">📦 Card</button>
-                    <button class="field-tab" data-field="title">📝 Title</button>
+                    <button class="field-tab active" data-field="card">${ICONS.PACKAGE} Card<span class="tab-check-icon"></span></button>
+                    <button class="field-tab" data-field="title">${ICONS.FILE} Title<span class="tab-check-icon"></span></button>
                 `}
             </div>
             
@@ -444,15 +500,15 @@ function getPanelHTML() {
             </div>
             
             <div class="nav-buttons">
-                <button class="nav-btn" id="parentBtn" title="Select Parent">⬆️</button>
-                <button class="nav-btn" id="childBtn" title="Select Child">⬇️</button>
-                <button class="nav-btn" id="prevBtn" title="Previous Sibling">⬅️</button>
-                <button class="nav-btn" id="nextBtn" title="Next Sibling">➡️</button>
+                <button class="nav-btn" id="parentBtn" title="Select Parent">${ICONS.ARROW_UP}</button>
+                <button class="nav-btn" id="childBtn" title="Select Child">${ICONS.ARROW_DOWN}</button>
+                <button class="nav-btn" id="prevBtn" title="Previous Sibling">${ICONS.ARROW_LEFT}</button>
+                <button class="nav-btn" id="nextBtn" title="Next Sibling">${ICONS.ARROW_RIGHT}</button>
             </div>
             
             <div class="action-buttons">
-                <button class="action-btn confirm-btn" id="confirmBtn">✓ Confirm</button>
-                <button class="action-btn save-btn" id="saveBtn">💾 Save Site</button>
+                <button class="action-btn confirm-btn" id="confirmBtn">${ICONS.CHECK} Confirm</button>
+                <button class="action-btn save-btn" id="saveBtn">${ICONS.SAVE} Save Site</button>
             </div>
             
             <div class="instructions">
@@ -815,7 +871,7 @@ function renderGroupTabs() {
         let cls = 'group-tab';
         if (isActive) cls += ' active';
         if (isComplete) cls += ' complete';
-        return `<button class="${cls}" data-group-index="${i}" title="Variant ${i + 1}${isComplete ? ' (complete)' : ''}\nRight-click to delete">${i + 1}</button>`;
+        return `<button class="${cls}" data-group-index="${i}" title="Variant ${i + 1}${isComplete ? ' (complete)' : ''}\nRight-click to delete">${i + 1}<span class="group-check-icon"></span></button>`;
     }).join('');
 
     container.innerHTML = `${buttons}<button class="group-add-btn" id="addGroupBtn" title="Add Variant">+</button>`;

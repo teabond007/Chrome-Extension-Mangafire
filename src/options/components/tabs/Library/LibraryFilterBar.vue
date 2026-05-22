@@ -1,7 +1,9 @@
 <template>
     <div class="library-header">
         <div class="library-title-section">
-            <div class="library-icon">📚</div>
+            <div class="library-icon">
+                <span class="icon-svg icon-library" style="font-size: 24px;"></span>
+            </div>
             <div class="library-title-text">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <h2>Your Library</h2>
@@ -62,7 +64,7 @@
                 <template v-if="customStatuses && customStatuses.length > 0">
                     <option disabled>── Custom Statuses ──</option>
                     <option v-for="m in customStatuses" :key="m.name" :value="'marker:' + m.name">
-                        📌 {{ m.name }}
+                        {{ m.name }}
                     </option>
                 </template>
             </select>
@@ -109,7 +111,7 @@
                     :class="{ active: cardViewSize === 'list' }"
                     title="Detailed List View"
                 >
-                    📋
+                    <span class="icon-svg icon-list"></span>
                 </button>
             </div>
         </div>
@@ -117,7 +119,9 @@
        
 
 
-            <button @click="$emit('clear-filters')" class="btn btn-ghost btn-sm filter-preset-btn" style="margin-left: auto;">✕ Clear</button>
+            <button @click="$emit('clear-filters')" class="btn btn-ghost btn-sm filter-preset-btn" style="margin-left: auto; display: inline-flex; align-items: center; gap: 4px;">
+                <span class="icon-svg icon-close" style="font-size: 10px;"></span> Clear
+            </button>
         
     </div>
 </template>

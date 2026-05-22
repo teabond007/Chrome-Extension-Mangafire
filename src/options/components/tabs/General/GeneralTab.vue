@@ -12,7 +12,7 @@
             <div class="cards-row">
                 <SettingsCard 
                     title="General Preferences" 
-                    icon="⚙️" 
+                    icon="icon-settings" 
                     guide-target="guide-general"
                     full-height
                 >

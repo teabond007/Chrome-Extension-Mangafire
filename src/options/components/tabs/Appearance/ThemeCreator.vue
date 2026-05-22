@@ -1,7 +1,7 @@
 <template>
     <SettingsCard 
         title="Theme Creator" 
-        icon="✨" 
+        icon="icon-sparkles" 
         guide-target="guide-personalization"
     >
         <div class="card-body"> 

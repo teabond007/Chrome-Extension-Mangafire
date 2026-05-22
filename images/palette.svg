@@ -1,0 +1,7 @@
+<!-- Sourced from Feather Icons (Cole Bemis), MIT License -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 14.7255 3.09032 17.1962 4.85857 19C5.34735 19.4888 5.68884 20.1252 5.8166 20.7816L5.85764 20.9922C5.93888 21.4093 6.30397 21.7105 6.72911 21.7105H7C7.55228 21.7105 8 21.2628 8 20.7105V20C8 18.8954 8.89543 18 10 18H11C11.5523 18 12 18.4477 12 19V22Z"></path>
+  <circle cx="7.5" cy="10.5" r="1.5" fill="currentColor"></circle>
+  <circle cx="11.5" cy="7.5" r="1.5" fill="currentColor"></circle>
+  <circle cx="16.5" cy="9.5" r="1.5" fill="currentColor"></circle>
+</svg>

@@ -14,7 +14,7 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
                 <SettingsCard 
                     title="Highlight Styles" 
-                    icon="🖼️" 
+                    icon="icon-image" 
                     guide-target="guide-styles"
                     full-height
                 >
@@ -27,7 +27,7 @@
 
                     <div class="divider"></div>
                     <div class="range-header">
-                        <label>Highlight Thickness</label>
+                         <label>Highlight Thickness</label>
                         <span id="globalRangeValue" style="color: var(--primary); font-weight: bold;">{{ highlightThickness }}px</span>
                     </div>
                     <input type="range" :value="highlightThickness" @input="updateHighlightThickness" min="1" max="10"
@@ -36,7 +36,7 @@
 
                 <SettingsCard 
                     title="Library Styles" 
-                    icon="📚" 
+                    icon="icon-library" 
                     guide-target="guide-personalization"
                     full-height
                 >

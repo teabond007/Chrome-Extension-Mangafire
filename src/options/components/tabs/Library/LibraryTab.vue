@@ -5,10 +5,16 @@
                 <h1>Library</h1>
                 <p class="subtitle">Browse and manage your manga library</p>
             </div>
-            <div class="header-actions">
-                <button @click="addNewManga" class="btn btn-secondary">➕ Add Manga</button>
-                <button @click="syncMissing" class="btn btn-warning-large" title="Fetch info for entries stuck on 'Loading info...'">⚡ Sync Missing Info</button>
-                <button @click="syncAll" class="btn" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600;" title="WARNING: Erase all info cache and refetch from scratch">🗑️ Erase & Sync All</button>
+            <div class="header-actions" style="display: flex; gap: 10px; align-items: center;">
+                <button @click="addNewManga" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px;">
+                    <span class="icon-svg icon-plus"></span> Add Manga
+                </button>
+                <button @click="syncMissing" class="btn btn-warning-large" style="display: inline-flex; align-items: center; gap: 6px;" title="Fetch info for entries stuck on 'Loading info...'">
+                    <span class="icon-svg icon-zap"></span> Sync Missing Info
+                </button>
+                <button @click="syncAll" class="btn" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 6px;" title="WARNING: Erase all info cache and refetch from scratch">
+                    <span class="icon-svg icon-trash"></span> Erase & Sync All
+                </button>
             </div>
         </header>
 

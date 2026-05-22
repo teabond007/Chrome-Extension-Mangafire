@@ -74,7 +74,7 @@ export class GenericAdapter {
     }
 
     /**
-     * Extracts manga data from a card element using configured selectors.
+     * Extracts manga data from a card element.
      * @param {HTMLElement} cardElement - The manga card DOM element
      * @returns {{ id: string, title: string, slug: string, url: string }}
      */
@@ -322,8 +322,8 @@ export class GenericAdapter {
 }
 
 /**
- * Initializes enhancement for a custom site using its stored configuration.
- * @param {Object} config - CustomSiteConfig from storage
+ * starts enhancement for a custom site.
+ * @param {Object} config - for custom site (name, hostname, selectors, readerSelectors)
  * @param {Object} settings - User settings
  */
 export async function initCustomSite(config, settings) {

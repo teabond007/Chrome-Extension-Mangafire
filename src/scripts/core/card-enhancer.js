@@ -127,7 +127,7 @@ export class CardEnhancer {
     }
 
     /**
-     * Find all manga card elements on the page using adapter selectors.
+     * Find all manga card elements on page.
      * @returns {Array<{ element: HTMLElement, data: Object }>}
      */
     findCards() {
@@ -198,7 +198,7 @@ export class CardEnhancer {
     }
 
     /**
-     * Match a card to a library entry by source ID or normalized title.
+     * if title both in library and on card, return object.
      * @param {{ element: HTMLElement, data: Object }} card
      * @param {Array} library
      * @returns {Object|undefined}
@@ -226,6 +226,7 @@ export class CardEnhancer {
 
     /**
      * Apply all enabled enhancements to a matched card.
+     * applyRibbon, applyQuickActions, applyBorder
      * @param {{ element: HTMLElement, data: Object }} card
      * @param {Object} entry - Library entry
      */
@@ -340,12 +341,6 @@ export class CardEnhancer {
         OverlayFactory.mountStatusRibbon(card.element, entry.status, finalColor);
     }
 
-    /**
-     * @deprecated Reading badges removed to simplify UI.
-     */
-    applyProgressBadge(card, entry) {
-        // No-op
-    }
 
     /**
      * Apply a "NEW" badge for cards with unread chapters.
