@@ -34,14 +34,14 @@
   "content_scripts": [
     {
       "js": [
-        "assets/main.js-loader-06f02c3f.js"
+        "assets/main.js-loader-7e5f6fdb.js"
       ],
       "matches": [
         "*://fallback.custom-sites.local/*"
       ],
       "run_at": "document_idle",
       "css": [
-        "assets/main-e46df7c3.css"
+        "assets/main-819987f6.css"
       ]
     }
   ],
@@ -63,8 +63,8 @@
       ],
       "resources": [
         "assets/metadata-service-7948b06d.js",
-        "assets/library-service-8a030843.js",
-        "assets/main.js-30f8a010.js"
+        "assets/library-service-2af9a00e.js",
+        "assets/main.js-16d8057a.js"
       ],
       "use_dynamic_url": false
     }

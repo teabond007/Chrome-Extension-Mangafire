@@ -62,39 +62,63 @@ const props = defineProps({
 const emit = defineEmits(['action']);
 
 const hasHistory = computed(() => {
+  console.log("[QuickActions] Checking if entry has reading history...");
   const lastRead = parseFloat(props.entry.lastReadChapter) || 0;
-  return lastRead > 0;
+  const result = lastRead > 0;
+  console.log("[QuickActions] hasHistory result is: " + result);
+  return result;
 });
 
-const unitName = computed(() => props.adapter.unitName === 'episode' ? 'Ep.' : 'Ch.');
+const unitName = computed(() => {
+  console.log("[QuickActions] Figuring out unit name from adapter: " + props.adapter.unitName);
+  return props.adapter.unitName === 'episode' ? 'Ep.' : 'Ch.';
+});
 
 const nextChapter = computed(() => {
+  console.log("[QuickActions] Calculating what the next chapter should be...");
   const lastRead = parseFloat(props.entry.lastReadChapter) || 0;
-  return Math.floor(lastRead) + 1;
+  const next = Math.floor(lastRead) + 1;
+  console.log("[QuickActions] nextChapter calculated to: " + next);
+  return next;
 });
 
 const continueTitle = computed(() => {
-  return hasHistory.value 
+  console.log("[QuickActions] Setting the continue reading button tooltip title...");
+  const titleText = hasHistory.value 
     ? `Continue ${unitName.value} ${nextChapter.value}` 
     : `Start Reading ${unitName.value} 1`;
+  console.log("[QuickActions] continueTitle tooltip text is: " + titleText);
+  return titleText;
 });
 
 const statusColor = computed(() => {
+  console.log("[QuickActions] Finding status color for status: " + props.entry.status);
   const normalized = (props.entry.status || '').toLowerCase().trim();
   
   for (const [key, color] of Object.entries(STATUS_COLORS)) {
     if (normalized === key.toLowerCase() || normalized.includes(key.toLowerCase())) {
+      console.log("[QuickActions] Found matched color: " + color + " for key: " + key);
       return color;
     }
   }
+  console.log("[QuickActions] No color matched, using transparent fallback.");
   return 'rgba(255,255,255,0.3)';
 });
 
 const onAction = (action, event) => {
-  if (props.callbacks[action]) {
-    props.callbacks[action](props.entry, event?.currentTarget);
+  console.log("[QuickActions] onAction triggered! action=" + action);
+  try {
+    if (props.callbacks[action]) {
+      console.log("[QuickActions] Triggering parent callback function for action: " + action);
+      props.callbacks[action](props.entry, event?.currentTarget);
+    } else {
+      console.log("[QuickActions] No callback was found for action: " + action);
+    }
+    console.log("[QuickActions] Emitting custom action event to parent Vue app...");
+    emit('action', { action, entry: props.entry, target: event?.currentTarget });
+  } catch (err) {
+    console.log("[QuickActions] Oh no, an error happened in onAction click handler: " + err);
   }
-  emit('action', { action, entry: props.entry, target: event?.currentTarget });
 };
 </script>
 

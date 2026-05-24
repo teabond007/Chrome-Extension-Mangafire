@@ -27,41 +27,54 @@ class ProgressTracker {
      * Parses the current URL and schedules a progress save.
      */
     async init() {
-        // Check if progress tracking is enabled in settings
-        const settings = await chrome.storage.local.get([TOGGLES.PROGRESS_TRACKING]);
-        if (settings[TOGGLES.PROGRESS_TRACKING] === false) {
-            console.log('[ProgressTracker] Tracking disabled in settings');
-            return;
+        console.log("[ProgressTracker] init function started!");
+        try {
+            // Check if progress tracking is enabled in settings
+            console.log("[ProgressTracker] Loading progress tracking toggles from storage...");
+            const settings = await chrome.storage.local.get([TOGGLES.PROGRESS_TRACKING]);
+            if (settings[TOGGLES.PROGRESS_TRACKING] === false) {
+                console.log('[ProgressTracker] Tracking is disabled in the settings, exiting.');
+                return;
+            }
+
+            console.log("[ProgressTracker] Parsing the current URL to get chapter information...");
+            const urlData = this.parseCurrentUrl();
+            
+            console.log('[ProgressTracker] parseCurrentUrl result is: ', urlData);
+
+            if (!urlData || (!urlData.chapterNo && !urlData.title && !urlData.slug)) {
+                console.log('[ProgressTracker] We are not on a chapter reader page, skipping tracking.');
+                return;
+            }
+
+            console.log("[ProgressTracker] Setting up current query object with page details.");
+            this.currentQuery = {};
+            this.currentQuery.source = this.adapter.id || this.adapter.PREFIX;
+            this.currentQuery.slug = urlData.slug;
+            this.currentQuery.title = urlData.title || '';
+            this.currentQuery.sourceId = urlData.id;
+            this.currentQuery.mangaSlug = urlData.slug;
+
+            this.currentProgress = {
+                chapter: String(urlData.chapterNo),
+                url: window.location.href
+            };
+
+            console.log('[ProgressTracker] Now tracking: ', this.currentQuery);
+
+            // Schedule save after engagement threshold
+            console.log("[ProgressTracker] Scheduling saveProgress in 5 seconds...");
+            this.saveTimeout = setTimeout(() => {
+                console.log("[ProgressTracker] 5 seconds have passed, calling saveProgress!");
+                this.saveProgress();
+            }, PROGRESS_CONFIG.SAVE_DELAY);
+
+            // Also save when user scrolls significantly (engagement signal)
+            console.log("[ProgressTracker] Setting up scroll tracking event listener...");
+            this.setupScrollTracking();
+        } catch (e) {
+            console.log("[ProgressTracker] Error in init: " + e);
         }
-
-        const urlData = this.parseCurrentUrl();
-        
-        console.log('[ProgressTracker] parseCurrentUrl result:', urlData);
-
-        if (!urlData || (!urlData.chapterNo && !urlData.title && !urlData.slug)) {
-            console.log('[ProgressTracker] Not a chapter page, skipping');
-            return;
-        }
-
-        this.currentQuery = {};
-        this.currentQuery.source = this.adapter.id || this.adapter.PREFIX;
-        this.currentQuery.slug = urlData.slug;
-        this.currentQuery.title = urlData.title || '';
-        this.currentQuery.sourceId = urlData.id;
-        this.currentQuery.mangaSlug = urlData.slug;
-
-        this.currentProgress = {
-            chapter: String(urlData.chapterNo),
-            url: window.location.href
-        };
-
-        console.log('[ProgressTracker] Tracking:', this.currentQuery);
-
-        // Schedule save after engagement threshold
-        this.saveTimeout = setTimeout(() => this.saveProgress(), PROGRESS_CONFIG.SAVE_DELAY);
-
-        // Also save when user scrolls significantly (engagement signal)
-        this.setupScrollTracking();
     }
 
     /**
@@ -99,33 +112,38 @@ class ProgressTracker {
      * Saves the current reading progress using LibraryService.
      */
     async saveProgress() {
-        if (this.isSaved || !this.currentQuery) return;
+        console.log("[ProgressTracker] saveProgress called!");
+        if (this.isSaved || !this.currentQuery) {
+            console.log("[ProgressTracker] Already saved or current query is null, exiting saveProgress.");
+            return;
+        }
         this.isSaved = true;
 
         try {
-            // 1. Track read chapter in history
+            console.log("[ProgressTracker] Saving... Step 1: tracking read chapter in history...");
             const history = await LibraryService.trackReadChapter(this.currentQuery, this.currentProgress.chapter);
 
-            // 2. Update library entry
+            console.log("[ProgressTracker] Saving... Step 2: updating reading progress in library...");
             const entry = await LibraryService.updateProgress(this.currentQuery, this.currentProgress);
 
-            // 3. Update entry with read chapters count from history
+            console.log("[ProgressTracker] Saving... Step 3: updating entry readChapters count...");
             if (entry) {
                 entry.readChapters = history.length;
             }
 
-            console.log(`[ProgressTracker] ✓ Saved progress: ${this.currentQuery.title || this.currentQuery.slug} ch.${this.currentProgress.chapter}`);
+            console.log(`[ProgressTracker] Wow! Saved progress successfully for: ${this.currentQuery.title || this.currentQuery.slug} ch.${this.currentProgress.chapter}`);
             
-            // 4. Notify background script (for badge updates, etc.)
+            console.log("[ProgressTracker] Saving... Step 4: notifying background script about progress...");
             this.notifyProgress(entry);
 
-            // 5. Auto-fetch AniList metadata for new entries
+            console.log("[ProgressTracker] Saving... Step 5: check if we need to fetch metadata for entry...");
             if (entry && !entry.anilistData) {
+                console.log("[ProgressTracker] Metadata is missing, asking background script to fetch it!");
                 this.fetchMetadataForEntry(entry.title, LibraryService.getMangaId(entry));
             }
 
         } catch (error) {
-            console.error('[ProgressTracker] Failed to save progress:', error);
+            console.log('[ProgressTracker] Oh no, failed to save progress: ' + error);
             this.isSaved = false; // Allow retry
         }
     }

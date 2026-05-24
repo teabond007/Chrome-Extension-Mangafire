@@ -26,8 +26,10 @@ export const useLibraryStore = defineStore('library', {
 
     actions: {
         async loadLibrary() {
+            console.log("[LibraryStore] loadLibrary function has started!");
             this.isLoading = true;
             try {
+                console.log("[LibraryStore] Loading library data keys from chrome storage...");
                 const data = await chrome.storage.local.get([
                     DATA.LIBRARY_ENTRIES, 
                     DATA.READING_HISTORY, 
@@ -36,24 +38,26 @@ export const useLibraryStore = defineStore('library', {
                 ]);
                 
                 const rawEntries = data[DATA.LIBRARY_ENTRIES];
-                console.log('[LibraryStore] loadLibrary from storage. Raw type:', typeof rawEntries, 'isArray:', Array.isArray(rawEntries));
+                console.log('[LibraryStore] Raw entries retrieved: type=' + typeof rawEntries + ', isArray=' + Array.isArray(rawEntries));
                 
                 if (Array.isArray(rawEntries)) {
-                    console.log('[LibraryStore] loadLibrary count:', rawEntries.length);
+                    console.log('[LibraryStore] Success! Loaded library entries count: ' + rawEntries.length);
                     this.entries = rawEntries;
                 } else {
-                    console.warn('[LibraryStore] loadLibrary: entries is not an array! Data:', rawEntries);
+                    console.log('[LibraryStore] Warning! entries retrieved was not an array! We will reset entries to [].');
                     this.entries = [];
                 }
 
                 this.history = data[DATA.READING_HISTORY] || {};
                 this.personalData = data[DATA.PERSONAL_DATA] || {};
                 this.lastSync = data[DATA.LAST_SYNC_TIME] || null;
+                console.log("[LibraryStore] Done setting state variables in loadLibrary!");
 
             } catch (err) {
-                console.error('Failed to load library:', err);
+                console.log('[LibraryStore] Error occurred inside loadLibrary: ' + err);
             } finally {
                 this.isLoading = false;
+                console.log("[LibraryStore] loadLibrary has finished running!");
             }
         },
 
@@ -85,67 +89,53 @@ export const useLibraryStore = defineStore('library', {
          * @param {Object} entry - The entry object to remove
          */
         async removeEntry(entry) {
-            console.log('[LibraryStore] removeEntry requested for:', entry);
-            if (!entry) {
-                console.warn('[LibraryStore] removeEntry called with null/undefined entry');
-                return;
-            }
+            console.log('[LibraryStore] removeEntry started!');
+            try {
+                if (!entry) {
+                    console.log('[LibraryStore] The entry passed is null or undefined!');
+                    return;
+                }
+                
+                var titleToMatch = (entry.title || '').toLowerCase().trim();
+                console.log('[LibraryStore] We want to remove the manga with title: ' + titleToMatch);
 
-            const aniId = entry.anilistData?.id;
-            const slug = entry.mangaSlug;
-            const title = (entry.title || '').toLowerCase().trim();
-
-            // Safeguard: ensure this.entries is an array
-            if (!Array.isArray(this.entries)) {
-                console.warn('[LibraryStore] removeEntry called but entries is not an array. Resetting.');
-                this.entries = [];
-                await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: [] });
-                return;
-            }
-
-            const beforeCount = Array.isArray(this.entries) ? this.entries.length : 'NOT_ARRAY';
-            
-            // Safeguard: ensure this.entries is an array
-            if (!Array.isArray(this.entries)) {
-                console.warn('[LibraryStore] removeEntry: entries is not an array. Resetting.');
-                this.entries = [];
-                await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: [] });
-                return;
-            }
-
-            this.entries = this.entries.filter(e => {
-                if (!e) return false; // Filter out nulls/undefineds
-
-                // Match by AniList ID
-                if (aniId && e.anilistData?.id === aniId) return false;
-
-                // Match by Slug
-                if (slug && e.mangaSlug === slug) return false;
-
-                // Match by Title (Normalize both for robust comparison)
-                if (title) {
-                    const entryTitle = (e.title || '').toLowerCase().trim();
-                    if (entryTitle === title) return false;
+                if (!Array.isArray(this.entries)) {
+                    console.log('[LibraryStore] Oh no! entries is not an array, resetting to empty array.');
+                    this.entries = [];
+                    await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: [] });
+                    return;
                 }
 
-                return true;
-            });
+                var oldLength = this.entries.length;
+                console.log('[LibraryStore] Number of entries before removal: ' + oldLength);
 
-            const afterCount = this.entries.length;
-            console.log(`[LibraryStore] filter complete. Count: ${beforeCount} -> ${afterCount}`);
+                // Create a brand new array and push elements that do NOT match the title
+                var newEntriesList = [];
+                for (var i = 0; i < this.entries.length; i++) {
+                    var currentEntry = this.entries[i];
+                    if (currentEntry) {
+                        var currentTitle = (currentEntry.title || '').toLowerCase().trim();
+                        if (currentTitle === titleToMatch) {
+                            console.log('[LibraryStore] Found the match to delete! Skipping: ' + currentEntry.title);
+                        } else {
+                            newEntriesList.push(currentEntry);
+                        }
+                    }
+                }
 
-            // CRITICAL: Convert to plain JS object/array before saving to storage.
-            // Vue/Pinia Proxies can cause issues. We use JSON stringify to strip all proxies simply.
-            try {
+                this.entries = newEntriesList;
+                var newLength = this.entries.length;
+                console.log('[LibraryStore] Number of entries after removal: ' + newLength);
+
+                console.log('[LibraryStore] Serializing entries list to plain JS array...');
                 var plainString = JSON.stringify(this.entries);
                 var plainEntries = JSON.parse(plainString);
-                console.log('[LibraryStore] saving plainEntries to storage. Length:', plainEntries.length);
                 
-                // Set directly without complex Promise wrappers
+                console.log('[LibraryStore] Saving new entries list to local chrome storage...');
                 await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: plainEntries });
-                console.log('[LibraryStore] Storage set successful');
+                console.log('[LibraryStore] Saved to storage successfully!');
             } catch (err) {
-                console.error('[LibraryStore] Failed to save removed entry to storage:', err);
+                console.log('[LibraryStore] Error in removeEntry: ' + err);
             }
         },
 
@@ -164,26 +154,58 @@ export const useLibraryStore = defineStore('library', {
          * @param {string} titleOrSlug - The title or slug to match.
          */
         showEntryDetails(titleOrSlug) {
-            if (!titleOrSlug) return;
-            const target = titleOrSlug.toLowerCase().trim();
-            const targetSlug = target.replace(/[^a-z0-9]/g, '');
+            console.log("[LibraryStore] showEntryDetails called for titleOrSlug: " + titleOrSlug);
+            try {
+                if (!titleOrSlug) {
+                    console.log("[LibraryStore] titleOrSlug is empty, exiting.");
+                    return;
+                }
+                var target = titleOrSlug.toLowerCase().trim();
+                console.log("[LibraryStore] Normalized target search term is: " + target);
 
-            // 1. Exact title match
-            let entry = this.entries.find(e => e.title.toLowerCase().trim() === target);
+                var entryFound = null;
 
-            // 2. Slug-based match
-            if (!entry) {
-                entry = this.entries.find(e => {
-                    const eSlug = e.title.toLowerCase().replace(/[^a-z0-9]/g, '');
-                    const eMangaSlug = (e.mangaSlug || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-                    return eSlug === targetSlug || eMangaSlug === targetSlug || eSlug.includes(targetSlug) || targetSlug.includes(eSlug);
-                });
-            }
+                // Loop 1: search for an exact title match first
+                console.log("[LibraryStore] Loop 1: Looking for exact title match...");
+                for (var i = 0; i < this.entries.length; i++) {
+                    var e = this.entries[i];
+                    if (e && e.title) {
+                        var currentTitle = e.title.toLowerCase().trim();
+                        if (currentTitle === target) {
+                            console.log("[LibraryStore] Found exact title match! Entry: " + e.title);
+                            entryFound = e;
+                            break;
+                        }
+                    }
+                }
 
-            if (entry) {
-                this.selectedEntry = entry;
-            } else {
-                console.warn(`[LibraryStore] Could not find entry for: ${titleOrSlug}`);
+                // Loop 2: fuzzy or slug-based match if we found nothing in Loop 1
+                if (entryFound == null) {
+                    console.log("[LibraryStore] Loop 2: Looking for fallback matching...");
+                    var targetSlug = target.replace(/[^a-z0-9]/g, '');
+                    
+                    for (var j = 0; j < this.entries.length; j++) {
+                        var e = this.entries[j];
+                        if (e && e.title) {
+                            var eSlug = e.title.toLowerCase().replace(/[^a-z0-9]/g, '');
+                            var eMangaSlug = (e.mangaSlug || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                            if (eSlug === targetSlug || eMangaSlug === targetSlug || eSlug.indexOf(targetSlug) !== -1 || targetSlug.indexOf(eSlug) !== -1) {
+                                console.log("[LibraryStore] Found slug/fuzzy match! Entry: " + e.title);
+                                entryFound = e;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (entryFound != null) {
+                    console.log("[LibraryStore] Setting selectedEntry to: " + entryFound.title);
+                    this.selectedEntry = entryFound;
+                } else {
+                    console.log("[LibraryStore] Warning! Could not find any entry in library matching: " + titleOrSlug);
+                }
+            } catch (err) {
+                console.log("[LibraryStore] Error in showEntryDetails: " + err);
             }
         },
 

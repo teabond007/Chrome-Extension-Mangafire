@@ -36,15 +36,29 @@ function slugify(title) {
  * @returns {Object|undefined}
  */
 export function findEntry(library, query) {
-    const { title, slug, source, sourceId } = query;
-    const normalizedTitle = slugify(title);
+    console.log("[LibraryService] Starting findEntry to find matching saved manga!");
+    try {
+        var title = query.title;
+        console.log("[LibraryService] Title we are looking for is: " + title);
+        
+        var normalizedTitle = slugify(title);
+        console.log("[LibraryService] Normalized title is: " + normalizedTitle);
 
-    return library.find(e => {
-        if (source && sourceId && e.source === source && e.sourceId === sourceId) return true;
-        if (slug && (e.slug === slug || slug === e.mangaSlug?.split('.')[0])) return true;
-        if (title && slugify(e.title) === normalizedTitle) return true;
-        return false;
-    });
+        for (var i = 0; i < library.length; i++) {
+            var e = library[i];
+            var entryTitle = e.title;
+            var normalizedEntryTitle = slugify(entryTitle);
+            
+            if (normalizedEntryTitle === normalizedTitle) {
+                console.log("[LibraryService] Hurrah! Found a matching entry: " + e.title);
+                return e;
+            }
+        }
+        console.log("[LibraryService] No entry was found matching title: " + title);
+    } catch (err) {
+        console.log("[LibraryService] Error in findEntry: " + err);
+    }
+    return undefined;
 }
 
 /**
@@ -123,45 +137,67 @@ export async function loadLibrary() {
  * @returns {Promise<Object>} The final merged entry
  */
 export async function upsertEntry(entryData) {
-    const library = await loadLibrary();
-    const id2 = getMangaId(entryData);
-
-    const existingIdx = library.findIndex(e => {
-        const id1 = getMangaId(e);
-        return id1 === id2 || (e.title && e.title === entryData.title);
-    });
-
-    const now = Date.now();
-    let updatedEntry;
-
-    if (existingIdx !== -1) {
-        // Update the existing entry
-        var entry = library[existingIdx];
+    console.log("[LibraryService] upsertEntry called for: " + (entryData ? entryData.title : "null"));
+    try {
+        var library = await loadLibrary();
+        console.log("[LibraryService] Loaded library, count: " + library.length);
         
-        // Copy the data manually
-        for (var key in entryData) {
-            entry[key] = entryData[key];
+        var matchTitle = slugify(entryData.title);
+        var existingIdx = -1;
+        
+        // Loop and look for a title match
+        for (var i = 0; i < library.length; i++) {
+            if (library[i] && library[i].title) {
+                var currentTitle = slugify(library[i].title);
+                if (currentTitle === matchTitle) {
+                    existingIdx = i;
+                    console.log("[LibraryService] Found existing entry to update at index: " + i);
+                    break;
+                }
+            }
         }
-        
-        entry.lastUpdated = now;
-        library[existingIdx] = entry;
-    } else {
-        // Create a new entry
-        var newEntry = {};
-        newEntry.status = DEFAULT_STATUS;
-        
-        for (var key in entryData) {
-            newEntry[key] = entryData[key];
+
+        var now = Date.now();
+        var updatedEntry;
+
+        if (existingIdx !== -1) {
+            // Update the existing entry
+            console.log("[LibraryService] Updating existing manga entry in library: " + entryData.title);
+            var entry = library[existingIdx];
+            
+            // Copy the data manually
+            for (var key in entryData) {
+                entry[key] = entryData[key];
+            }
+            
+            entry.lastUpdated = now;
+            library[existingIdx] = entry;
+            updatedEntry = entry;
+        } else {
+            // Create a new entry
+            console.log("[LibraryService] Creating a brand new manga entry in library: " + entryData.title);
+            var newEntry = {};
+            newEntry.status = DEFAULT_STATUS;
+            
+            for (var key in entryData) {
+                newEntry[key] = entryData[key];
+            }
+            
+            newEntry.lastRead = now;
+            newEntry.lastUpdated = now;
+            library.push(newEntry);
+            updatedEntry = newEntry;
         }
-        
-        newEntry.lastRead = now;
-        newEntry.lastUpdated = now;
-        library.push(newEntry);
+
+        var finalLibrary = Array.isArray(library) ? library : [];
+        console.log("[LibraryService] Saving modified library to chrome local storage...");
+        await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: JSON.parse(JSON.stringify(finalLibrary)) });
+        console.log("[LibraryService] Saved successfully!");
+        return updatedEntry;
+    } catch (err) {
+        console.log("[LibraryService] Error in upsertEntry: " + err);
+        return null;
     }
-
-    const finalLibrary = Array.isArray(library) ? library : [];
-    await chrome.storage.local.set({ [DATA.LIBRARY_ENTRIES]: JSON.parse(JSON.stringify(finalLibrary)) });
-    return updatedEntry;
 }
 
 /**

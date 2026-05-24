@@ -46,14 +46,36 @@ const defaultStatuses = [
 ];
 
 const allStatuses = computed(() => {
-  return [...defaultStatuses, ...props.customStatuses];
+  console.log("[StatusPicker] computed allStatuses has triggered!");
+  var merged = [];
+  
+  // Use simple loops to merge arrays
+  for (var i = 0; i < defaultStatuses.length; i++) {
+    merged.push(defaultStatuses[i]);
+  }
+  for (var j = 0; j < props.customStatuses.length; j++) {
+    merged.push(props.customStatuses[j]);
+  }
+  
+  console.log("[StatusPicker] Merged statuses count: " + merged.length);
+  return merged;
 });
 
 const onSelect = (statusName) => {
-  if (props.onSelect) {
-    props.onSelect(statusName, props.entry);
+  console.log("[StatusPicker] onSelect was clicked for statusName: " + statusName);
+  try {
+    if (props.onSelect) {
+      console.log("[StatusPicker] Calling props.onSelect callback!");
+      props.onSelect(statusName, props.entry);
+    } else {
+      console.log("[StatusPicker] props.onSelect callback not found.");
+    }
+    
+    console.log("[StatusPicker] Emitting select event...");
+    emit('select', statusName);
+  } catch (err) {
+    console.log("[StatusPicker] Oh no! Error in onSelect click handler: " + err);
   }
-  emit('select', statusName);
 };
 </script>
 

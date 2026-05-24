@@ -20,6 +20,7 @@ export class CardEnhancer {
      * @param {Object} settings - User settings from Chrome storage
      */
     constructor(adapter, settings) {
+        console.log("[CardEnhancer] constructor called!");
         if (settings == null) settings = {};
         this.adapter = adapter;
 
@@ -36,7 +37,6 @@ export class CardEnhancer {
 
         this.settings.highlighting = settings[TOGGLES.LIBRARY_BORDERS] !== false;
         this.settings.quickActions = settings[TOGGLES.QUICK_ACTIONS] !== false;
-        this.settings.newChapterBadges = settings.newChapterBadges !== false;
         this.settings.showRibbons = settings[TOGGLES.LIBRARY_SHOW_RIBBONS] !== false;
         
         var customStatuses = settings[DATA.CUSTOM_STATUSES];
@@ -45,6 +45,7 @@ export class CardEnhancer {
         }
         this.settings.customStatuses = customStatuses;
         this.settings.customStatusesEnabled = settings[TOGGLES.CUSTOM_STATUS_ENABLED] !== false;
+        console.log("[CardEnhancer] constructor finished setting up settings!");
     }
 
     /**
@@ -52,25 +53,30 @@ export class CardEnhancer {
      * @returns {Promise<number>} Number of cards enhanced
      */
     async enhanceAll() {
+        console.log("[CardEnhancer] Starting the enhanceAll function now!");
         if (!chrome.runtime?.id) {
-            console.log('[CardEnhancer] Extension context invalidated, skipping enhancement.');
+            console.log('[CardEnhancer] Context is bad, we cannot enhance.');
             return 0;
         }
 
         try {
+            console.log("[CardEnhancer] Finding all the cards on the page...");
             var cards = this.findCards();
+            console.log("[CardEnhancer] We found " + cards.length + " cards on this page.");
             
-            // Load the library from storage using a simple await
+            console.log("[CardEnhancer] Getting library entries and read chapters from storage...");
             var storageData = await chrome.storage.local.get([DATA.LIBRARY_ENTRIES, DATA.READING_HISTORY]);
             
             var library = [];
             if (Array.isArray(storageData[DATA.LIBRARY_ENTRIES])) {
                 library = storageData[DATA.LIBRARY_ENTRIES];
+            } else {
+                console.log("[CardEnhancer] Library entries in storage was not an array, using empty list.");
             }
 
             var readChapters = storageData[DATA.READING_HISTORY] || {};
 
-            // Attach read chapter history to each entry so we can show ribbons/badges
+            console.log("[CardEnhancer] Processing history for each library entry...");
             for (var k = 0; k < library.length; k++) {
                 var entry = library[k];
                 if (entry && entry.title) {
@@ -86,21 +92,24 @@ export class CardEnhancer {
 
             var enhancedCount = 0;
 
+            console.log("[CardEnhancer] Looping through all the cards to enhance them...");
             for (var i = 0; i < cards.length; i++) {
                 var card = cards[i];
 
                 try {
-                    // Skip cards already processed
                     if (card.element.dataset.bmhEnhanced) {
+                        console.log("[CardEnhancer] Card is already enhanced, skipping: " + card.data.title);
                         continue;
                     }
 
+                    console.log("[CardEnhancer] Looking for match for card: " + card.data.title);
                     var match = this.findMatch(card, library);
 
                     if (match) {
+                        console.log("[CardEnhancer] Card matched an entry in library! Applying enhancements.");
                         this.applyEnhancements(card, match);
                     } else if (this.settings.quickActions) {
-                        // No library match — show an "Add to Library" button in the overlay
+                        console.log("[CardEnhancer] Card is new! Creating a skeleton entry for: " + card.data.title);
                         var skeletonEntry = {
                             title: card.data.title,
                             slug: card.data.id,
@@ -115,13 +124,14 @@ export class CardEnhancer {
                     card.element.dataset.bmhEnhanced = 'true';
                     enhancedCount = enhancedCount + 1;
                 } catch (cardError) {
-                    console.error('[CardEnhancer] Error enhancing card:', cardError, card);
+                    console.log('[CardEnhancer] Single card error occurred: ' + cardError);
                 }
             }
 
+            console.log("[CardEnhancer] Done enhancing cards! Total enhanced in this run: " + enhancedCount);
             return enhancedCount;
         } catch (err) {
-            console.error('[CardEnhancer] Global enhancement error:', err);
+            console.log('[CardEnhancer] Oh no! Global enhancement error: ' + err);
             return 0;
         }
     }
@@ -204,23 +214,26 @@ export class CardEnhancer {
      * @returns {Object|undefined}
      */
     findMatch(card, library) {
-        // First pass: exact source + sourceId match
-        for (var i = 0; i < library.length; i++) {
-            var entry = library[i];
-            if (entry.source === this.adapter.id && entry.sourceId === card.data.id) {
-                return entry;
+        console.log("[CardEnhancer] Starting findMatch for: " + card.data.title);
+        try {
+            var normalizedCardTitle = this.normalizeTitle(card.data.title);
+            console.log("[CardEnhancer] Card title normalized is: " + normalizedCardTitle);
+            
+            // Loop through all entries to see if we find a title that matches
+            for (var i = 0; i < library.length; i++) {
+                var entry = library[i];
+                var entryTitle = entry.title;
+                var normalizedEntryTitle = this.normalizeTitle(entryTitle);
+                
+                if (normalizedEntryTitle === normalizedCardTitle) {
+                    console.log("[CardEnhancer] Wow, we found a match in the library! Title is: " + entry.title);
+                    return entry;
+                }
             }
+            console.log("[CardEnhancer] We did not find any match for: " + card.data.title);
+        } catch (e) {
+            console.log("[CardEnhancer] Oh no! Something went wrong in findMatch: " + e);
         }
-
-        // Second pass: normalized title match
-        var normalizedCardTitle = this.normalizeTitle(card.data.title);
-        for (var i = 0; i < library.length; i++) {
-            var entry = library[i];
-            if (this.normalizeTitle(entry.title) === normalizedCardTitle) {
-                return entry;
-            }
-        }
-
         return undefined;
     }
 
@@ -231,20 +244,24 @@ export class CardEnhancer {
      * @param {Object} entry - Library entry
      */
     applyEnhancements(card, entry) {
-        if (this.settings.highlighting) {
-            this.applyBorder(card, entry);
-        }
+        console.log("[CardEnhancer] applyEnhancements called for: " + entry.title);
+        try {
+            if (this.settings.highlighting) {
+                console.log("[CardEnhancer] Library borders enabled, calling applyBorder");
+                this.applyBorder(card, entry);
+            }
 
-        if (this.settings.newChapterBadges && entry.hasNewChapters) {
-            this.applyNewBadge(card);
-        }
+            if (this.settings.quickActions) {
+                console.log("[CardEnhancer] Quick actions enabled, calling applyQuickActions");
+                this.applyQuickActions(card, entry);
+            }
 
-        if (this.settings.quickActions) {
-            this.applyQuickActions(card, entry);
-        }
-
-        if (this.settings.showRibbons) {
-            this.applyRibbon(card, entry);
+            if (this.settings.showRibbons) {
+                console.log("[CardEnhancer] Show ribbons enabled, calling applyRibbon");
+                this.applyRibbon(card, entry);
+            }
+        } catch (err) {
+            console.log("[CardEnhancer] Error applying enhancements: " + err);
         }
     }
 
@@ -346,9 +363,7 @@ export class CardEnhancer {
      * Apply a "NEW" badge for cards with unread chapters.
      * @param {{ element: HTMLElement, data: Object }} card
      */
-    applyNewBadge(card) {
-        OverlayFactory.mountStatusBadge(card.element, 'NEW', 'new');
-    }
+    // applyNewBadge has been removed because it is never an option in the program.
 
     /**
      * Apply the quick-actions tooltip overlay to a card.
