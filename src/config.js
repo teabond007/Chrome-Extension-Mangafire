@@ -53,10 +53,6 @@ export const BORDER_DEFAULTS = {
  * @type {Object<string, string>}
  */
 export const TOGGLES = {
-    // Cloud Sync
-    // Cloud Sync
-    AUTO_SYNC: 'profileAutoSync',
-
     // Core Features
     FAMILY_FRIENDLY: 'FamilyFriendlyfeatureEnabled',
     HISTORY_TRACKING: 'SyncandMarkReadfeatureEnabled',
@@ -85,8 +81,7 @@ export const SETTINGS = {
     HIGHLIGHT_THICKNESS: 'CustomBorderSize',
     LIBRARY_THICKNESS: 'LibraryBorderSize',
     BORDER_STYLE: 'GlobalBorderStyle',
-    VIEW_MODE: 'cardViewSize', // Unified from cardViewSize/libraryViewMode
-    SYNC_INTERVAL: 'profileSyncInterval'
+    VIEW_MODE: 'cardViewSize' // Unified from cardViewSize/libraryViewMode
 };
 
 /**
@@ -105,7 +100,6 @@ export const DATA = {
     
     // Timestamps
     LAST_BACKUP: 'LastBackupDate',
-    LAST_SYNC_CLOUD: 'profileLastSync',
     LAST_SYNC_TIME: 'lastSyncTime'
 };
 
@@ -145,14 +139,6 @@ export const API_CONFIG = {
         BASE_URL: 'https://graphql.anilist.co',
         MIN_REQUEST_INTERVAL: 750
     }
-};
-
-/**
- * Sync intervals
- */
-export const SYNC_CONFIG = {
-    INTERVAL_DEFAULT: 24 * 60 * 60 * 1000, // 24 hours
-    RETRY_DELAY: 5 * 60 * 1000             // 5 minutes
 };
 
 /**

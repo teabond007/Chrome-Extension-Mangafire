@@ -59,68 +59,126 @@ const props = defineProps({
 const emit = defineEmits(['edit', 'edit-reader']);
 const customSitesStore = useCustomSitesStore();
 
-/**
- * Determines configuration status of card/listing selectors
- */
 const cardStatus = computed(() => {
-    const site = props.site;
-    if (!site.selectors) return 'empty';
+    console.log("checking card status");
+    var site = props.site;
+    if (!site.selectors) {
+        return 'empty';
+    }
     
-    const selectors = Array.isArray(site.selectors) ? site.selectors : [site.selectors];
-    if (selectors.length === 0) return 'empty';
+    var selectors = [];
+    if (Array.isArray(site.selectors)) {
+        for (var i = 0; i < site.selectors.length; i++) {
+            selectors.push(site.selectors[i]);
+        }
+    } else {
+        selectors.push(site.selectors);
+    }
     
-    const hasCard = selectors.some(s => s.card);
-    if (!hasCard) return 'empty';
+    if (selectors.length === 0) {
+        return 'empty';
+    }
     
-    const invalidGroup = selectors.find(s => s.card && !s.title);
-    if (invalidGroup) return 'incomplete';
+    var hasCard = false;
+    for (var j = 0; j < selectors.length; j++) {
+        if (selectors[j] && selectors[j].card) {
+            hasCard = true;
+            break;
+        }
+    }
+    
+    if (hasCard == false) {
+        return 'empty';
+    }
+    
+    var hasIncomplete = false;
+    for (var k = 0; k < selectors.length; k++) {
+        var s = selectors[k];
+        if (s && s.card && !s.title) {
+            hasIncomplete = true;
+            break;
+        }
+    }
+    
+    if (hasIncomplete == true) {
+        return 'incomplete';
+    }
     
     return 'complete';
 });
 
 const cardStatusText = computed(() => {
-    switch (cardStatus.value) {
-        case 'complete': return 'Card Selectors';
-        case 'incomplete': return 'Incomplete Cards';
-        case 'empty': return 'Missing Card Selectors';
-        default: return '';
+    console.log("getting card status text: " + cardStatus.value);
+    if (cardStatus.value === 'complete') {
+        return 'Card Selectors';
     }
+    if (cardStatus.value === 'incomplete') {
+        return 'Incomplete Cards';
+    }
+    if (cardStatus.value === 'empty') {
+        return 'Missing Card Selectors';
+    }
+    return '';
 });
 
 /**
  * Determines configuration status of reader selectors
  */
 const readerStatus = computed(() => {
-    const site = props.site;
-    if (!site.readerSelectors) return 'empty';
+    console.log("checking reader status");
+    var site = props.site;
+    if (!site.readerSelectors) {
+        return 'empty';
+    }
     
-    const r = site.readerSelectors;
-    const hasDetect = !!r.readerDetect;
-    const hasTitle = !!r.readerTitle;
-    const hasChapter = !!r.readerChapter;
+    var r = site.readerSelectors;
+    var hasDetect = r.readerDetect != undefined && r.readerDetect != "";
+    var hasTitle = r.readerTitle != undefined && r.readerTitle != "";
+    var hasChapter = r.readerChapter != undefined && r.readerChapter != "";
     
-    if (!hasDetect && !hasTitle && !hasChapter) return 'empty';
-    if (!hasDetect || !hasTitle || !hasChapter) return 'incomplete';
+    if (hasDetect == false && hasTitle == false && hasChapter == false) {
+        return 'empty';
+    }
+    if (hasDetect == false || hasTitle == false || hasChapter == false) {
+        return 'incomplete';
+    }
     
     return 'complete';
 });
 
 const readerStatusText = computed(() => {
-    switch (readerStatus.value) {
-        case 'complete': return 'Reader Selectors';
-        case 'incomplete': return 'Incomplete Reader';
-        case 'empty': return 'Missing Reader Selectors';
-        default: return '';
+    console.log("getting reader status text: " + readerStatus.value);
+    if (readerStatus.value === 'complete') {
+        return 'Reader Selectors';
     }
+    if (readerStatus.value === 'incomplete') {
+        return 'Incomplete Reader';
+    }
+    if (readerStatus.value === 'empty') {
+        return 'Missing Reader Selectors';
+    }
+    return '';
 });
 
 const toggleSite = async () => {
-    await customSitesStore.toggleSite(props.site.id);
+    console.log("toggling site: " + props.site.name);
+    try {
+        await customSitesStore.toggleSite(props.site.id);
+    } catch (err) {
+        console.log("error toggling: " + err);
+    }
 };
 
 const deleteSite = async () => {
-    if (!confirm('Are you sure you want to delete this site configuration?')) return;
-    await customSitesStore.removeSite(props.site.id);
+    console.log("deleting site: " + props.site.name);
+    try {
+        var ok = confirm('Are you sure you want to delete this site configuration?');
+        if (ok == true) {
+            await customSitesStore.removeSite(props.site.id);
+        }
+    } catch (err) {
+        console.log("error deleting: " + err);
+    }
 };
 </script>
 
