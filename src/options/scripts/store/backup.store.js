@@ -122,7 +122,7 @@ export const useBackupStore = defineStore('backup', {
                                 needsAuth = true;
                             }
                         }
-
+                        
                         if (needsAuth) {
                             console.log("new permissions needed, showing dialog");
                             self.pendingImportData = importedData;
@@ -190,7 +190,7 @@ export const useBackupStore = defineStore('backup', {
             try {
                 await applyStorageData(data, true);
 
-                // Let background script know custom sites changed
+               
                 chrome.runtime.sendMessage({ type: 'custom-sites-updated' });
 
                 this.syncStatus = 'success';

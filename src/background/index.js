@@ -38,6 +38,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     // Fetch AniList/MangaDex metadata from background (avoids CORS on custom sites)
     handleFetchMetadata(msg.title, msg.storageKey, sendResponse);
     return true;
+  } else if (msg.type === "inject-selector-tool") {
+    // Manually inject the content script and CSS into a tab (used by options page to start selector tool immediately)
+    handleInjectSelectorTool(msg.tabId, sendResponse);
+    return true;
   }
   
   // Mandatory response to prevent "The message port closed before a response was received"
@@ -199,6 +203,51 @@ async function handleFetchMetadata(title, storageKey, sendResponse) {
   } catch (e) {
     console.warn('[Background] Metadata fetch failed:', e);
     if (sendResponse) sendResponse({ success: false, error: e.message });
+  }
+}
+
+/**
+ * Force-injects the compiled content script and CSS into a specific tab.
+ * This is used when the user starts the DOM selector tool, ensuring the script
+ * runs immediately on the target page.
+ * @param {number} tabId - Target tab ID.
+ * @param {Function} sendResponse - Response callback.
+ */
+async function handleInjectSelectorTool(tabId, sendResponse) {
+  console.log("[Background] handleInjectSelectorTool called for tab: " + tabId);
+  try {
+    var manifest = chrome.runtime.getManifest();
+    var contentScriptPath = manifest.content_scripts?.[0]?.js?.[0];
+    var cssPath = manifest.content_scripts?.[0]?.css?.[0];
+
+    if (!contentScriptPath) {
+      console.log('[Background] No content script path found for injection');
+      if (sendResponse) sendResponse({ success: false, error: 'No content script path found' });
+      return;
+    }
+
+    console.log(`[Background] Injecting content script ${contentScriptPath} into tab ${tabId}`);
+
+    // Inject the compiled content script javascript file
+    await chrome.scripting.executeScript({
+      target: { tabId: tabId },
+      files: [contentScriptPath]
+    });
+
+    // If a compiled CSS path is defined, we inject that as well
+    if (cssPath) {
+      console.log(`[Background] Injecting CSS ${cssPath} into tab ${tabId}`);
+      await chrome.scripting.insertCSS({
+        target: { tabId: tabId },
+        files: [cssPath]
+      });
+    }
+
+    console.log("[Background] Inject selector tool completed successfully");
+    if (sendResponse) sendResponse({ success: true });
+  } catch (error) {
+    console.log('[Background] Failed to inject selector tool: ' + error.message);
+    if (sendResponse) sendResponse({ success: false, error: error.message });
   }
 }
 

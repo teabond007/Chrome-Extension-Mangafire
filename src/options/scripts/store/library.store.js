@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Pinia store for managing the manga library, including entries, reading history, and personal data.
+ * This store handles loading and saving the library to browser storage, syncing metadata, and providing getters for different entry statuses.
+ * It also includes functions for removing entries and showing entry details in a modal.
+ */
+
 import { defineStore } from 'pinia';
 import { wipeMangadexCache } from '../../../scripts/core/api/mangadex-api.js';
 import { getMergedMetadata } from '../../../scripts/core/api/metadata-service';
